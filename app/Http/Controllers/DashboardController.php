@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
@@ -23,22 +23,79 @@ class DashboardController extends Controller
         if ($user->member) {
             $member = $user->member;
             
-            // Contribution Trends (Last 6 months)
-            $contributionTrends = $member->contributions()
-                ->select(
-                    DB::raw('SUM(amount) as total'),
-                    DB::raw("DATE_FORMAT(contribution_date, '%b') as month")
-                )
-                ->where('contribution_date', '>=', now()->subMonths(6))
-                ->groupBy(DB::raw("DATE_FORMAT(contribution_date, '%Y-%m')"), DB::raw("DATE_FORMAT(contribution_date, '%b')"))
-                ->orderBy(DB::raw("DATE_FORMAT(contribution_date, '%Y-%m')"), 'asc')
-                ->get();
+            // --- CONTRIBUTION TRENDS ---
+            $trendFilter = $request->get('trend_filter', 'month');
+            $trendQuery = $member->contributions();
+            $trendData = [];
+            $trendLabels = [];
 
-            // Contribution Types (Pie Chart)
-            $contributionTypes = $member->contributions()
-                ->select('contribution_type', DB::raw('SUM(amount) as total'))
-                ->groupBy('contribution_type')
-                ->get();
+            if ($trendFilter == 'week') {
+                // Last 7 days including today
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = now()->subDays($i);
+                    $trendLabels[] = $date->format('D'); // Mon, Tue...
+                    $trendData[$date->format('Y-m-d')] = 0;
+                }
+
+                $results = $member->contributions()
+                    ->where('contribution_date', '>=', now()->subDays(6)->startOfDay())
+                    ->select(DB::raw('SUM(amount) as total'), DB::raw("DATE_FORMAT(contribution_date, '%Y-%m-%d') as day"))
+                    ->groupBy('day')
+                    ->get();
+
+                foreach ($results as $r) {
+                    if (isset($trendData[$r->day])) $trendData[$r->day] = (float)$r->total;
+                }
+                $trendData = array_values($trendData);
+
+            } elseif ($trendFilter == 'year') {
+                // All 12 months of current year
+                $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                $trendLabels = $months;
+                $trendData = array_fill(0, 12, 0);
+
+                $results = $member->contributions()
+                    ->whereYear('contribution_date', now()->year)
+                    ->select(DB::raw('SUM(amount) as total'), DB::raw("MONTH(contribution_date) as month"))
+                    ->groupBy('month')
+                    ->get();
+
+                foreach ($results as $r) {
+                    $trendData[$r->month - 1] = (float)$r->total;
+                }
+            } else { // Default: Last 6 Months
+                $tempData = [];
+                for ($i = 5; $i >= 0; $i--) {
+                    $date = now()->subMonths($i);
+                    $trendLabels[] = $date->format('M');
+                    $tempData[$date->format('Y-m')] = 0;
+                }
+
+                $results = $member->contributions()
+                    ->where('contribution_date', '>=', now()->subMonths(5)->startOfMonth())
+                    ->select(DB::raw('SUM(amount) as total'), DB::raw("DATE_FORMAT(contribution_date, '%Y-%m') as ym"))
+                    ->groupBy('ym')
+                    ->get();
+
+                foreach ($results as $r) {
+                    if (isset($tempData[$r->ym])) $tempData[$r->ym] = (float)$r->total;
+                }
+                $trendData = array_values($tempData);
+            }
+
+            // --- CONTRIBUTION DISTRIBUTION ---
+            $distFilter = $request->get('dist_filter', 'year');
+            $distQuery = $member->contributions()
+                ->select('contribution_type', DB::raw('SUM(amount) as total'));
+            
+            if ($distFilter == 'month') {
+                $distQuery->whereMonth('contribution_date', now()->month)
+                          ->whereYear('contribution_date', now()->year);
+            } else {
+                $distQuery->whereYear('contribution_date', now()->year);
+            }
+            
+            $contributionTypes = $distQuery->groupBy('contribution_type')->get();
 
             $totalContributed = $member->contributions()->sum('amount');
             $recentContributions = $member->contributions()->latest()->limit(5)->get();
@@ -49,7 +106,8 @@ class DashboardController extends Controller
 
             return view('member.dashboard', compact(
                 'member', 
-                'contributionTrends', 
+                'trendLabels', 
+                'trendData', 
                 'contributionTypes', 
                 'totalContributed', 
                 'recentContributions',

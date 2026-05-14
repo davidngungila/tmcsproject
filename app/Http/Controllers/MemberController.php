@@ -143,6 +143,12 @@ class MemberController extends Controller
         return redirect()->route('members.index')->with('success', 'Member deleted successfully');
     }
 
+    public function idCard(Member $member)
+    {
+        $member->load('groups');
+        return view('members.id_card', compact('member'));
+    }
+
     public function categories()
     {
         // For now, static categories. In a full system, these might be in a separate table.

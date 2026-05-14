@@ -57,6 +57,7 @@ Route::middleware('auth')->group(function () {
 
     // Members
     Route::get('/members/categories', [MemberController::class, 'categories'])->name('members.categories');
+    Route::get('/members/{member}/id-card', [MemberController::class, 'idCard'])->name('members.id-card');
     Route::resource('members', MemberController::class);
 
     // Finance

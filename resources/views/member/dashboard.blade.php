@@ -8,15 +8,15 @@
 <div class="animate-in">
     <!-- TOP STATS -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="card bg-gradient-to-br from-blue-700 to-indigo-500 text-white p-6 shadow-lg border-0">
+        <div class="card bg-blue-600 text-white p-6 shadow-lg border-0">
             <div class="flex justify-between items-start mb-4">
                 <div class="w-10 h-10 rounded-lg bg-white/20 flex-center">
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 </div>
                 <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">Total Giving</span>
             </div>
-            <div class="text-2xl font-black leading-none">{{ number_format($totalContributed) }}</div>
-            <div class="text-[10px] mt-1 opacity-80 font-bold uppercase tracking-wider">Tanzanian Shillings</div>
+            <div class="text-2xl font-black leading-none text-white">{{ number_format($totalContributed) }}</div>
+            <div class="text-[10px] mt-1 text-white font-bold uppercase tracking-wider">Tanzanian Shillings</div>
         </div>
 
         <div class="card p-6 shadow-sm border-l-4 border-green-500">
@@ -60,20 +60,29 @@
         <!-- CONTRIBUTION TRENDS (BAR CHART) -->
         <div class="lg:col-span-2 card">
             <div class="card-header border-b flex items-center justify-between">
-                <div class="card-title text-sm">Contribution Trends (Last 6 Months)</div>
+                <div class="card-title text-sm font-bold uppercase tracking-wider text-muted">Contribution Trends</div>
+                <div class="flex gap-1">
+                    <a href="?trend_filter=week" class="px-2 py-1 text-[10px] rounded {{ request('trend_filter', 'month') == 'week' ? 'bg-blue-600 text-white' : 'bg-light text-muted hover:bg-gray-200' }} font-bold transition-all">WEEK</a>
+                    <a href="?trend_filter=month" class="px-2 py-1 text-[10px] rounded {{ request('trend_filter', 'month') == 'month' ? 'bg-blue-600 text-white' : 'bg-light text-muted hover:bg-gray-200' }} font-bold transition-all">MONTH</a>
+                    <a href="?trend_filter=year" class="px-2 py-1 text-[10px] rounded {{ request('trend_filter', 'month') == 'year' ? 'bg-blue-600 text-white' : 'bg-light text-muted hover:bg-gray-200' }} font-bold transition-all">YEAR</a>
+                </div>
             </div>
             <div class="card-body">
-                <canvas id="contributionChart" height="200"></canvas>
+                <canvas id="contributionChart" height="250"></canvas>
             </div>
         </div>
 
         <!-- CONTRIBUTION TYPES (PIE CHART) -->
         <div class="lg:col-span-1 card">
-            <div class="card-header border-b">
-                <div class="card-title text-sm">Giving Distribution</div>
+            <div class="card-header border-b flex items-center justify-between">
+                <div class="card-title text-sm font-bold uppercase tracking-wider text-muted">Giving Distribution</div>
+                <div class="flex gap-1">
+                    <a href="?dist_filter=month" class="px-2 py-1 text-[10px] rounded {{ request('dist_filter', 'year') == 'month' ? 'bg-amber-500 text-white' : 'bg-light text-muted hover:bg-gray-200' }} font-bold transition-all">MONTH</a>
+                    <a href="?dist_filter=year" class="px-2 py-1 text-[10px] rounded {{ request('dist_filter', 'year') == 'year' ? 'bg-amber-500 text-white' : 'bg-light text-muted hover:bg-gray-200' }} font-bold transition-all">YEAR</a>
+                </div>
             </div>
             <div class="card-body">
-                <canvas id="typeChart" height="200"></canvas>
+                <canvas id="typeChart" height="250"></canvas>
             </div>
         </div>
     </div>
@@ -140,71 +149,114 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Trends Chart
-    const trendCtx = document.getElementById('contributionChart').getContext('2d');
-    const trendData = {!! json_encode($contributionTrends->pluck('total')) !!};
-    const trendLabels = {!! json_encode($contributionTrends->pluck('month')) !!};
-
-    if (trendData.length > 0) {
+document.addEventListener('DOMContentLoaded', function() {
+    // Trends Chart - Line style like Admin Dashboard
+    const trendCtx = document.getElementById('contributionChart');
+    if (trendCtx) {
         new Chart(trendCtx, {
-            type: 'bar',
+            type: 'line',
             data: {
-                labels: trendLabels,
+                labels: @json($trendLabels),
                 datasets: [{
                     label: 'Contributions (TZS)',
-                    data: trendData,
-                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                    borderColor: 'rgb(59, 130, 246)',
-                    borderWidth: 1,
-                    borderRadius: 4
+                    data: @json($trendData),
+                    borderColor: '#2563eb', // blue-600
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#2563eb'
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { beginAtZero: true, ticks: { font: { size: 10 } } }, 
-                    x: { ticks: { font: { size: 10 } } } 
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'TZS ' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5], color: 'rgba(0,0,0,0.05)' },
+                        ticks: {
+                            font: { size: 10 },
+                            callback: function(value) {
+                                if (value >= 1000000) return (value/1000000) + 'M';
+                                if (value >= 1000) return (value/1000) + 'K';
+                                return value;
+                            }
+                        }
+                    },
+                    x: { 
+                        grid: { display: false },
+                        ticks: { font: { size: 10 } }
+                    }
                 }
             }
         });
-    } else {
-        trendCtx.font = "12px sans-serif";
-        trendCtx.fillStyle = "#999";
-        trendCtx.textAlign = "center";
-        trendCtx.fillText("No contribution data available for the last 6 months", trendCtx.canvas.width/2, trendCtx.canvas.height/2);
     }
 
     // Types Chart
-    const typeCtx = document.getElementById('typeChart').getContext('2d');
-    const typeData = {!! json_encode($contributionTypes->pluck('total')) !!};
-    const typeLabels = {!! json_encode($contributionTypes->pluck('contribution_type')) !!};
+    const typeCtx = document.getElementById('typeChart');
+    if (typeCtx) {
+        const typeData = @json($contributionTypes->pluck('total'));
+        const typeLabels = @json($contributionTypes->pluck('contribution_type'));
 
-    if (typeData.length > 0) {
-        new Chart(typeCtx, {
-            type: 'doughnut',
-            data: {
-                labels: typeLabels,
-                datasets: [{
-                    data: typeData,
-                    backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#6B7280'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
-            }
-        });
-    } else {
-        typeCtx.font = "12px sans-serif";
-        typeCtx.fillStyle = "#999";
-        typeCtx.textAlign = "center";
-        typeCtx.fillText("No giving records found", typeCtx.canvas.width/2, typeCtx.canvas.height/2);
+        if (typeData.length > 0) {
+            new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: typeLabels.map(label => label.charAt(0).toUpperCase() + label.slice(1).replace('_', ' ')),
+                    datasets: [{
+                        data: typeData,
+                        backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#6b7280'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { 
+                                boxWidth: 10, 
+                                font: { size: 10, weight: 'bold' },
+                                padding: 15
+                            } 
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return ` TZS ${value.toLocaleString()} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '70%'
+                }
+            });
+        } else {
+            const ctx = typeCtx.getContext('2d');
+            ctx.font = "12px DM Sans";
+            ctx.fillStyle = "#6b9e82";
+            ctx.textAlign = "center";
+            ctx.fillText("No giving records found", typeCtx.width/2, typeCtx.height/2);
+        }
     }
+});
 </script>
 @endpush

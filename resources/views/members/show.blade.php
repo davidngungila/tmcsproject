@@ -186,10 +186,10 @@
           <div class="text-[10px] text-muted uppercase font-bold tracking-widest">{{ $member->registration_number }}</div>
         </div>
         <div class="card-footer bg-light/30 p-4 border-t text-center">
-            <button class="btn btn-dark btn-sm w-full rounded-xl" onclick="window.print()">
+            <a href="{{ route('members.id-card', $member->id) }}" class="btn btn-dark btn-sm w-full rounded-xl">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print Identity Card
-            </button>
+            </a>
         </div>
       </div>
 
@@ -225,7 +225,7 @@
 @push('scripts')
 <script>
 function printMemberCard(id) {
-  window.print();
+  window.location.href = "{{ route('members.id-card', $member->id) }}";
 }
 
 function sendEmail(id) {

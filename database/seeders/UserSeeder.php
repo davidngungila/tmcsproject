@@ -76,13 +76,16 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($users as $userData) {
+            $roleName = $userData['role'];
+            unset($userData['role']); // Role is not a column in users table
+
             $user = \App\Models\User::updateOrCreate(
                 ['email' => $userData['email']],
                 $userData
             );
 
             // Assign role to user
-            $role = \App\Models\Role::where('name', $userData['role'])->first();
+            $role = \App\Models\Role::where('name', $roleName)->first();
             if ($role && !$user->roles()->where('role_id', $role->id)->exists()) {
                 $user->roles()->attach($role->id);
             }

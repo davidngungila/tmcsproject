@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('title', 'Contribution Details - TmcsSmart')
-@section('page-title', 'Contribution: ' . $contribution->receipt_number)
-@section('breadcrumb', 'TmcsSmart / Finance / ' . $contribution->receipt_number)
+@section('page-title', 'Contribution')
+@section('breadcrumb', 'TmcsSmart / Finance / Contribution')
 
 @section('content')
 <div class="animate-in">
