@@ -105,8 +105,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [MemberProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile/edit', [MemberProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile/update', [MemberProfileController::class, 'update'])->name('profile.update');
+        Route::get('/pay', [MemberProfileController::class, 'pay'])->name('profile.pay');
+        Route::post('/pay', [MemberProfileController::class, 'processPayment'])->name('profile.process-payment');
     });
-});
+
     // Elections
     Route::get('/elections/results', [ElectionController::class, 'results'])->name('elections.results');
     Route::get('/elections/{election}/vote', [ElectionController::class, 'vote'])->name('elections.vote');

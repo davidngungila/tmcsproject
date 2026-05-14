@@ -6,9 +6,80 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Services\SnipePaymentService;
+use App\Models\Contribution;
 
 class ProfileController extends Controller
 {
+    protected $snipeService;
+
+    public function __construct(SnipePaymentService $snipeService)
+    {
+        $this->snipeService = $snipeService;
+    }
+
+    public function pay()
+    {
+        $user = Auth::user();
+        $member = $user->member;
+
+        if (!$member) {
+            return redirect()->route('dashboard')->with('error', 'Member profile not found.');
+        }
+
+        return view('member.profile.pay', compact('member'));
+    }
+
+    public function processPayment(Request $request)
+    {
+        $user = Auth::user();
+        $member = $user->member;
+
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:500',
+            'contribution_type' => 'required|string',
+            'payment_method' => 'required|string|in:mobile_money,card',
+        ]);
+
+        $receiptNumber = 'RCP-ONLINE-' . date('Ymd') . '-' . strtoupper(Str::random(5));
+        $type = $validated['payment_method'] === 'mobile_money' ? 'mobile' : 'card';
+
+        $paymentResponse = $this->snipeService->initializePayment($type, [
+            'amount' => $validated['amount'],
+            'phone' => $member->phone,
+            'name' => $member->full_name,
+            'email' => $member->email,
+            'reference' => $receiptNumber,
+            'metadata' => [
+                'member_id' => $member->id,
+                'contribution_type' => $validated['contribution_type'],
+                'source' => 'member_portal'
+            ]
+        ]);
+
+        if ($paymentResponse['status'] === 'success') {
+            // Create pending contribution
+            Contribution::create([
+                'member_id' => $member->id,
+                'contribution_type' => $validated['contribution_type'],
+                'amount' => $validated['amount'],
+                'contribution_date' => now(),
+                'payment_method' => $validated['payment_method'],
+                'notes' => 'Online payment initiated via Member Portal.',
+                'receipt_number' => $receiptNumber,
+                'is_verified' => false,
+            ]);
+
+            if (isset($paymentResponse['data']['payment_url'])) {
+                return redirect($paymentResponse['data']['payment_url']);
+            }
+
+            return redirect()->route('member.profile.index')->with('success', 'Payment initialized! Please check your phone for the USSD prompt.');
+        }
+
+        return back()->with('error', 'Payment failed: ' . $paymentResponse['message']);
+    }
+
     public function index()
     {
         $user = Auth::user();

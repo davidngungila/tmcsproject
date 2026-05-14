@@ -54,20 +54,34 @@ class MemberController extends Controller
 
         // Auto-create User account for Member if email exists
         if ($member->email) {
-            User::create([
+            // Get last name and capitalize it for the password
+            $nameParts = explode(' ', trim($member->full_name));
+            $lastName = end($nameParts);
+            $password = strtoupper($lastName);
+
+            $user = User::create([
                 'name' => $member->full_name,
                 'email' => $member->email,
-                'password' => Hash::make('member123'), // Default password
+                'password' => Hash::make($password),
                 'phone' => $member->phone,
                 'is_active' => true,
             ]);
+
+            // Assign 'member' role if it exists
+            $memberRole = \App\Models\Role::where('name', 'member')->first();
+            if ($memberRole) {
+                $user->roles()->attach($memberRole->id);
+            }
+
+            // Link member to user
+            $member->update(['user_id' => $user->id]);
         }
 
         if ($request->has('groups')) {
             $member->groups()->attach($request->groups, ['join_date' => now(), 'is_active' => true]);
         }
 
-        return redirect()->route('members.index')->with('success', 'Member registered successfully. User account created with default password: member123');
+        return redirect()->route('members.index')->with('success', 'Member registered successfully. User account created (Username: ' . $member->email . ')');
     }
 
     public function show(Member $member)

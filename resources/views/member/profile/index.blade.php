@@ -24,7 +24,13 @@
           <div class="badge {{ $member->is_active ? 'green' : 'red' }} mb-6">
             {{ $member->is_active ? 'Active Member' : 'Inactive' }}
           </div>
-          <a href="{{ route('member.profile.edit') }}" class="btn btn-secondary w-full btn-sm">Edit Profile</a>
+          <div class="flex flex-col gap-2">
+            <a href="{{ route('member.profile.pay') }}" class="btn btn-primary w-full btn-sm">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-1.5"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Make Payment
+            </a>
+            <a href="{{ route('member.profile.edit') }}" class="btn btn-secondary w-full btn-sm">Edit Profile</a>
+          </div>
         </div>
       </div>
 
