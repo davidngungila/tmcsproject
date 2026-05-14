@@ -64,7 +64,6 @@ class MemberController extends Controller
                 'email' => $member->email,
                 'password' => Hash::make($password),
                 'phone' => $member->phone,
-                'is_active' => true,
             ]);
 
             // Assign 'member' role if it exists
