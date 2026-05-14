@@ -111,13 +111,32 @@
       <!-- MY QR CODE -->
       <div class="card overflow-hidden">
         <div class="card-header border-b bg-light/30">
-          <div class="card-title text-sm">Member Identity QR</div>
+          <div class="card-title text-sm font-bold uppercase tracking-wider text-muted">Member Identity QR</div>
+          <div class="card-subtitle text-[10px]">Scan for full member details</div>
         </div>
         <div class="card-body flex flex-col items-center py-10">
-          <div class="p-4 bg-white rounded-2xl border-2 border-dashed border-gray-200 mb-4">
-            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(150)->generate($member->registration_number) !!}
+          @php
+            $qrContent = "MEMBER PROFILE\n";
+            $qrContent .= "------------------\n";
+            $qrContent .= "Name: " . $member->full_name . "\n";
+            $qrContent .= "Reg No: " . $member->registration_number . "\n";
+            $qrContent .= "Baptismal: " . ($member->baptismal_name ?? 'N/A') . "\n";
+            $qrContent .= "DOB: " . ($member->date_of_birth ? $member->date_of_birth->format('Y-m-d') : 'N/A') . "\n";
+            $qrContent .= "Type: " . strtoupper($member->member_type) . "\n";
+            $qrContent .= "Email: " . ($member->email ?? 'N/A') . "\n";
+            $qrContent .= "Phone: " . ($member->phone ?? 'N/A') . "\n";
+            $qrContent .= "Address: " . ($member->address ?? 'N/A') . "\n";
+            $qrContent .= "Joined: " . $member->registration_date->format('M d, Y') . "\n";
+            if($member->groups->count() > 0) {
+              $qrContent .= "Groups: " . implode(', ', $member->groups->pluck('name')->toArray());
+            }
+          @endphp
+          <div class="p-6 bg-white rounded-3xl border-2 border-dashed border-gray-200 mb-6 inline-block shadow-sm">
+            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(180)->generate($qrContent) !!}
           </div>
-          <p class="text-xs text-muted max-w-xs text-center">Scan this QR code during church events for quick attendance check-in.</p>
+          <div class="text-xs font-black text-gray-900 mb-1 uppercase">{{ $member->full_name }}</div>
+          <div class="text-[10px] text-muted uppercase font-bold tracking-widest">{{ $member->registration_number }}</div>
+          <p class="text-[10px] text-muted max-w-[200px] text-center mt-4">Scan this QR code during church events for quick attendance check-in.</p>
         </div>
       </div>
 

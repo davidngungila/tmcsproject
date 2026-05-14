@@ -144,44 +144,67 @@
 <script>
     // Trends Chart
     const trendCtx = document.getElementById('contributionChart').getContext('2d');
-    new Chart(trendCtx, {
-        type: 'bar',
-        data: {
-            labels: {!! json_encode($contributionTrends->pluck('month')) !!},
-            datasets: [{
-                label: 'Contributions (TZS)',
-                data: {!! json_encode($contributionTrends->pluck('total')) !!},
-                backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                borderColor: 'rgb(59, 130, 246)',
-                borderWidth: 1,
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } }
-        }
-    });
+    const trendData = {!! json_encode($contributionTrends->pluck('total')) !!};
+    const trendLabels = {!! json_encode($contributionTrends->pluck('month')) !!};
+
+    if (trendData.length > 0) {
+        new Chart(trendCtx, {
+            type: 'bar',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Contributions (TZS)',
+                    data: trendData,
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                    borderColor: 'rgb(59, 130, 246)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { beginAtZero: true, ticks: { font: { size: 10 } } }, 
+                    x: { ticks: { font: { size: 10 } } } 
+                }
+            }
+        });
+    } else {
+        trendCtx.font = "12px sans-serif";
+        trendCtx.fillStyle = "#999";
+        trendCtx.textAlign = "center";
+        trendCtx.fillText("No contribution data available for the last 6 months", trendCtx.canvas.width/2, trendCtx.canvas.height/2);
+    }
 
     // Types Chart
     const typeCtx = document.getElementById('typeChart').getContext('2d');
-    new Chart(typeCtx, {
-        type: 'doughnut',
-        data: {
-            labels: {!! json_encode($contributionTypes->pluck('contribution_type')) !!},
-            datasets: [{
-                data: {!! json_encode($contributionTypes->pluck('total')) !!},
-                backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#6B7280'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
-        }
-    });
+    const typeData = {!! json_encode($contributionTypes->pluck('total')) !!};
+    const typeLabels = {!! json_encode($contributionTypes->pluck('contribution_type')) !!};
+
+    if (typeData.length > 0) {
+        new Chart(typeCtx, {
+            type: 'doughnut',
+            data: {
+                labels: typeLabels,
+                datasets: [{
+                    data: typeData,
+                    backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#6B7280'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+            }
+        });
+    } else {
+        typeCtx.font = "12px sans-serif";
+        typeCtx.fillStyle = "#999";
+        typeCtx.textAlign = "center";
+        typeCtx.fillText("No giving records found", typeCtx.canvas.width/2, typeCtx.canvas.height/2);
+    }
 </script>
 @endpush
