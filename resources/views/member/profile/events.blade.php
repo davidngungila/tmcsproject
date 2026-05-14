@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Events - TmcsSmart')
-@section('page-title', 'My Events & Attendance')
-@section('breadcrumb', 'TmcsSmart / Member / Events')
+@section('title', 'Events - TMCS Smart')
+@section('page-title', 'Events')
+@section('breadcrumb', 'Home / Member / Events')
 
 @section('content')
 <div class="animate-in space-y-6">

@@ -160,7 +160,7 @@ class FinanceController extends Controller
             return $pdf->download("Receipt_{$contribution->receipt_number}.pdf");
         }
 
-        return view('finance.receipt', compact('contribution'));
+        return view('finance.show', compact('contribution'));
     }
 
     public function reports()

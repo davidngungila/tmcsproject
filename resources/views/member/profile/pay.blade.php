@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Make Payment - TmcsSmart')
-@section('page-title', 'Online Contribution')
-@section('breadcrumb', 'TmcsSmart / Member / Pay')
+@section('title', 'Make Payment - TMCS Smart')
+@section('page-title', 'Make Payment')
+@section('breadcrumb', 'Home / Member / Pay')
 
 @section('content')
 <div class="animate-in">

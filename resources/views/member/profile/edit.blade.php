@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Profile - TmcsSmart')
-@section('page-title', 'Edit My Profile')
-@section('breadcrumb', 'TmcsSmart / Member / Profile / Edit')
+@section('title', 'Edit Profile - TMCS Smart')
+@section('page-title', 'Edit Profile')
+@section('breadcrumb', 'Home / Member / Profile / Edit')
 
 @section('content')
 <div class="animate-in max-w-2xl mx-auto">

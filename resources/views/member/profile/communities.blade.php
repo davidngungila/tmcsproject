@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'My Communities - TmcsSmart')
+@section('title', 'My Communities - TMCS Smart')
 @section('page-title', 'My Communities')
-@section('breadcrumb', 'TmcsSmart / Member / Communities')
+@section('breadcrumb', 'Home / Member / Communities')
 
 @section('content')
 <div class="animate-in">
