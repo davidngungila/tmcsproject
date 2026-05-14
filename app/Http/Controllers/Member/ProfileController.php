@@ -137,4 +137,32 @@ class ProfileController extends Controller
 
         return redirect()->route('member.profile.index')->with('success', 'Profile updated successfully.');
     }
+
+    public function communities()
+    {
+        $member = Auth::user()->member;
+        $communities = $member->groups()->where('type', 'Community')->get();
+        return view('member.profile.communities', compact('member', 'communities'));
+    }
+
+    public function groups()
+    {
+        $member = Auth::user()->member;
+        $groups = $member->groups()->where('type', '!=', 'Community')->get();
+        return view('member.profile.groups', compact('member', 'groups'));
+    }
+
+    public function contributions()
+    {
+        $member = Auth::user()->member;
+        $contributions = $member->contributions()->latest()->paginate(15);
+        return view('member.profile.contributions', compact('member', 'contributions'));
+    }
+
+    public function events()
+    {
+        $member = Auth::user()->member;
+        $attendance = $member->eventAttendance()->with('event')->latest()->paginate(15);
+        return view('member.profile.events', compact('member', 'attendance'));
+    }
 }

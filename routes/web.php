@@ -107,6 +107,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/profile/update', [MemberProfileController::class, 'update'])->name('profile.update');
         Route::get('/pay', [MemberProfileController::class, 'pay'])->name('profile.pay');
         Route::post('/pay', [MemberProfileController::class, 'processPayment'])->name('profile.process-payment');
+        
+        // New specific member portal views
+        Route::get('/communities', [MemberProfileController::class, 'communities'])->name('communities');
+        Route::get('/groups', [MemberProfileController::class, 'groups'])->name('groups');
+        Route::get('/contributions', [MemberProfileController::class, 'contributions'])->name('contributions.index');
+        Route::get('/events', [MemberProfileController::class, 'events'])->name('events');
     });
 
     // Elections

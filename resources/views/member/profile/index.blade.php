@@ -57,7 +57,7 @@
       </div>
     </div>
 
-    <!-- RIGHT COLUMN: DETAILS, GROUPS, CONTRIBUTIONS -->
+    <!-- RIGHT COLUMN: DETAILS -->
     <div class="lg:col-span-3 space-y-6">
       
       <!-- PERSONAL DETAILS -->
@@ -88,103 +88,6 @@
               <div class="text-sm font-medium">{{ $member->address }}</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- COMMUNITIES & GROUPS -->
-      <div class="card">
-        <div class="card-header border-b">
-          <div class="card-title">My Communities & Groups</div>
-        </div>
-        <div class="card-body">
-          @if($member->groups->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              @foreach($member->groups as $group)
-                <div class="p-4 bg-light rounded-xl border border-gray-100 flex items-center gap-4">
-                  <div class="w-12 h-12 rounded-lg bg-white flex-center shadow-sm text-{{ $group->type === 'Community' ? 'blue' : 'green' }}-500">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  </div>
-                  <div>
-                    <div class="font-bold text-sm">{{ $group->name }}</div>
-                    <div class="text-[11px] text-muted">{{ $group->type }} • Joined {{ $group->pivot->join_date ? \Carbon\Carbon::parse($group->pivot->join_date)->format('M Y') : 'N/A' }}</div>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          @else
-            <div class="text-center py-8 text-muted">
-              <p class="text-sm">You haven't joined any groups yet.</p>
-            </div>
-          @endif
-        </div>
-      </div>
-
-      <!-- RECENT CONTRIBUTIONS -->
-      <div class="card">
-        <div class="card-header border-b flex items-center justify-between">
-          <div class="card-title">Recent Contributions</div>
-          <a href="#" class="text-xs text-blue-500 font-bold hover:underline">View All</a>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-light/50 border-b">
-              <tr>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted">Date</th>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted">Type</th>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted">Method</th>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @forelse($member->contributions as $contribution)
-                <tr class="hover:bg-light/30 transition-colors">
-                  <td class="px-6 py-4 text-sm">{{ $contribution->contribution_date->format('d M, Y') }}</td>
-                  <td class="px-6 py-4 text-sm font-medium">{{ $contribution->contribution_type }}</td>
-                  <td class="px-6 py-4 text-sm capitalize text-muted">{{ str_replace('_', ' ', $contribution->payment_method) }}</td>
-                  <td class="px-6 py-4 text-sm font-bold text-right">{{ number_format($contribution->amount) }} TZS</td>
-                </tr>
-              @empty
-                <tr>
-                  <td colspan="4" class="px-6 py-8 text-center text-muted text-sm">No contributions recorded yet.</td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- RECENT ATTENDANCE -->
-      <div class="card">
-        <div class="card-header border-b">
-          <div class="card-title">Recent Event Attendance</div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-light/50 border-b">
-              <tr>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted">Event</th>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted">Date</th>
-                <th class="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-muted">Status</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              @forelse($member->eventAttendance->take(5) as $attendance)
-                <tr class="hover:bg-light/30 transition-colors">
-                  <td class="px-6 py-4 text-sm font-medium">{{ $attendance->event->event_name }}</td>
-                  <td class="px-6 py-4 text-sm text-muted">{{ $attendance->event->event_date->format('d M, Y') }}</td>
-                  <td class="px-6 py-4 text-sm">
-                    <span class="badge {{ $attendance->status === 'attended' ? 'green' : 'amber' }}">
-                      {{ ucfirst($attendance->status) }}
-                    </span>
-                  </td>
-                </tr>
-              @empty
-                <tr>
-                  <td colspan="3" class="px-6 py-8 text-center text-muted text-sm">No attendance records found.</td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
         </div>
       </div>
 

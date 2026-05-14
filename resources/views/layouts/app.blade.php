@@ -859,9 +859,32 @@
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span class="nav-label">My Profile</span>
         </a>
-        <a href="{{ route('member.profile.pay') }}" class="nav-item {{ request()->is('member/pay*') ? 'active' : '' }}">
-          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span class="nav-label">Make Payment</span>
+        
+        <a href="{{ route('member.communities') }}" class="nav-item {{ request()->is('member/communities*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span class="nav-label">My Communities</span>
+        </a>
+
+        <a href="{{ route('member.groups') }}" class="nav-item {{ request()->is('member/groups*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+          <span class="nav-label">My Groups</span>
+        </a>
+
+        <div class="nav-group">
+          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('member/contributions*') || request()->is('member/pay*') ? 'open' : '' }}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="nav-label">My Contributions</span>
+            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="nav-dropdown {{ request()->is('member/contributions*') || request()->is('member/pay*') ? 'show' : '' }}">
+            <a href="{{ route('member.contributions.index') }}" class="dropdown-item {{ request()->is('member/contributions') ? 'active' : '' }}">Contribution History</a>
+            <a href="{{ route('member.profile.pay') }}" class="dropdown-item {{ request()->is('member/pay') ? 'active' : '' }}">Make Payment</a>
+          </div>
+        </div>
+
+        <a href="{{ route('member.events') }}" class="nav-item {{ request()->is('member/events*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span class="nav-label">Events</span>
         </a>
         @endif
 
