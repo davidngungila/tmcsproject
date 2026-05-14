@@ -50,6 +50,12 @@ class EventController extends Controller
         return redirect()->route('events.index')->with('success', 'Event planned successfully');
     }
 
+    public function destroy(Event $event)
+    {
+        $event->delete();
+        return redirect()->route('events.index')->with('success', 'Event deleted successfully');
+    }
+
     public function attendance()
     {
         return view('events.attendance');

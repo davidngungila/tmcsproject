@@ -18,6 +18,19 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * Check if the user has a specific permission.
+     */
+    public function hasPermission($permission)
+    {
+        foreach ($this->roles as $role) {
+            if ($role->permissions()->where('name', $permission)->exists()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

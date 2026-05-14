@@ -64,24 +64,18 @@
       <p class="text-sm text-muted mt-1">Create and manage church events</p>
     </div>
     <div class="flex gap-3">
-      @if(auth()->user()->hasPermission('events.calendar'))
       <button class="btn btn-secondary" onclick="showCalendarView()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         Calendar View
       </button>
-      @endif
-      @if(auth()->user()->hasPermission('events.export'))
       <button class="btn btn-secondary" onclick="exportEvents()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Export
       </button>
-      @endif
-      @if(auth()->user()->hasPermission('events.create'))
       <a href="{{ route('events.create') }}" class="btn btn-primary">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
         Create Event
       </a>
-      @endif
     </div>
   </div>
 
@@ -105,87 +99,125 @@
     </div>
   </div>
 
-  <!-- EVENTS GRID -->
-  <div class="grid-2 mb-6">
-    @forelse($events as $event)
-    <div class="card hover:shadow-lg transition-shadow">
-      @if($event->photo)
-      <div class="h-48 bg-cover bg-center rounded-t-lg" style="background-image: url('{{ $event->photo }}');"></div>
-      @else
-      <div class="h-48 bg-gradient-to-br from-green-500 to-green-300 rounded-t-lg flex items-center justify-center">
-        <svg width="48" height="48" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      </div>
-      @endif
-      
-      <div class="card-body">
-        <div class="flex items-center justify-between mb-2">
-          <span class="badge {{ getEventStatusColor($event->status) }}">
-            {{ ucfirst($event->status) }}
-          </span>
-          @if($event->max_capacity)
-          <span class="text-sm text-muted">{{ $event->attendance->count() }}/{{ $event->max_capacity }}</span>
-          @endif
-        </div>
-        
-        <h3 class="font-bold text-lg mb-2">{{ $event->event_name }}</h3>
-        <p class="text-sm text-muted mb-4">{{ Str::limit($event->description, 100) }}</p>
-        
-        <div class="space-y-2 mb-4">
-          <div class="flex justify-between text-sm">
-            <span class="text-muted">Date:</span>
-            <span>{{ $event->event_date->format('M d, Y') }}</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-muted">Time:</span>
-            <span>{{ $event->event_time->format('h:i A') }}</span>
-          </div>
-          <div class="flex justify-between text-sm">
-            <span class="text-muted">Venue:</span>
-            <span>{{ $event->venue }}</span>
-          </div>
-          @if($event->max_capacity)
-          <div class="flex justify-between text-sm">
-            <span class="text-muted">Capacity:</span>
-            <span>{{ $event->max_capacity }} people</span>
-          </div>
-          @endif
-        </div>
-        
-        <div class="flex gap-2">
-          <button class="btn btn-ghost btn-sm flex-1" onclick="viewEvent({{ $event->id }})">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-            View
-          </button>
-          @if(auth()->user()->hasPermission('events.edit'))
-          <a href="{{ route('events.edit', $event->id) }}" class="btn btn-ghost btn-sm flex-1">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-            Edit
-          </a>
-          @endif
-          @if($event->status === 'upcoming' && auth()->user()->hasPermission('events.checkin'))
-          <button class="btn btn-primary btn-sm flex-1" onclick="checkInAttendees({{ $event->id }})">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Check-in
-          </button>
-          @endif
-        </div>
+  <!-- EVENTS TABLE -->
+  <div class="card overflow-hidden mb-6">
+    <div class="card-header border-b">
+      <div class="flex items-center justify-between">
+        <div class="card-title">Events List</div>
+        <div class="text-xs text-muted">{{ $events->total() }} events total</div>
       </div>
     </div>
-    @empty
-    <div class="col-span-2 text-center py-12 text-muted">
-      <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block;">
-        <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-      </svg>
-      <p>No events found</p>
-      @if(auth()->user()->hasPermission('events.create'))
-      <a href="{{ route('events.create') }}" class="btn btn-primary mt-4">Create First Event</a>
-      @endif
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-light/50 border-b">
+          <tr>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Event Name</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Schedule</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Venue</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Status</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Attendance</th>
+            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          @forelse($events as $event)
+          <tr class="hover:bg-light/30 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-light flex-center overflow-hidden flex-shrink-0">
+                  @if($event->photo)
+                    <img src="{{ $event->photo }}" class="w-full h-full object-cover">
+                  @else
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-muted"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  @endif
+                </div>
+                <div>
+                  <div class="font-bold text-sm">{{ $event->event_name }}</div>
+                  <div class="text-[11px] text-muted">{{ Str::limit($event->description, 35) }}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="text-sm font-medium">{{ $event->event_date->format('d M, Y') }}</div>
+              <div class="text-[11px] text-muted">{{ $event->event_time->format('h:i A') }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-1.5 text-sm">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-muted"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                {{ $event->venue }}
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="badge {{ getEventStatusColor($event->status) }}">
+                {{ ucfirst($event->status) }}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-[60px]">
+                  @php
+                    $percent = $event->max_capacity ? ($event->attendance->count() / $event->max_capacity) * 100 : 0;
+                    $percent = min(100, $percent);
+                  @endphp
+                  <div class="h-full bg-{{ getEventStatusColor($event->status) }}-500 rounded-full" style="width: {{ $percent }}%"></div>
+                </div>
+                <span class="text-xs font-medium">{{ $event->attendance->count() }}{{ $event->max_capacity ? '/' . $event->max_capacity : '' }}</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <div class="dropdown">
+                  <button class="btn btn-ghost btn-sm px-2">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                  </button>
+                  <div class="dropdown-menu right-0 w-48">
+                    <button class="dropdown-item" onclick="viewEvent({{ $event->id }})">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      View Details
+                    </button>
+                    <a href="{{ route('events.edit', $event->id) }}" class="dropdown-item">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                      Edit Event
+                    </a>
+                    @if($event->status === 'upcoming')
+                    <button class="dropdown-item text-green-600" onclick="checkInAttendees({{ $event->id }})">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Mark Attendance
+                    </button>
+                    @endif
+                    <div class="dropdown-divider"></div>
+                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?')">
+                      @csrf @method('DELETE')
+                      <button type="submit" class="dropdown-item text-red">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        Delete Event
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          @empty
+          <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-muted">
+              <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block;">
+                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              <p>No events found</p>
+              <a href="{{ route('events.create') }}" class="btn btn-primary mt-4 btn-sm">Create First Event</a>
+            </td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
     </div>
-    @endforelse
   </div>
 
   <!-- PAGINATION -->
-  {{ $events->links() }}
+  <div class="mb-8">
+    {{ $events->links() }}
+  </div>
 </div>
 
 <!-- VIEW EVENT MODAL -->
