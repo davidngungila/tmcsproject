@@ -27,11 +27,12 @@ class DashboardController extends Controller
             $contributionTrends = $member->contributions()
                 ->select(
                     DB::raw('SUM(amount) as total'),
-                    DB::raw("DATE_FORMAT(contribution_date, '%b') as month")
+                    DB::raw("DATE_FORMAT(contribution_date, '%b') as month"),
+                    DB::raw("DATE_FORMAT(contribution_date, '%Y-%m') as year_month")
                 )
                 ->where('contribution_date', '>=', now()->subMonths(6))
-                ->groupBy('month')
-                ->orderBy('contribution_date')
+                ->groupBy('year_month', 'month')
+                ->orderBy('year_month', 'asc')
                 ->get();
 
             // Contribution Types (Pie Chart)

@@ -153,8 +153,14 @@ class FinanceController extends Controller
         }
 
         $contribution->load('member');
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finance.receipt_pdf', compact('contribution'));
-        return $pdf->download("Receipt_{$contribution->receipt_number}.pdf");
+
+        // Check if the request wants a PDF download or a web view
+        if (request()->has('download')) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finance.receipt_pdf', compact('contribution'));
+            return $pdf->download("Receipt_{$contribution->receipt_number}.pdf");
+        }
+
+        return view('finance.receipt', compact('contribution'));
     }
 
     public function reports()
@@ -165,11 +171,5 @@ class FinanceController extends Controller
     public function settings()
     {
         return view('finance.settings');
-    }
-
-    public function receipt(Contribution $contribution)
-    {
-        $contribution->load('member');
-        return view('finance.receipt', compact('contribution'));
     }
 }
