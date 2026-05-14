@@ -14,7 +14,9 @@
                 <div class="card-body -mt-12 text-center">
                     <div class="relative inline-block mb-4">
                         <div class="w-24 h-24 rounded-full bg-white p-1 shadow-lg mx-auto overflow-hidden">
-                            @if(auth()->user()->profile_image)
+                            @if(auth()->user()->member && auth()->user()->member->photo)
+                                <img src="{{ asset('storage/' . auth()->user()->member->photo) }}" alt="{{ auth()->user()->name }}" class="w-full h-full rounded-full object-cover">
+                            @elseif(auth()->user()->profile_image)
                                 <img src="{{ asset('storage/' . auth()->user()->profile_image) }}" alt="{{ auth()->user()->name }}" class="w-full h-full rounded-full object-cover">
                             @else
                                 <div class="w-full h-full rounded-full bg-green-500 flex items-center justify-center text-white text-3xl font-bold">

@@ -62,32 +62,62 @@
       
       <!-- PERSONAL DETAILS -->
       <div class="card">
-        <div class="card-header border-b">
-          <div class="card-title">Personal Details</div>
+        <div class="card-header border-b flex items-center justify-between">
+          <div class="card-title">Detailed Information</div>
+          <span class="text-[10px] text-muted">Last updated: {{ $member->updated_at->format('d M, Y H:i') }}</span>
         </div>
         <div class="card-body">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div>
-              <label class="text-xs text-muted uppercase font-bold tracking-wider mb-1 block">Email Address</label>
-              <div class="text-sm font-medium">{{ $member->email ?? 'Not provided' }}</div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Registration Number</label>
+              <div class="text-sm font-bold text-blue-600">{{ $member->registration_number }}</div>
             </div>
-            <div>
-              <label class="text-xs text-muted uppercase font-bold tracking-wider mb-1 block">Phone Number</label>
-              <div class="text-sm font-medium">{{ $member->phone ?? 'Not provided' }}</div>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Full Name</label>
+              <div class="text-sm font-medium">{{ $member->full_name }}</div>
             </div>
-            <div>
-              <label class="text-xs text-muted uppercase font-bold tracking-wider mb-1 block">Date of Birth</label>
-              <div class="text-sm font-medium">{{ $member->date_of_birth->format('d M, Y') }}</div>
-            </div>
-            <div>
-              <label class="text-xs text-muted uppercase font-bold tracking-wider mb-1 block">Baptismal Name</label>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Baptismal Name</label>
               <div class="text-sm font-medium">{{ $member->baptismal_name ?? 'N/A' }}</div>
             </div>
-            <div class="md:col-span-2">
-              <label class="text-xs text-muted uppercase font-bold tracking-wider mb-1 block">Residential Address</label>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Email Address</label>
+              <div class="text-sm font-medium">{{ $member->email ?? 'Not provided' }}</div>
+            </div>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Phone Number</label>
+              <div class="text-sm font-medium">{{ $member->phone ?? 'Not provided' }}</div>
+            </div>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Date of Birth</label>
+              <div class="text-sm font-medium">{{ $member->date_of_birth->format('d M, Y') }}</div>
+            </div>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Member Category</label>
+              <div class="text-sm font-medium capitalize">{{ $member->member_type }}</div>
+            </div>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Registration Date</label>
+              <div class="text-sm font-medium">{{ $member->registration_date->format('d M, Y') }}</div>
+            </div>
+            <div class="p-3 bg-light/50 rounded-xl">
+              <label class="text-[10px] text-muted uppercase font-bold tracking-wider mb-1 block">Address</label>
               <div class="text-sm font-medium">{{ $member->address }}</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- MY QR CODE -->
+      <div class="card overflow-hidden">
+        <div class="card-header border-b bg-light/30">
+          <div class="card-title text-sm">Member Identity QR</div>
+        </div>
+        <div class="card-body flex flex-col items-center py-10">
+          <div class="p-4 bg-white rounded-2xl border-2 border-dashed border-gray-200 mb-4">
+            {!! QrCode::size(150)->generate($member->registration_number) !!}
+          </div>
+          <p class="text-xs text-muted max-w-xs text-center">Scan this QR code during church events for quick attendance check-in.</p>
         </div>
       </div>
 

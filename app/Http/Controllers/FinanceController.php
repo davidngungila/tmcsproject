@@ -145,6 +145,18 @@ class FinanceController extends Controller
         return redirect()->route('finance.index')->with('success', 'Contribution deleted successfully');
     }
 
+    public function receipt(Contribution $contribution)
+    {
+        // Allow members to download their own receipts
+        if (auth()->user()->member && auth()->user()->member->id !== $contribution->member_id) {
+            abort(403, 'Unauthorized access to this receipt.');
+        }
+
+        $contribution->load('member');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finance.receipt_pdf', compact('contribution'));
+        return $pdf->download("Receipt_{$contribution->receipt_number}.pdf");
+    }
+
     public function reports()
     {
         return view('finance.reports');

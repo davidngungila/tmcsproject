@@ -19,9 +19,42 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Redirect member users to their profile dashboard
-        if (!$user->hasPermission('dashboard.view') && $user->member) {
-            return redirect()->route('member.profile.index');
+        // Member Dashboard
+        if ($user->member) {
+            $member = $user->member;
+            
+            // Contribution Trends (Last 6 months)
+            $contributionTrends = $member->contributions()
+                ->select(
+                    DB::raw('SUM(amount) as total'),
+                    DB::raw("DATE_FORMAT(contribution_date, '%b') as month")
+                )
+                ->where('contribution_date', '>=', now()->subMonths(6))
+                ->groupBy('month')
+                ->orderBy('contribution_date')
+                ->get();
+
+            // Contribution Types (Pie Chart)
+            $contributionTypes = $member->contributions()
+                ->select('contribution_type', DB::raw('SUM(amount) as total'))
+                ->groupBy('contribution_type')
+                ->get();
+
+            $totalContributed = $member->contributions()->sum('amount');
+            $recentContributions = $member->contributions()->latest()->limit(5)->get();
+            $upcomingEvents = \App\Models\Event::where('event_date', '>=', now())
+                ->orderBy('event_date')
+                ->limit(3)
+                ->get();
+
+            return view('member.dashboard', compact(
+                'member', 
+                'contributionTrends', 
+                'contributionTypes', 
+                'totalContributed', 
+                'recentContributions',
+                'upcomingEvents'
+            ));
         }
 
         // Core Statistics
