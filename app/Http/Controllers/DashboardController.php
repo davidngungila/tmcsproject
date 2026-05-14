@@ -11,11 +11,19 @@ use App\Models\Event;
 use App\Models\Asset;
 use App\Models\Expense;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
+
+        // Redirect member users to their profile dashboard
+        if (!$user->hasPermission('dashboard.view') && $user->member) {
+            return redirect()->route('member.profile.index');
+        }
+
         // Core Statistics
         $totalMembers = Member::count();
         $totalGroups = Group::count();

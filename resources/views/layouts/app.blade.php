@@ -846,10 +846,19 @@
       <!-- NAV -->
       <div style="flex:1; padding: 8px 0;">
         <div class="nav-section-label">Main</div>
+        @if(auth()->user()->hasPermission('dashboard.view'))
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}">
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span class="nav-label">Dashboard</span>
         </a>
+        @endif
+
+        @if(auth()->user()->member)
+        <a href="{{ route('member.profile.index') }}" class="nav-item {{ request()->is('member/profile*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+          <span class="nav-label">My Profile</span>
+        </a>
+        @endif
 
         @if(auth()->user()->hasPermission('members.view'))
         <div class="nav-group">
@@ -1087,13 +1096,15 @@
               </div>
               
               <div class="p-1">
-                <a href="{{ route('dashboard') }}" class="dropdown-menu-item">
+                @if(auth()->user()->member)
+                <a href="{{ route('member.profile.index') }}" class="dropdown-menu-item">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                  Profile Details
+                  My Profile
                 </a>
+                @endif
                 <a href="{{ route('settings.security') }}" class="dropdown-menu-item">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                  Account and Security Settings
+                  Account Security
                 </a>
               </div>
               

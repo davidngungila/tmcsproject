@@ -46,6 +46,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the member details for this user.
+     */
+    public function member()
+    {
+        return $this->hasOne(Member::class);
+    }
+
+    /**
      * Get the roles that belong to the user.
      */
     public function roles()

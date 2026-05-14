@@ -18,6 +18,7 @@ use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ReconciliationController;
 use App\Http\Controllers\FinancialReportController;
+use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +100,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/certificates/verify', [CertificateController::class, 'verify'])->name('certificates.verify');
     Route::resource('certificates', CertificateController::class);
 
+    // Member Self-Service Routes
+    Route::prefix('member')->name('member.')->group(function () {
+        Route::get('/profile', [MemberProfileController::class, 'index'])->name('profile.index');
+        Route::get('/profile/edit', [MemberProfileController::class, 'edit'])->name('profile.edit');
+        Route::post('/profile/update', [MemberProfileController::class, 'update'])->name('profile.update');
+    });
+});
     // Elections
     Route::get('/elections/results', [ElectionController::class, 'results'])->name('elections.results');
     Route::get('/elections/{election}/vote', [ElectionController::class, 'vote'])->name('elections.vote');

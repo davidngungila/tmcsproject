@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Member extends Model
 {
     protected $fillable = [
+        'user_id',
         'registration_number',
         'full_name',
         'email',
@@ -31,6 +32,14 @@ class Member extends Model
         'registration_date' => 'date',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the user linked to this member.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Get the user who created the member.
