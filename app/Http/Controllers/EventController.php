@@ -12,9 +12,9 @@ class EventController extends Controller
         $events = Event::latest()->paginate(10);
         $totalEvents = Event::count();
         $upcomingEvents = Event::where('event_date', '>', now())->count();
-        $completedEvents = Event::where('status', 'completed')->count();
+        $pastEvents = Event::where('event_date', '<', now())->orWhere('status', 'completed')->count();
         $totalAttendees = \App\Models\EventAttendance::where('status', 'attended')->count();
-        return view('events.index', compact('events', 'totalEvents', 'upcomingEvents', 'completedEvents', 'totalAttendees'));
+        return view('events.index', compact('events', 'totalEvents', 'upcomingEvents', 'pastEvents', 'totalAttendees'));
     }
 
     public function create()
