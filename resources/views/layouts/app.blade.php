@@ -888,7 +888,7 @@
         </a>
         @endif
 
-        @if(auth()->user()->hasPermission('members.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('members.view'))
         <div class="nav-section-label">Administration</div>
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('members*') ? 'open' : '' }}">
@@ -904,7 +904,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('finance.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('finance.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('finance*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -922,7 +922,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('groups.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('groups.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('groups*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -937,7 +937,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('communications.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('communications.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('communications*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -953,7 +953,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('certificates.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('certificates.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('certificates*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -968,7 +968,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('events.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('events.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('events*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -983,7 +983,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('elections.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('elections.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('elections*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
@@ -998,7 +998,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('assets.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('assets.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('assets*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -1013,7 +1013,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('shop.view'))
+        @if(!auth()->user()->member && auth()->user()->hasPermission('shop.view'))
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('shop*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
