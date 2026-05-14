@@ -115,7 +115,7 @@
         </div>
         <div class="card-body flex flex-col items-center py-10">
           <div class="p-4 bg-white rounded-2xl border-2 border-dashed border-gray-200 mb-4">
-            {!! QrCode::size(150)->generate($member->registration_number) !!}
+            {!! \SimpleSoftwareIO\QrCode\Facades\QrCode::size(150)->generate($member->registration_number) !!}
           </div>
           <p class="text-xs text-muted max-w-xs text-center">Scan this QR code during church events for quick attendance check-in.</p>
         </div>
