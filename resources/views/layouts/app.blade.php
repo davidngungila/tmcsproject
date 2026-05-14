@@ -845,8 +845,8 @@
 
       <!-- NAV -->
       <div style="flex:1; padding: 8px 0;">
-        <div class="nav-section-label">Main</div>
         @if(auth()->user()->hasPermission('dashboard.view'))
+        <div class="nav-section-label">Main</div>
         <a href="{{ route('dashboard') }}" class="nav-item {{ request()->is('dashboard') ? 'active' : '' }}">
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span class="nav-label">Dashboard</span>
@@ -854,13 +854,19 @@
         @endif
 
         @if(auth()->user()->member)
+        <div class="nav-section-label">Member Portal</div>
         <a href="{{ route('member.profile.index') }}" class="nav-item {{ request()->is('member/profile*') ? 'active' : '' }}">
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span class="nav-label">My Profile</span>
         </a>
+        <a href="{{ route('member.profile.pay') }}" class="nav-item {{ request()->is('member/pay*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="nav-label">Make Payment</span>
+        </a>
         @endif
 
         @if(auth()->user()->hasPermission('members.view'))
+        <div class="nav-section-label">Administration</div>
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('members*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -1064,7 +1070,9 @@
           <div class="topbar-dropdown">
             <button class="flex items-center gap-2 p-1 hover:bg-light rounded-lg transition-all" onclick="toggleTopbarDropdown('profileMenu')">
               <div class="user-avatar overflow-hidden" style="width:32px; height:32px; font-size:11px;">
-                @if(auth()->user()->profile_image)
+                @if(auth()->user()->member && auth()->user()->member->photo)
+                  <img src="{{ asset('storage/' . auth()->user()->member->photo) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                @elseif(auth()->user()->profile_image)
                   <img src="{{ asset('storage/' . auth()->user()->profile_image) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                 @else
                   {{ substr(auth()->user()->name, 0, 2) }}
@@ -1080,7 +1088,9 @@
               <!-- Profile Header -->
               <div class="px-4 py-3 border-b border-light flex items-center gap-3">
                 <div class="user-avatar overflow-hidden" style="width:40px; height:40px; font-size:14px;">
-                  @if(auth()->user()->profile_image)
+                  @if(auth()->user()->member && auth()->user()->member->photo)
+                    <img src="{{ asset('storage/' . auth()->user()->member->photo) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
+                  @elseif(auth()->user()->profile_image)
                     <img src="{{ asset('storage/' . auth()->user()->profile_image) }}" alt="{{ auth()->user()->name }}" class="w-full h-full object-cover">
                   @else
                     {{ substr(auth()->user()->name, 0, 2) }}
