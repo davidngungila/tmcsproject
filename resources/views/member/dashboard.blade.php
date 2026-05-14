@@ -6,18 +6,75 @@
 
 @section('content')
 <div class="animate-in">
+    <style>
+        /* Member Dashboard Theme Overrides */
+        [data-theme="dark"] .card {
+            background: var(--bg-card);
+            border-color: var(--border);
+            color: var(--text-primary);
+        }
+        [data-theme="dark"] .text-muted {
+            color: var(--text-muted) !important;
+        }
+        [data-theme="dark"] .bg-light\/50 {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+        [data-theme="dark"] .divide-gray-50 > * {
+            border-color: var(--border-light) !important;
+        }
+        [data-theme="dark"] .hover\:bg-light\/30:hover {
+            background: var(--hover-row) !important;
+        }
+        [data-theme="dark"] th {
+            background: rgba(255, 255, 255, 0.03) !important;
+            color: var(--text-secondary) !important;
+            border-color: var(--border) !important;
+        }
+        [data-theme="dark"] td {
+            border-color: var(--border-light) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Responsive Fixes */
+        @media (max-width: 768px) {
+            .grid-cols-4 {
+                grid-template-columns: 1fr 1fr !important;
+            }
+            .text-2xl {
+                font-size: 1.25rem !important;
+            }
+        }
+        @media (max-width: 480px) {
+            .grid-cols-4 {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+
     <!-- TOP STATS -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="card bg-blue-600 text-white p-6 shadow-lg border-0">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-10 h-10 rounded-lg bg-white/20 flex-center">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">Total Giving</span>
-            </div>
-            <div class="text-2xl font-black leading-none text-white">{{ number_format($totalContributed) }}</div>
-            <div class="text-[10px] mt-1 text-white font-bold uppercase tracking-wider">Tanzanian Shillings</div>
+      <!-- TOTAL GIVING -->
+<div class="card p-6 shadow-sm border-l-4 border-blue-500">
+    <div class="flex items-center gap-4">
+
+        <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex-center">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
         </div>
+
+        <div>
+            <div class="text-2xl font-black">
+                {{ number_format($totalContributed) }}
+            </div>
+
+            <div class="text-[10px] text-muted uppercase font-bold tracking-widest">
+                Total Giving
+            </div>
+        </div>
+
+    </div>
+</div>
 
         <div class="card p-6 shadow-sm border-l-4 border-green-500">
             <div class="flex items-center gap-4">
@@ -151,10 +208,12 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    
     // Trends Chart - Line style like Admin Dashboard
     const trendCtx = document.getElementById('contributionChart');
     if (trendCtx) {
-        new Chart(trendCtx, {
+        const trendChart = new Chart(trendCtx, {
             type: 'line',
             data: {
                 labels: @json($trendLabels),
@@ -186,8 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { borderDash: [5, 5], color: 'rgba(0,0,0,0.05)' },
+                        grid: { 
+                            borderDash: [5, 5], 
+                            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)' 
+                        },
                         ticks: {
+                            color: isDark ? '#7ecfa0' : '#3d6b54',
                             font: { size: 10 },
                             callback: function(value) {
                                 if (value >= 1000000) return (value/1000000) + 'M';
@@ -198,10 +261,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     },
                     x: { 
                         grid: { display: false },
-                        ticks: { font: { size: 10 } }
+                        ticks: { 
+                            color: isDark ? '#7ecfa0' : '#3d6b54',
+                            font: { size: 10 } 
+                        }
                     }
                 }
             }
+        });
+
+        window.addEventListener('themeChanged', (e) => {
+            const dark = e.detail.theme === 'dark';
+            trendChart.options.scales.y.grid.color = dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
+            trendChart.options.scales.y.ticks.color = dark ? '#7ecfa0' : '#3d6b54';
+            trendChart.options.scales.x.ticks.color = dark ? '#7ecfa0' : '#3d6b54';
+            trendChart.update();
         });
     }
 
@@ -212,7 +286,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const typeLabels = @json($contributionTypes->pluck('contribution_type'));
 
         if (typeData.length > 0) {
-            new Chart(typeCtx, {
+            const typeChart = new Chart(typeCtx, {
                 type: 'doughnut',
                 data: {
                     labels: typeLabels.map(label => label.charAt(0).toUpperCase() + label.slice(1).replace('_', ' ')),
@@ -230,6 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         legend: { 
                             position: 'bottom', 
                             labels: { 
+                                color: isDark ? '#e2f5eb' : '#0a1a12',
                                 boxWidth: 10, 
                                 font: { size: 10, weight: 'bold' },
                                 padding: 15
@@ -249,12 +324,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     cutout: '70%'
                 }
             });
+
+            window.addEventListener('themeChanged', (e) => {
+                const dark = e.detail.theme === 'dark';
+                typeChart.options.plugins.legend.labels.color = dark ? '#e2f5eb' : '#0a1a12';
+                typeChart.update();
+            });
         } else {
             const ctx = typeCtx.getContext('2d');
             ctx.font = "12px DM Sans";
-            ctx.fillStyle = "#6b9e82";
+            ctx.fillStyle = isDark ? "#7ecfa0" : "#6b9e82";
             ctx.textAlign = "center";
             ctx.fillText("No giving records found", typeCtx.width/2, typeCtx.height/2);
+            
+            window.addEventListener('themeChanged', (e) => {
+                const dark = e.detail.theme === 'dark';
+                ctx.clearRect(0, 0, typeCtx.width, typeCtx.height);
+                ctx.fillStyle = dark ? "#7ecfa0" : "#6b9e82";
+                ctx.fillText("No giving records found", typeCtx.width/2, typeCtx.height/2);
+            });
         }
     }
 });

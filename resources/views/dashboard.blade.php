@@ -6,6 +6,60 @@
 
 @section('content')
 <div class="animate-in">
+  <style>
+    /* Dashboard Theme & Responsive Overrides */
+    .welcome-header {
+      background: linear-gradient(135deg, var(--green-600), var(--green-500));
+      color: white !important;
+    }
+    [data-theme="dark"] .stat-card {
+      background: var(--bg-card);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .stat-value {
+      color: var(--text-primary);
+    }
+    [data-theme="dark"] .stat-label {
+      color: var(--text-secondary);
+    }
+    [data-theme="dark"] .stat-subtitle {
+      color: var(--text-muted);
+    }
+    [data-theme="dark"] .card {
+      background: var(--bg-card);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .card-title {
+      color: var(--text-primary);
+    }
+    [data-theme="dark"] tr:hover {
+      background: var(--hover-row);
+    }
+    [data-theme="dark"] td {
+      color: var(--text-primary);
+      border-color: var(--border-light);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .stat-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .welcome-header {
+        padding: 20px;
+      }
+      .welcome-title {
+        font-size: 20px;
+      }
+    }
+    @media (max-width: 480px) {
+      .stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
   <!-- WELCOME HEADER -->
   <div class="welcome-header mb-6">
     <div class="welcome-content">
@@ -194,7 +248,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('financeTrendChart');
     if (ctx) {
-        new Chart(ctx, {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const chart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: @json($chartMonths),
@@ -226,8 +281,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { borderDash: [5, 5], color: 'rgba(0,0,0,0.05)' },
+                        grid: { 
+                            borderDash: [5, 5], 
+                            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)' 
+                        },
                         ticks: {
+                            color: isDark ? '#7ecfa0' : '#3d6b54',
                             callback: function(value) {
                                 if (value >= 1000000) return (value/1000000) + 'M';
                                 if (value >= 1000) return (value/1000) + 'K';
@@ -235,9 +294,23 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
                     },
-                    x: { grid: { display: false } }
+                    x: { 
+                        grid: { display: false },
+                        ticks: {
+                            color: isDark ? '#7ecfa0' : '#3d6b54'
+                        }
+                    }
                 }
             }
+        });
+
+        // Listen for theme changes
+        window.addEventListener('themeChanged', (e) => {
+            const dark = e.detail.theme === 'dark';
+            chart.options.scales.y.grid.color = dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
+            chart.options.scales.y.ticks.color = dark ? '#7ecfa0' : '#3d6b54';
+            chart.options.scales.x.ticks.color = dark ? '#7ecfa0' : '#3d6b54';
+            chart.update();
         });
     }
 });

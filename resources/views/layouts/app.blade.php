@@ -1173,12 +1173,27 @@
     let darkMode = false;
     function toggleTheme() {
       darkMode = !darkMode;
-      document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+      const theme = darkMode ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      
       const icon = document.getElementById('themeIcon');
       icon.innerHTML = darkMode
         ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
         : '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
+      
+      // Dispatch event for charts to update
+      window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: theme } }));
     }
+
+    // Initialize theme from localStorage
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            darkMode = false; // will be toggled
+            toggleTheme();
+        }
+    });
 
     // Topbar Dropdown Toggle
     function toggleTopbarDropdown(id) {
