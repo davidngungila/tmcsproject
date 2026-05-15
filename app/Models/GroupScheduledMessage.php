@@ -5,18 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MessageTemplate extends Model
+class GroupScheduledMessage extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'group_id',
-        'name',
-        'subject',
-        'content',
-        'type',
+        'title',
+        'message',
+        'scheduled_at',
+        'frequency',
         'is_active',
-        'is_global',
+        'last_sent_at',
+    ];
+
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+        'last_sent_at' => 'datetime',
+        'is_active' => 'boolean',
     ];
 
     public function group()

@@ -46,8 +46,8 @@
       <div class="stat-label">Total Members</div>
     </div>
 
-    <div class="stat-card blue">
-      <div class="stat-icon blue">
+    <div class="stat-card green">
+      <div class="stat-icon green">
         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
       </div>
       <div class="stat-value">{{ $activeGroups }}</div>
@@ -88,16 +88,18 @@
   <!-- GROUPS TABLE -->
   <div class="card mb-6 overflow-hidden">
     <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="w-full">
+      <div class="table-responsive overflow-x-auto">
+        <table class="w-full min-w-[1000px]">
           <thead>
             <tr class="text-left border-b border-light bg-light/30">
               <th class="p-4 text-xs font-bold text-muted uppercase">Group Name</th>
               <th class="p-4 text-xs font-bold text-muted uppercase">Type</th>
               <th class="p-4 text-xs font-bold text-muted uppercase">Status</th>
               <th class="p-4 text-xs font-bold text-muted uppercase text-center">Members</th>
-              <th class="p-4 text-xs font-bold text-muted uppercase">Leader</th>
-              <th class="p-4 text-xs font-bold text-muted uppercase">Formed Date</th>
+              <th class="p-4 text-xs font-bold text-muted uppercase">Chairperson</th>
+              <th class="p-4 text-xs font-bold text-muted uppercase">Secretary</th>
+              <th class="p-4 text-xs font-bold text-muted uppercase">Accountant</th>
+              <th class="p-4 text-xs font-bold text-muted uppercase">Giving (TZS)</th>
               <th class="p-4 text-xs font-bold text-muted uppercase text-right">Actions</th>
             </tr>
           </thead>
@@ -106,44 +108,41 @@
             <tr class="border-b border-light hover:bg-light/30 transition-all">
               <td class="p-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center font-bold">
+                  <div class="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center font-bold shadow-sm">
                     {{ substr($group->name, 0, 2) }}
                   </div>
                   <div>
-                    <div class="font-bold text-sm">{{ $group->name }}</div>
-                    <div class="text-[10px] text-muted truncate max-w-[150px]">{{ $group->description }}</div>
+                    <div class="font-bold text-sm text-gray-800">{{ $group->name }}</div>
+                    <div class="text-[9px] text-muted font-black uppercase tracking-widest">{{ $group->type }}</div>
                   </div>
                 </div>
               </td>
-              <td class="p-4 text-sm">{{ $group->type }}</td>
+              <td class="p-4 text-xs font-medium text-gray-600">{{ $group->type }}</td>
               <td class="p-4">
-                <span class="badge {{ $group->is_active ? 'green' : 'red' }} scale-90 origin-left">
+                <span class="badge {{ $group->is_active ? 'green' : 'red' }} uppercase font-black text-[9px]">
                   {{ $group->is_active ? 'Active' : 'Inactive' }}
                 </span>
               </td>
-              <td class="p-4 text-sm text-center font-bold">{{ $group->members->count() }}</td>
-              <td class="p-4 text-sm">
-                @if($group->leader)
-                  <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded-full bg-light flex items-center justify-center text-[10px] font-bold">
-                      {{ substr($group->leader->full_name, 0, 2) }}
-                    </div>
-                    {{ $group->leader->full_name }}
-                  </div>
-                @else
-                  <span class="text-muted italic">Not assigned</span>
-                @endif
+              <td class="p-4 text-sm text-center font-black text-gray-800">{{ $group->members_count }}</td>
+              <td class="p-4">
+                <div class="text-[10px] font-bold text-gray-700">{{ $group->chairperson->full_name ?? 'Not Assigned' }}</div>
               </td>
-              <td class="p-4 text-sm text-muted">
-                {{ $group->created_at->format('M d, Y') }}
+              <td class="p-4">
+                <div class="text-[10px] font-bold text-gray-700">{{ $group->secretary->full_name ?? 'Not Assigned' }}</div>
+              </td>
+              <td class="p-4">
+                <div class="text-[10px] font-bold text-gray-700">{{ $group->accountant->full_name ?? 'Not Assigned' }}</div>
+              </td>
+              <td class="p-4 text-sm font-black text-green-600">
+                TZS {{ number_format($group->total_giving, 0) }}
               </td>
               <td class="p-4">
                 <div class="flex items-center justify-end gap-2">
-                  <a href="{{ route('groups.show', $group->id) }}" class="btn btn-secondary btn-sm p-1.5" title="View Details">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  <a href="{{ route('groups.show', $group->id) }}" class="btn btn-ghost btn-sm text-green-600 p-1" title="Operations">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                   </a>
-                  <a href="{{ route('groups.edit', $group->id) }}" class="btn btn-secondary btn-sm p-1.5" title="Edit Group">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  <a href="{{ route('groups.edit', $group->id) }}" class="btn btn-ghost btn-sm text-gray-400 p-1" title="Settings">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                   </a>
                 </div>
               </td>

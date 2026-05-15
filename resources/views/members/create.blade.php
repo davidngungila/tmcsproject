@@ -44,6 +44,16 @@
 
         <div class="form-row">
           <div class="form-group">
+            <label class="form-label">Member Category *</label>
+            <select name="category_id" class="form-control" required>
+              <option value="">Select Category</option>
+              @foreach($categories as $category)
+                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+              @endforeach
+            </select>
+            @error('category_id') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
+          </div>
+          <div class="form-group">
             <label class="form-label">Member Type *</label>
             <select name="member_type" class="form-control" required>
               <option value="">Select Type</option>
@@ -54,11 +64,6 @@
             </select>
             @error('member_type') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
           </div>
-          <div class="form-group">
-            <label class="form-label">Date of Birth *</label>
-            <input type="date" name="date_of_birth" class="form-control" value="{{ old('date_of_birth') }}" required>
-            @error('date_of_birth') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
-          </div>
         </div>
 
         <div class="form-group">
@@ -67,10 +72,17 @@
           @error('address') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Registration Date *</label>
-          <input type="date" name="registration_date" class="form-control" value="{{ old('registration_date', now()->format('Y-m-d')) }}" required>
-          @error('registration_date') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date of Birth *</label>
+            <input type="date" name="date_of_birth" class="form-control" value="{{ old('date_of_birth') }}" required>
+            @error('date_of_birth') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
+          </div>
+          <div class="form-group">
+            <label class="form-label">Registration Date *</label>
+            <input type="date" name="registration_date" class="form-control" value="{{ old('registration_date', now()->format('Y-m-d')) }}" required>
+            @error('registration_date') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
+          </div>
         </div>
       </div>
     </div>

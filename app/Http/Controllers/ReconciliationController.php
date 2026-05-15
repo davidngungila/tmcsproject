@@ -6,6 +6,7 @@ use App\Models\Reconciliation;
 use App\Models\Contribution;
 use App\Models\Expense;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class ReconciliationController extends Controller
@@ -24,10 +25,23 @@ class ReconciliationController extends Controller
         $totalIncome = Contribution::whereBetween('contribution_date', [$start, $end])->sum('amount');
         $totalExpenses = Expense::whereBetween('expense_date', [$start, $end])->sum('amount');
         
+        $incomeByType = Contribution::whereBetween('contribution_date', [$start, $end])
+            ->select('contribution_type', DB::raw('SUM(amount) as total'))
+            ->groupBy('contribution_type')
+            ->get();
+
+        $expenseByCategory = Expense::whereBetween('expense_date', [$start, $end])
+            ->select('category', DB::raw('SUM(amount) as total'))
+            ->groupBy('category')
+            ->get();
+
         $openingBalance = 0; // In real app, get from previous reconciliation
         $closingBalance = $openingBalance + $totalIncome - $totalExpenses;
 
-        return view('finance.reconciliation.create', compact('start', 'end', 'totalIncome', 'totalExpenses', 'openingBalance', 'closingBalance'));
+        return view('finance.reconciliation.create', compact(
+            'start', 'end', 'totalIncome', 'totalExpenses', 
+            'openingBalance', 'closingBalance', 'incomeByType', 'expenseByCategory'
+        ));
     }
 
     public function store(Request $request)

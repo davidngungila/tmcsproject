@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('communications', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['email', 'sms']);
+            $table->enum('type', ['email', 'sms', 'announcement']);
             $table->string('subject');
             $table->text('message');
             $table->enum('recipient_type', ['all', 'group', 'individual']);

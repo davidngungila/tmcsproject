@@ -240,6 +240,137 @@
         </div>
     </div>
   </div>
+
+  <!-- COMMUNITY ANALYTICS (ADMIN) -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+      <!-- TOP COMMUNITIES -->
+      <div class="lg:col-span-4">
+          <div class="card h-full">
+              <div class="card-header bg-gray-50/50 border-b">
+                  <h3 class="text-xs font-black uppercase tracking-widest text-gray-400">Largest Communities</h3>
+              </div>
+              <div class="card-body p-0">
+                  <div class="divide-y divide-gray-100">
+                      @foreach($topGroups as $group)
+                      <div class="p-4 flex items-center justify-between hover:bg-light/30 transition-all">
+                          <div class="flex items-center gap-3">
+                              <div class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex-center font-bold text-[10px]">
+                                  {{ substr($group->name, 0, 2) }}
+                              </div>
+                              <div>
+                                  <div class="text-sm font-bold text-gray-800">{{ $group->name }}</div>
+                                  <div class="text-[9px] text-muted font-bold uppercase tracking-widest">{{ $group->type }}</div>
+                              </div>
+                          </div>
+                          <div class="text-right">
+                              <div class="text-sm font-black text-green-600">{{ $group->members_count }}</div>
+                              <div class="text-[8px] text-gray-400 font-bold uppercase">Members</div>
+                          </div>
+                      </div>
+                      @endforeach
+                  </div>
+              </div>
+              <div class="card-footer bg-green-900 p-4 rounded-b-2xl">
+                  <div class="flex items-center justify-between text-white">
+                      <span class="text-[9px] font-black uppercase tracking-widest opacity-60">Total Community Giving</span>
+                      <span class="text-sm font-black">TZS {{ number_format($communityCollections, 0) }}</span>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <!-- RECENT COMMUNITY ACTIVITY -->
+      <div class="lg:col-span-8">
+          <div class="card h-full border-none shadow-sm">
+              <div class="card-header bg-gray-50/50 border-b flex items-center justify-between">
+                  <h3 class="text-xs font-black uppercase tracking-widest text-gray-400">Recent Community Operations</h3>
+                  <a href="{{ route('groups.index') }}" class="text-[9px] font-black text-green-600 uppercase tracking-widest hover:underline">View All Groups</a>
+              </div>
+              <div class="table-wrap">
+                  <table class="w-full">
+                      <thead>
+                          <tr class="bg-gray-50/30">
+                              <th class="text-[9px] font-black uppercase p-4 text-gray-400">Community</th>
+                              <th class="text-[9px] font-black uppercase p-4 text-gray-400">Meeting Date</th>
+                              <th class="text-[9px] font-black uppercase p-4 text-gray-400 text-center">Attendance</th>
+                              <th class="text-[9px] font-black uppercase p-4 text-gray-400 text-right">Collected</th>
+                          </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-100">
+                          @forelse($recentGroupActivity as $activity)
+                          <tr class="hover:bg-light/30 transition-all">
+                              <td class="p-4 font-bold text-sm text-gray-800">{{ $activity->group->name }}</td>
+                              <td class="p-4 text-xs text-muted">{{ $activity->meeting_date->format('M d, Y') }}</td>
+                              <td class="p-4 text-center">
+                                  <div class="flex justify-center gap-1">
+                                      <span class="badge green scale-75">{{ $activity->present_count }}P</span>
+                                      <span class="badge amber scale-75">{{ $activity->guest_count }}G</span>
+                                  </div>
+                              </td>
+                              <td class="p-4 text-right font-black text-sm text-green-600">TZS {{ number_format($activity->total_collected, 0) }}</td>
+                          </tr>
+                          @empty
+                          <tr><td colspan="4" class="p-12 text-center text-muted italic text-xs">No recent community activities recorded.</td></tr>
+                          @endforelse
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- ADMIN ANNOUNCEMENTS & ALERTS -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+      <div class="lg:col-span-12">
+          <div class="card border-l-4 border-green-600 shadow-lg">
+              <div class="card-header bg-green-50/30 border-b p-6 flex items-center justify-between">
+                  <div>
+                      <h3 class="text-sm font-black uppercase tracking-widest text-green-900">Community Announcements</h3>
+                      <p class="text-[10px] text-green-600 font-bold uppercase tracking-widest mt-1">Targeted Communication & Advertising</p>
+                  </div>
+                  <a href="{{ route('communications.create') }}" class="btn btn-primary px-6 py-2 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-green-100">
+                      Create New Broadcast
+                  </a>
+              </div>
+              <div class="card-body p-0">
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-x divide-gray-100">
+                      <div class="p-6">
+                          <div class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Active Alerts</div>
+                          <div class="space-y-4">
+                              @php
+                                  $activeAnnouncements = \App\Models\Communication::where('recipient_type', 'all')->where('status', 'sent')->latest()->limit(3)->get();
+                              @endphp
+                              @forelse($activeAnnouncements as $ann)
+                              <div class="p-3 rounded-xl bg-gray-50 border border-gray-100 hover:border-green-100 transition-all cursor-pointer">
+                                  <div class="text-[10px] font-black text-gray-800 uppercase line-clamp-1">{{ $ann->subject }}</div>
+                                  <div class="text-[9px] text-muted font-bold mt-1 uppercase">{{ $ann->created_at->diffForHumans() }}</div>
+                              </div>
+                              @empty
+                              <div class="text-center py-4 text-muted italic text-[10px]">No active general alerts.</div>
+                              @endforelse
+                          </div>
+                      </div>
+                      <div class="lg:col-span-3 p-6">
+                          <div class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Targeted Group Issues</div>
+                          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              @foreach($topGroups as $group)
+                              <div class="p-4 rounded-2xl bg-light/30 border border-gray-100 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                                  <div>
+                                      <div class="text-sm font-black text-gray-800">{{ $group->name }}</div>
+                                      <div class="text-[9px] text-muted font-bold uppercase tracking-widest">{{ $group->members_count }} Members</div>
+                                  </div>
+                                  <a href="{{ route('communications.create', ['group_id' => $group->id]) }}" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex-center opacity-0 group-hover:opacity-100 transition-all">
+                                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                                  </a>
+                              </div>
+                              @endforeach
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
 </div>
 @endsection
 

@@ -4,7 +4,12 @@ use App\Http\Controllers\MessageTemplateController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\MemberCategoryController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\GroupOperationController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\CommunicationController;
@@ -46,7 +51,11 @@ Route::post('/webhooks/snipe', [WebhookController::class, 'handleSnipe'])->name(
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
-    // Dashboard
+    // User Management
+    Route::resource('users', UserController::class);
+    Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+
+    // Admin Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Settings & Profile
@@ -56,9 +65,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/security/update', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
 
     // Members
-    Route::get('/members/categories', [MemberController::class, 'categories'])->name('members.categories');
+    Route::resource('members/categories', MemberCategoryController::class)->names([
+        'index' => 'members.categories',
+        'create' => 'members.categories.create',
+        'store' => 'members.categories.store',
+        'show' => 'members.categories.show',
+        'edit' => 'members.categories.edit',
+        'update' => 'members.categories.update',
+        'destroy' => 'members.categories.destroy',
+    ]);
     Route::get('/members/{member}/id-card', [MemberController::class, 'idCard'])->name('members.id-card');
-    Route::resource('members', MemberController::class);
+    Route::resource('members', MemberController::class)->except(['categories']);
 
     // Finance
     Route::get('/finance', [FinanceController::class, 'index'])->name('finance.index');
@@ -73,6 +90,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/groups/communities', [GroupController::class, 'communities'])->name('groups.communities');
     Route::get('/groups/activities', [GroupController::class, 'activities'])->name('groups.activities');
     Route::resource('groups', GroupController::class);
+
+    // Group Operations (for Leaders)
+    Route::prefix('groups/{group}/operations')->name('groups.operations.')->group(function () {
+        Route::get('/members', [GroupOperationController::class, 'members'])->name('members');
+        Route::get('/contributions', [GroupOperationController::class, 'contributions'])->name('contributions');
+        Route::post('/contributions', [GroupOperationController::class, 'storeContribution'])->name('contributions.store');
+        Route::get('/attendance', [GroupOperationController::class, 'attendance'])->name('attendance');
+        Route::post('/attendance', [GroupOperationController::class, 'storeAttendance'])->name('attendance.store');
+        Route::get('/meeting/{meeting}', [GroupOperationController::class, 'showMeeting'])->name('meeting.show');
+        Route::get('/planning', [GroupOperationController::class, 'planning'])->name('planning');
+        Route::post('/planning', [GroupOperationController::class, 'storePlan'])->name('planning.store');
+        Route::get('/messages', [GroupOperationController::class, 'messages'])->name('messages');
+        Route::post('/messages', [GroupOperationController::class, 'sendMessage'])->name('messages.send');
+        Route::post('/messages/templates', [GroupOperationController::class, 'storeTemplate'])->name('messages.templates.store');
+        Route::post('/messages/schedule', [GroupOperationController::class, 'scheduleMessage'])->name('messages.schedule');
+    });
 
     // Communications
     Route::get('/communications/announcements', [CommunicationController::class, 'announcements'])->name('communications.announcements');

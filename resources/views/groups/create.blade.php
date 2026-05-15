@@ -51,8 +51,45 @@
             </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Meeting Time</label>
-            <input type="time" name="meeting_time" class="form-control" value="{{ old('meeting_time') }}">
+            <label class="form-label">Regular Contribution Amount</label>
+            <div class="input-group">
+              <span class="input-group-text">KES</span>
+              <input type="number" step="0.01" name="regular_contribution_amount" class="form-control" value="{{ old('regular_contribution_amount', 0) }}">
+            </div>
+            <p class="text-xs text-muted mt-1">Default amount per member per meeting</p>
+          </div>
+        </div>
+
+        <div class="border-t pt-4 mt-4">
+          <h4 class="text-sm font-bold mb-4 uppercase text-muted">Leadership Assignment</h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="form-group">
+              <label class="form-label">Chairperson</label>
+              <select name="chairperson_id" class="form-control select2">
+                <option value="">Select Chairperson</option>
+                @foreach($members as $member)
+                <option value="{{ $member->id }}" {{ old('chairperson_id') == $member->id ? 'selected' : '' }}>{{ $member->full_name }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Secretary</label>
+              <select name="secretary_id" class="form-control select2">
+                <option value="">Select Secretary</option>
+                @foreach($members as $member)
+                <option value="{{ $member->id }}" {{ old('secretary_id') == $member->id ? 'selected' : '' }}>{{ $member->full_name }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Accountant</label>
+              <select name="accountant_id" class="form-control select2">
+                <option value="">Select Accountant</option>
+                @foreach($members as $member)
+                <option value="{{ $member->id }}" {{ old('accountant_id') == $member->id ? 'selected' : '' }}>{{ $member->full_name }}</option>
+                @endforeach
+              </select>
+            </div>
           </div>
         </div>
       </div>

@@ -33,7 +33,7 @@
       --gold-300: #fbbf24;
       --gold-100: #fef3c7;
 
-      --blue-600: #2563eb;
+      --blue-600: #059669;
       --red-500:  #ef4444;
 
       /* Light mode */
@@ -56,8 +56,8 @@
       --badge-amber-tx: #92400e;
       --badge-red-bg:   #fee2e2;
       --badge-red-tx:   #b91c1c;
-      --badge-blue-bg:  #dbeafe;
-      --badge-blue-tx:  #1e40af;
+      --badge-blue-bg:  #d1fae5;
+      --badge-blue-tx:  #047857;
     }
     [data-theme="dark"] {
       --bg-base:      #031a10;

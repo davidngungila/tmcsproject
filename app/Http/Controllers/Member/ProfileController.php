@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\SnipePaymentService;
 use App\Models\Contribution;
 
+use App\Models\Group;
+
 class ProfileController extends Controller
 {
     protected $snipeService;
@@ -141,15 +143,37 @@ class ProfileController extends Controller
     public function communities()
     {
         $member = Auth::user()->member;
+        
+        // Groups the member is in
         $communities = $member->groups()->where('type', 'Community')->get();
-        return view('member.profile.communities', compact('member', 'communities'));
+        
+        // Groups the member LEADS
+        $ledCommunities = Group::where('type', 'Community')
+            ->where(function($query) use ($member) {
+                $query->where('chairperson_id', $member->id)
+                    ->orWhere('secretary_id', $member->id)
+                    ->orWhere('accountant_id', $member->id);
+            })->get();
+
+        return view('member.profile.communities', compact('member', 'communities', 'ledCommunities'));
     }
 
     public function groups()
     {
         $member = Auth::user()->member;
+        
+        // Groups the member is in
         $groups = $member->groups()->where('type', '!=', 'Community')->get();
-        return view('member.profile.groups', compact('member', 'groups'));
+        
+        // Groups the member LEADS
+        $ledGroups = Group::where('type', '!=', 'Community')
+            ->where(function($query) use ($member) {
+                $query->where('chairperson_id', $member->id)
+                    ->orWhere('secretary_id', $member->id)
+                    ->orWhere('accountant_id', $member->id);
+            })->get();
+
+        return view('member.profile.groups', compact('member', 'groups', 'ledGroups'));
     }
 
     public function contributions()

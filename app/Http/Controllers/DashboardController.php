@@ -104,6 +104,25 @@ class DashboardController extends Controller
                 ->limit(3)
                 ->get();
 
+            // --- GROUP LEADERSHIP ---
+            $ledGroups = Group::where('chairperson_id', $member->id)
+                ->orWhere('secretary_id', $member->id)
+                ->orWhere('accountant_id', $member->id)
+                ->get();
+
+            // --- ANNOUNCEMENTS ---
+            $announcements = \App\Models\Communication::where(function($query) use ($member) {
+                    $query->where('recipient_type', 'all')
+                        ->orWhere(function($q) use ($member) {
+                            $q->where('recipient_type', 'group')
+                              ->whereIn('group_id', $member->groups->pluck('id'));
+                        });
+                })
+                ->where('status', 'sent')
+                ->latest()
+                ->limit(5)
+                ->get();
+
             return view('member.dashboard', compact(
                 'member', 
                 'trendLabels', 
@@ -111,7 +130,9 @@ class DashboardController extends Controller
                 'contributionTypes', 
                 'totalContributed', 
                 'recentContributions',
-                'upcomingEvents'
+                'upcomingEvents',
+                'ledGroups',
+                'announcements'
             ));
         }
 
@@ -156,9 +177,23 @@ class DashboardController extends Controller
         $financeData = array_fill(1, 12, 0);
         foreach ($incomeTrends as $m => $total) $financeData[$m] = (float)$total;
 
+        // --- COMMUNITY ANALYTICS (FOR ADMINS) ---
+        $topGroups = Group::withCount('members')
+            ->orderBy('members_count', 'desc')
+            ->take(5)
+            ->get();
+            
+        $communityCollections = \App\Models\GroupMeeting::sum('total_collected');
+        
+        $recentGroupActivity = \App\Models\GroupMeeting::with('group')
+            ->latest()
+            ->take(5)
+            ->get();
+
         return view('dashboard', compact(
             'totalMembers', 'totalGroups', 'totalIncome', 'totalExpenses', 'netBalance',
-            'upcomingEvents', 'recentContributions', 'financeData', 'chartMonths'
+            'upcomingEvents', 'recentContributions', 'financeData', 'chartMonths',
+            'topGroups', 'communityCollections', 'recentGroupActivity'
         ));
     }
 }

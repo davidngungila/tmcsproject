@@ -16,6 +16,7 @@ class Member extends Model
         'email',
         'phone',
         'member_type',
+        'category_id',
         'date_of_birth',
         'address',
         'baptismal_name',
@@ -39,6 +40,14 @@ class Member extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the category of the member.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(MemberCategory::class, 'category_id');
     }
 
     /**

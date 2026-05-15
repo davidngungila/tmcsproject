@@ -93,7 +93,7 @@
                   <div style="font-weight:600;font-size:13px;">{{ $member->full_name }}</div>
                   <div style="font-size:11px;color:var(--text-muted);">
                     {{ $member->baptismal_name ? 'Baptismal: ' . $member->baptismal_name : '' }}
-                    {{ $member->category ? ' • ' . $member->category : '' }}
+                    {{ $member->category ? ' • ' . $member->category->name : '' }}
                   </div>
                 </div>
               </div>

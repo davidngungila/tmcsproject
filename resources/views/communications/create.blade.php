@@ -50,6 +50,10 @@
                   <input type="radio" name="type" value="WhatsApp" {{ old('type') == 'WhatsApp' ? 'selected' : '' }}>
                   <span>WhatsApp</span>
                 </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="type" value="announcement" {{ old('type') == 'announcement' ? 'selected' : '' }}>
+                  <span class="badge green">Announcement</span>
+                </label>
               </div>
               @error('type') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
             </div>
@@ -154,6 +158,19 @@ const charCount = document.getElementById('charCount');
 const smsCount = document.getElementById('smsCount');
 const templateSelect = document.getElementById('messageTemplate');
 const subjectInput = document.querySelector('input[name="subject"]');
+
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const groupId = urlParams.get('group_id');
+  if (groupId) {
+    recipientType.value = 'Group';
+    groupSelect.classList.remove('hidden');
+    const groupOption = groupSelect.querySelector(`option[value="${groupId}"]`);
+    if (groupOption) {
+      groupOption.selected = true;
+    }
+  }
+});
 
 templateSelect.addEventListener('change', function() {
   if (this.value) {

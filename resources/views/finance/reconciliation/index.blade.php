@@ -24,31 +24,31 @@
                     <tr>
                         <th>Ref. ID</th>
                         <th>Period</th>
+                        <th>Opening</th>
                         <th>Income</th>
                         <th>Expenses</th>
-                        <th>Net Balance</th>
+                        <th>Closing</th>
                         <th>Difference</th>
                         <th>Status</th>
-                        <th>Reconciler</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($reconciliations as $rec)
                     <tr>
                         <td class="mono text-xs">{{ $rec->reference_id }}</td>
-                        <td class="text-sm">{{ $rec->period_start->format('M d') }} - {{ $rec->period_end->format('M d, Y') }}</td>
-                        <td class="text-green-600 font-medium">TZS {{ number_format($rec->total_income, 0) }}</td>
-                        <td class="text-red-600 font-medium">TZS {{ number_format($rec->total_expenses, 0) }}</td>
-                        <td class="font-bold">TZS {{ number_format($rec->total_income - $rec->total_expenses, 0) }}</td>
+                        <td class="text-[10px]">{{ $rec->period_start->format('M d') }} - {{ $rec->period_end->format('M d, Y') }}</td>
+                        <td class="text-xs">TZS {{ number_format($rec->opening_balance, 0) }}</td>
+                        <td class="text-green-600 font-bold text-xs">+{{ number_format($rec->total_income, 0) }}</td>
+                        <td class="text-red-600 font-bold text-xs">-{{ number_format($rec->total_expenses, 0) }}</td>
+                        <td class="font-black text-xs">TZS {{ number_format($rec->closing_balance, 0) }}</td>
                         <td>
                             @if($rec->difference == 0)
-                                <span class="text-green-600 font-bold">Matched</span>
+                                <span class="badge green uppercase font-black text-[9px]">Matched</span>
                             @else
-                                <span class="text-red-600 font-bold">TZS {{ number_format($rec->difference, 0) }}</span>
+                                <span class="badge red uppercase font-black text-[9px]">Diff: {{ number_format($rec->difference, 0) }}</span>
                             @endif
                         </td>
-                        <td><span class="badge green">{{ $rec->status }}</span></td>
-                        <td class="text-xs">{{ $rec->reconciler->name }}</td>
+                        <td><span class="badge blue uppercase font-black text-[9px]">{{ $rec->status }}</span></td>
                     </tr>
                     @empty
                     <tr><td colspan="8" class="text-center py-8 text-muted">No reconciliation records found.</td></tr>

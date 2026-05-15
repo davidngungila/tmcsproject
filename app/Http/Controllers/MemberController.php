@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Member;
 use App\Models\Group;
 use App\Models\User;
+use App\Models\MemberCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
@@ -15,14 +16,15 @@ class MemberController extends Controller
 {
     public function index()
     {
-        $members = Member::with(['groups'])->paginate(10);
+        $members = Member::with(['groups', 'category'])->paginate(10);
         return view('members.index', compact('members'));
     }
 
     public function create()
     {
         $groups = Group::all();
-        return view('members.create', compact('groups'));
+        $categories = MemberCategory::where('is_active', true)->get();
+        return view('members.create', compact('groups', 'categories'));
     }
 
     public function store(Request $request)
@@ -32,7 +34,7 @@ class MemberController extends Controller
             'email' => 'nullable|email|unique:members,email',
             'phone' => 'nullable|string|max:20',
             'member_type' => 'required|string',
-            'category' => 'nullable|string',
+            'category_id' => 'nullable|exists:member_categories,id',
             'date_of_birth' => 'required|date',
             'address' => 'required|string',
             'baptismal_name' => 'nullable|string',
@@ -85,15 +87,16 @@ class MemberController extends Controller
 
     public function show(Member $member)
     {
-        $member->load(['financials', 'groups', 'contributions']);
+        $member->load(['financials', 'groups', 'contributions', 'category']);
         return view('members.show', compact('member'));
     }
 
     public function edit(Member $member)
     {
         $groups = Group::all();
+        $categories = MemberCategory::where('is_active', true)->get();
         $memberGroups = $member->groups->pluck('id')->toArray();
-        return view('members.edit', compact('member', 'groups', 'memberGroups'));
+        return view('members.edit', compact('member', 'groups', 'memberGroups', 'categories'));
     }
 
     public function update(Request $request, Member $member)
@@ -103,7 +106,7 @@ class MemberController extends Controller
             'email' => 'nullable|email|unique:members,email,' . $member->id,
             'phone' => 'nullable|string|max:20',
             'member_type' => 'required|string',
-            'category' => 'nullable|string',
+            'category_id' => 'nullable|exists:member_categories,id',
             'date_of_birth' => 'required|date',
             'address' => 'required|string',
             'baptismal_name' => 'nullable|string',
@@ -147,15 +150,5 @@ class MemberController extends Controller
     {
         $member->load('groups');
         return view('members.id_card', compact('member'));
-    }
-
-    public function categories()
-    {
-        // For now, static categories. In a full system, these might be in a separate table.
-        $categories = [
-            'Undergraduate', 'Postgraduate', 'Teaching Staff', 'Non-Teaching Staff', 
-            'Sunday School', 'Community Member', 'Elder'
-        ];
-        return view('members.categories', compact('categories'));
     }
 }
