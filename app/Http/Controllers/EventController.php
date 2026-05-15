@@ -9,12 +9,34 @@ class EventController extends Controller
 {
     public function index()
     {
-        $events = Event::latest()->paginate(10);
+        $events = Event::orderBy('event_date', 'asc')->paginate(10);
+        $allEvents = Event::all(); // For calendar
         $totalEvents = Event::count();
         $upcomingEvents = Event::where('event_date', '>', now())->count();
         $pastEvents = Event::where('event_date', '<', now())->orWhere('status', 'completed')->count();
         $totalAttendees = \App\Models\EventAttendance::where('status', 'attended')->count();
-        return view('events.index', compact('events', 'totalEvents', 'upcomingEvents', 'pastEvents', 'totalAttendees'));
+
+        // Format events for FullCalendar
+        $calendarEvents = $allEvents->map(function($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->event_name,
+                'start' => $event->event_date->format('Y-m-d') . 'T' . $event->event_time->format('H:i:s'),
+                'className' => 'bg-' . getEventStatusColor($event->status) . '-500',
+                'description' => $event->description,
+                'venue' => $event->venue,
+                'url' => route('events.show', $event->id)
+            ];
+        });
+
+        return view('events.index', compact(
+            'events', 
+            'totalEvents', 
+            'upcomingEvents', 
+            'pastEvents', 
+            'totalAttendees',
+            'calendarEvents'
+        ));
     }
 
     public function create()

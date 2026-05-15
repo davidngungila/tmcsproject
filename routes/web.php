@@ -89,11 +89,16 @@ Route::middleware('auth')->group(function () {
     // Groups
     Route::get('/groups/communities', [GroupController::class, 'communities'])->name('groups.communities');
     Route::get('/groups/activities', [GroupController::class, 'activities'])->name('groups.activities');
+    Route::post('/groups/{group}/assign-leadership', [GroupController::class, 'assignLeadership'])->name('groups.assign-leadership');
+    Route::get('/groups/{group}/reports', [GroupController::class, 'reports'])->name('groups.reports.index');
+    Route::get('/groups/{group}/reports/{type}', [GroupController::class, 'viewReport'])->name('groups.reports.view');
     Route::resource('groups', GroupController::class);
 
     // Group Operations (for Leaders)
     Route::prefix('groups/{group}/operations')->name('groups.operations.')->group(function () {
         Route::get('/members', [GroupOperationController::class, 'members'])->name('members');
+        Route::post('/members/add', [GroupOperationController::class, 'addMember'])->name('members.add');
+        Route::delete('/members/{member}/remove', [GroupOperationController::class, 'removeMember'])->name('members.remove');
         Route::get('/contributions', [GroupOperationController::class, 'contributions'])->name('contributions');
         Route::post('/contributions', [GroupOperationController::class, 'storeContribution'])->name('contributions.store');
         Route::get('/attendance', [GroupOperationController::class, 'attendance'])->name('attendance');

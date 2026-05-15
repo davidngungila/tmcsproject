@@ -24,6 +24,10 @@
             </div>
         </div>
         <div class="flex gap-2">
+            <a href="{{ route('groups.reports.index', $group->id) }}" class="btn btn-secondary px-4 bg-blue-600 text-white hover:bg-blue-700">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                View Full Reports
+            </a>
             <a href="{{ route('groups.edit', $group->id) }}" class="btn btn-secondary px-4">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 Edit Group
@@ -102,25 +106,91 @@
                     <h3 class="text-xs font-black uppercase tracking-widest text-gray-400">Leadership Team</h3>
                 </div>
                 <div class="card-body p-6 space-y-5">
-                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-green-50/30 border border-green-50">
+                    <!-- GROUP LEADER -->
+                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-blue-50/30 border border-blue-50 group hover:bg-blue-50 transition-all">
+                        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex-center font-black text-xs">LD</div>
+                        <div class="flex-1">
+                            <div class="text-[10px] font-black uppercase text-blue-600 tracking-widest">Group Leader</div>
+                            @if($group->leader_id)
+                                <div class="text-sm font-black text-gray-800">{{ $group->leader->full_name }}</div>
+                            @else
+                                <form action="{{ route('groups.assign-leadership', $group->id) }}" method="POST" class="mt-1">
+                                    @csrf
+                                    <input type="hidden" name="role" value="leader_id">
+                                    <select name="member_id" class="select2-inline">
+                                        <option value=""></option>
+                                        @foreach($group->members as $member)
+                                            <option value="{{ $member->id }}">{{ $member->full_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- CHAIRPERSON -->
+                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-green-50/30 border border-green-50 group hover:bg-green-50 transition-all">
                         <div class="w-10 h-10 rounded-full bg-green-600 text-white flex-center font-black text-xs">CP</div>
                         <div class="flex-1">
                             <div class="text-[10px] font-black uppercase text-green-600 tracking-widest">Chairperson</div>
-                            <div class="text-sm font-black text-gray-800">{{ $group->chairperson->full_name ?? 'Not Assigned' }}</div>
+                            @if($group->chairperson_id)
+                                <div class="text-sm font-black text-gray-800">{{ $group->chairperson->full_name }}</div>
+                            @else
+                                <form action="{{ route('groups.assign-leadership', $group->id) }}" method="POST" class="mt-1">
+                                    @csrf
+                                    <input type="hidden" name="role" value="chairperson_id">
+                                    <select name="member_id" class="select2-inline">
+                                        <option value=""></option>
+                                        @foreach($group->members as $member)
+                                            <option value="{{ $member->id }}">{{ $member->full_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @endif
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-green-50/30 border border-green-50">
+
+                    <!-- SECRETARY -->
+                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-green-50/30 border border-green-50 group hover:bg-green-50 transition-all">
                         <div class="w-10 h-10 rounded-full bg-green-500 text-white flex-center font-black text-xs">SC</div>
                         <div class="flex-1">
                             <div class="text-[10px] font-black uppercase text-green-600 tracking-widest">Secretary</div>
-                            <div class="text-sm font-black text-gray-800">{{ $group->secretary->full_name ?? 'Not Assigned' }}</div>
+                            @if($group->secretary_id)
+                                <div class="text-sm font-black text-gray-800">{{ $group->secretary->full_name }}</div>
+                            @else
+                                <form action="{{ route('groups.assign-leadership', $group->id) }}" method="POST" class="mt-1">
+                                    @csrf
+                                    <input type="hidden" name="role" value="secretary_id">
+                                    <select name="member_id" class="select2-inline">
+                                        <option value=""></option>
+                                        @foreach($group->members as $member)
+                                            <option value="{{ $member->id }}">{{ $member->full_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @endif
                         </div>
                     </div>
-                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-amber-50/30 border border-amber-50">
+
+                    <!-- ACCOUNTANT -->
+                    <div class="flex items-center gap-4 p-3 rounded-2xl bg-amber-50/30 border border-amber-50 group hover:bg-amber-50 transition-all">
                         <div class="w-10 h-10 rounded-full bg-amber-500 text-white flex-center font-black text-xs">AC</div>
                         <div class="flex-1">
                             <div class="text-[10px] font-black uppercase text-amber-600 tracking-widest">Accountant</div>
-                            <div class="text-sm font-black text-gray-800">{{ $group->accountant->full_name ?? 'Not Assigned' }}</div>
+                            @if($group->accountant_id)
+                                <div class="text-sm font-black text-gray-800">{{ $group->accountant->full_name }}</div>
+                            @else
+                                <form action="{{ route('groups.assign-leadership', $group->id) }}" method="POST" class="mt-1">
+                                    @csrf
+                                    <input type="hidden" name="role" value="accountant_id">
+                                    <select name="member_id" class="select2-inline">
+                                        <option value=""></option>
+                                        @foreach($group->members as $member)
+                                            <option value="{{ $member->id }}">{{ $member->full_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -330,9 +400,27 @@
             </div>
         </div>
     </div>
+
 </div>
 
+@push('styles')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
+    .select2-container--default .select2-selection--single {
+        background-color: transparent;
+        border: none;
+        height: auto;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 700;
+        padding-left: 0;
+        line-height: normal;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        display: none;
+    }
     .tab-btn.active {
         background: white;
         color: #047857;
@@ -346,10 +434,23 @@
         background: rgba(255,255,255,0.5);
     }
 </style>
+@endpush
 
 @push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Select2
+        $('.select2-inline').select2({
+            placeholder: 'Search or Select...',
+            allowClear: true,
+            width: '100%'
+        }).on('change', function() {
+            $(this).closest('form').submit();
+        });
+
+        // Tab Switching
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
 

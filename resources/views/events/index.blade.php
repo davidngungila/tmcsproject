@@ -4,200 +4,136 @@
 @section('page-title', 'Event Management')
 @section('breadcrumb', 'TmcsSmart / Events')
 
+@push('styles')
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+<style>
+  .fc-event { cursor: pointer; border: none; padding: 2px 4px; border-radius: 4px; }
+  .fc-toolbar-title { font-family: 'Sora', sans-serif !important; font-weight: 800 !important; font-size: 1.25rem !important; }
+  .fc-button-primary { background-color: var(--green-600) !important; border-color: var(--green-600) !important; font-weight: 600 !important; text-transform: uppercase !important; font-size: 0.75rem !important; letter-spacing: 0.05em !important; }
+  .fc-button-primary:hover { background-color: var(--green-700) !important; border-color: var(--green-700) !important; }
+  .fc-daygrid-day-number { font-weight: 700; color: var(--text-muted); font-size: 0.8rem; }
+  .fc-col-header-cell-cushion { font-weight: 800; text-transform: uppercase; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.1em; }
+</style>
+@endpush
+
 @section('content')
-<div class="animate-in">
-  <!-- EVENT STATISTICS -->
-  <div class="stat-grid mb-6">
-    <div class="stat-card green">
-      <div class="stat-icon green">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      </div>
-      <div class="stat-value">{{ $totalEvents }}</div>
-      <div class="stat-label">Total Events</div>
-      <div class="stat-change up">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17l9-9m0 0V5m0 12h-12"/></svg>
-        5 new this month
-      </div>
+<div class="animate-in space-y-6">
+  <!-- TOP STATS -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700 text-white">
+      <div class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Total Events</div>
+      <div class="text-2xl font-black">{{ $totalEvents }}</div>
+      <div class="mt-2 text-[10px] font-bold opacity-70">Church lifecycle</div>
     </div>
-
-    <div class="stat-card gold">
-      <div class="stat-icon gold">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-      </div>
-      <div class="stat-value">{{ $totalAttendees }}</div>
-      <div class="stat-label">Total Attendees</div>
-      <div class="stat-change up">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17l9-9m0 0V5m0 12h-12"/></svg>
-        12% from last month
-      </div>
+    <div class="card p-6 border-none shadow-sm">
+      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Upcoming</div>
+      <div class="text-2xl font-black text-blue-600">{{ $upcomingEvents }}</div>
+      <div class="mt-2 text-[10px] font-bold text-muted">Planned sessions</div>
     </div>
-
-    <div class="stat-card blue">
-      <div class="stat-icon blue">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-      </div>
-      <div class="stat-value">{{ $upcomingEvents }}</div>
-      <div class="stat-label">Upcoming Events</div>
-      <div class="stat-change up">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17l9-9m0 0V5m0 12h-12"/></svg>
-        3 this week
-      </div>
+    <div class="card p-6 border-none shadow-sm">
+      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Total Attendees</div>
+      <div class="text-2xl font-black text-amber-600">{{ $totalAttendees }}</div>
+      <div class="mt-2 text-[10px] font-bold text-muted">Overall engagement</div>
     </div>
-
-    <div class="stat-card red">
-      <div class="stat-icon red">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-      </div>
-      <div class="stat-value">{{ $pastEvents }}</div>
-      <div class="stat-label">Past Events</div>
-      <div class="stat-change down">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 7l-9 9m0 0V4m0 12h12"/></svg>
-        Completed
-      </div>
+    <div class="card p-6 border-none shadow-sm">
+      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Past Events</div>
+      <div class="text-2xl font-black text-gray-800">{{ $pastEvents }}</div>
+      <div class="mt-2 text-[10px] font-bold text-muted">History archive</div>
     </div>
   </div>
 
-  <!-- PAGE ACTIONS -->
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <h2 class="text-lg font-bold">Event Management</h2>
-      <p class="text-sm text-muted mt-1">Create and manage church events</p>
+  <!-- VIEW TOGGLE & ACTIONS -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex bg-gray-100 p-1 rounded-xl">
+      <button onclick="switchView('calendar')" id="calendarToggle" class="px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all bg-white shadow-sm text-green-600">Calendar View</button>
+      <button onclick="switchView('list')" id="listToggle" class="px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-gray-400">List View</button>
     </div>
-    <div class="flex gap-3">
-      <button class="btn btn-secondary" onclick="showCalendarView()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        Calendar View
-      </button>
-      <button class="btn btn-secondary" onclick="exportEvents()">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        Export
-      </button>
-      <a href="{{ route('events.create') }}" class="btn btn-primary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-        Create Event
+    <div class="flex gap-2">
+      <a href="{{ route('events.create') }}" class="btn btn-primary bg-green-600 shadow-lg shadow-green-100 border-none px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="mr-2"><path d="M12 4v16m8-8H4"/></svg>
+        Schedule New Event
       </a>
     </div>
   </div>
 
-  <!-- FILTERS -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="flex gap-4 items-center flex-wrap">
-        <div class="flex-1 min-w-64">
-          <input type="text" class="form-control" placeholder="Search events..." id="searchInput">
-        </div>
-        <select class="form-control w-48" id="statusFilter">
-          <option value="">All Status</option>
-          <option value="upcoming">Upcoming</option>
-          <option value="ongoing">Ongoing</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <input type="month" class="form-control w-48" id="monthFilter">
-        <button class="btn btn-secondary" onclick="resetFilters()">Reset</button>
-      </div>
-    </div>
+  <!-- CALENDAR VIEW (DEFAULT) -->
+  <div id="calendarView" class="card border-none shadow-sm p-6 animate-in fade-in slide-in-from-bottom-4">
+    <div id="calendar"></div>
   </div>
 
-  <!-- EVENTS TABLE -->
-  <div class="card overflow-hidden mb-6">
-    <div class="card-header border-b">
-      <div class="flex items-center justify-between">
-        <div class="card-title">Events List</div>
-        <div class="text-xs text-muted">{{ $events->total() }} events total</div>
-      </div>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-light/50 border-b">
-          <tr>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Event Name</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Schedule</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Venue</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Status</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Attendance</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          @forelse($events as $event)
-          <tr class="hover:bg-light/30 transition-colors">
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-light flex-center overflow-hidden flex-shrink-0">
-                  @if($event->photo)
-                    <img src="{{ $event->photo }}" class="w-full h-full object-cover">
-                  @else
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-muted"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  @endif
-                </div>
-                <div>
-                  <div class="font-bold text-sm">{{ $event->event_name }}</div>
-                  <div class="text-[11px] text-muted">{{ Str::limit($event->description, 35) }}</div>
-                </div>
-              </div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="text-sm font-medium">{{ $event->event_date->format('d M, Y') }}</div>
-              <div class="text-[11px] text-muted">{{ $event->event_time->format('h:i A') }}</div>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-1.5 text-sm">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-muted"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                {{ $event->venue }}
-              </div>
-            </td>
-            <td class="px-6 py-4">
-              <span class="badge {{ getEventStatusColor($event->status) }}">
-                {{ ucfirst($event->status) }}
-              </span>
-            </td>
-            <td class="px-6 py-4">
-              <div class="flex items-center gap-2">
-                <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden min-w-[60px]">
-                  @php
-                    $percent = $event->max_capacity ? ($event->attendance->count() / $event->max_capacity) * 100 : 0;
-                    $percent = min(100, $percent);
-                  @endphp
-                  <div class="h-full bg-{{ getEventStatusColor($event->status) }}-500 rounded-full" style="width: {{ $percent }}%"></div>
-                </div>
-                <span class="text-xs font-medium">{{ $event->attendance->count() }}{{ $event->max_capacity ? '/' . $event->max_capacity : '' }}</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 text-right">
-              <div class="flex items-center justify-end gap-2">
-                <div class="dropdown">
-                  <button class="btn btn-ghost btn-sm px-2">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                  </button>
-                  <div class="dropdown-menu right-0 w-48">
-                    <button class="dropdown-item" onclick="viewEvent({{ $event->id }})">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                      View Details
-                    </button>
-                    <a href="{{ route('events.edit', $event->id) }}" class="dropdown-item">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                      Edit Event
-                    </a>
-                    @if($event->status === 'upcoming')
-                    <button class="dropdown-item text-green-600" onclick="checkInAttendees({{ $event->id }})">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                      Mark Attendance
-                    </button>
-                    @endif
-                    <div class="dropdown-divider"></div>
-                    <form action="{{ route('events.destroy', $event->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?')">
-                      @csrf @method('DELETE')
-                      <button type="submit" class="dropdown-item text-red">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        Delete Event
-                      </button>
-                    </form>
+  <!-- LIST VIEW (HIDDEN BY DEFAULT) -->
+  <div id="listView" class="hidden animate-in fade-in slide-in-from-bottom-4">
+    <div class="card border-none shadow-sm overflow-hidden">
+      <div class="table-wrap">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50/50">
+              <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Event Details</th>
+              <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date & Time</th>
+              <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Venue</th>
+              <th class="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+              <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @forelse($events as $event)
+            <tr class="hover:bg-gray-50/50 transition-all">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex-center font-black text-xs">
+                    {{ substr($event->event_name, 0, 2) }}
+                  </div>
+                  <div>
+                    <div class="text-sm font-black text-gray-800">{{ $event->event_name }}</div>
+                    <div class="text-[10px] text-muted font-bold">{{ Str::limit($event->description, 40) }}</div>
                   </div>
                 </div>
-              </div>
-            </td>
-          </tr>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-xs font-black text-gray-700">{{ $event->event_date->format('M d, Y') }}</div>
+                <div class="text-[10px] text-muted font-bold uppercase">{{ $event->event_time->format('h:i A') }}</div>
+              </td>
+              <td class="px-6 py-4 text-xs font-bold text-gray-600">
+                <div class="flex items-center gap-1.5">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  {{ $event->venue }}
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="badge {{ getEventStatusColor($event->status) }} uppercase text-[9px] font-black px-3 py-1">{{ $event->status }}</span>
+              </td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex justify-end gap-1">
+                  <a href="{{ route('events.show', $event->id) }}" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex-center hover:bg-green-600 hover:text-white transition-all">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  </a>
+                  <a href="{{ route('events.edit', $event->id) }}" class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex-center hover:bg-amber-600 hover:text-white transition-all">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            @empty
+            <tr>
+              <td colspan="5" class="p-16 text-center">
+                <div class="w-16 h-16 rounded-full bg-gray-50 text-gray-300 flex-center mx-auto mb-4">
+                  <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <p class="text-sm font-black text-gray-400 uppercase tracking-widest">No events scheduled yet.</p>
+              </td>
+            </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+      @if($events->hasPages())
+      <div class="p-6 border-t border-gray-50">
+        {{ $events->links() }}
+      </div>
+      @endif
+    </div>
+  </div>
+</div>
           @empty
           <tr>
             <td colspan="6" class="px-6 py-12 text-center text-muted">
@@ -267,36 +203,60 @@
 </div>
 @endsection
 
+@endsection
+
 @push('scripts')
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
 <script>
-// Helper functions
-function getEventStatusColor(status) {
-  const colors = {
-    'upcoming' => 'blue',
-    'ongoing' => 'green',
-    'completed' => 'amber',
-    'cancelled' => 'red'
-  };
-  return colors[status] ?? 'blue';
-}
-
-function viewEvent(eventId) {
-  fetch(`/events/${eventId}/show`)
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById('eventDetails').innerHTML = html;
-      document.getElementById('viewEventModal').classList.add('open');
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: @json($calendarEvents),
+        eventClick: function(info) {
+            info.jsEvent.preventDefault();
+            if (info.event.url) {
+                window.location.href = info.event.url;
+            }
+        },
+        eventDidMount: function(info) {
+            // Optional: add tooltips or extra info
+        }
     });
-}
+    calendar.render();
+    window.calendar = calendar; // Global ref for view switching
+});
 
-function checkInAttendees(eventId) {
-  document.getElementById('checkInModal').classList.add('open');
-  
-  // Load recent check-ins for this event
-  fetch(`/events/${eventId}/checkins`)
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
+function switchView(view) {
+    const calendarView = document.getElementById('calendarView');
+    const listView = document.getElementById('listView');
+    const calendarToggle = document.getElementById('calendarToggle');
+    const listToggle = document.getElementById('listToggle');
+
+    if (view === 'calendar') {
+        calendarView.classList.remove('hidden');
+        listView.classList.add('hidden');
+        calendarToggle.classList.add('bg-white', 'shadow-sm', 'text-green-600');
+        calendarToggle.classList.remove('text-gray-400');
+        listToggle.classList.remove('bg-white', 'shadow-sm', 'text-green-600');
+        listToggle.classList.add('text-gray-400');
+        if (window.calendar) window.calendar.render();
+    } else {
+        calendarView.classList.add('hidden');
+        listView.classList.remove('hidden');
+        listToggle.classList.add('bg-white', 'shadow-sm', 'text-green-600');
+        listToggle.classList.remove('text-gray-400');
+        calendarToggle.classList.remove('bg-white', 'shadow-sm', 'text-green-600');
+        calendarToggle.classList.add('text-gray-400');
+    }
+}
+</script>
+@endpush
         displayRecentCheckins(data.checkins);
       }
     });

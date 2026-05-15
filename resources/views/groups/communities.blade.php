@@ -14,6 +14,30 @@
     <a href="{{ route('groups.create') }}?type=Community" class="btn btn-primary">Add New Community</a>
   </div>
 
+  <!-- COMMUNITY STATISTICS -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700 text-white">
+      <div class="text-[10px] font-black uppercase tracking-widest opacity-80">Total Communities</div>
+      <div class="text-2xl font-black mt-2">{{ $totalCommunities }}</div>
+      <div class="text-[10px] font-bold mt-4">Active: {{ $activeCommunities }}</div>
+    </div>
+    <div class="card p-6 border-none shadow-sm">
+      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Total Membership</div>
+      <div class="text-2xl font-black text-gray-800 mt-2">{{ number_format($totalCommunityMembers) }}</div>
+      <div class="text-[10px] font-bold text-green-600 mt-4 uppercase tracking-widest">Growing Strong</div>
+    </div>
+    <div class="card p-6 border-none shadow-sm">
+      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Total Collections</div>
+      <div class="text-2xl font-black text-gray-800 mt-2">TZS {{ number_format($communityCollections, 0) }}</div>
+      <div class="text-[10px] font-bold text-amber-600 mt-4 uppercase tracking-widest">Community Giving</div>
+    </div>
+    <div class="card p-6 border-none shadow-sm">
+      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Avg Size</div>
+      <div class="text-2xl font-black text-gray-800 mt-2">{{ $totalCommunities > 0 ? round($totalCommunityMembers / $totalCommunities, 1) : 0 }}</div>
+      <div class="text-[10px] font-bold text-blue-600 mt-4 uppercase tracking-widest">Members / Community</div>
+    </div>
+  </div>
+
   <div class="card overflow-hidden">
     <table class="w-full text-left">
       <thead>
@@ -45,7 +69,7 @@
             </div>
           </td>
           <td class="p-4 text-center">
-            <span class="text-sm font-black text-gray-800">{{ $group->members->count() }}</span>
+            <span class="text-sm font-black text-gray-800">{{ $group->members_count }}</span>
           </td>
           <td class="p-4">
             <div class="flex items-center justify-end gap-1">

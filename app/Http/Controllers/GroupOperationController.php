@@ -48,7 +48,9 @@ class GroupOperationController extends Controller
         
         // Statistics for charts
         $memberTypes = $group->members->groupBy('member_type')->map->count();
-        $genders = $group->members->groupBy('gender')->map->count();
+        $genders = $group->members->groupBy(function($member) {
+            return $member->gender ?: 'Unknown';
+        })->map->count();
         
         $activeMembers = $group->members->where('pivot.is_active', true)->count();
         $inactiveMembers = $group->members->where('pivot.is_active', false)->count();
@@ -57,14 +59,47 @@ class GroupOperationController extends Controller
             ->wherePivot('join_date', '>=', now()->startOfMonth())
             ->count();
 
+        // Get all members not in this group for the "Add Member" dropdown
+        $allMembers = Member::whereDoesntHave('groups', function($query) use ($group) {
+            $query->where('groups.id', $group->id);
+        })->get();
+
         return view('groups.operations.members', compact(
             'group', 
             'memberTypes', 
             'genders', 
             'activeMembers', 
             'inactiveMembers',
-            'newThisMonth'
+            'newThisMonth',
+            'allMembers'
         ));
+    }
+
+    public function addMember(Request $request, Group $group)
+    {
+        $this->authorizeLeader($group);
+        $request->validate([
+            'member_id' => 'required|exists:members,id'
+        ]);
+
+        // Check if already a member (safety)
+        if ($group->members()->where('member_id', $request->member_id)->exists()) {
+            return back()->with('error', 'Member is already in this group.');
+        }
+
+        $group->members()->attach($request->member_id, [
+            'join_date' => now(),
+            'is_active' => true
+        ]);
+
+        return back()->with('success', 'Member added to group successfully.');
+    }
+
+    public function removeMember(Request $request, Group $group, Member $member)
+    {
+        $this->authorizeLeader($group);
+        $group->members()->detach($member->id);
+        return back()->with('success', 'Member removed from group successfully.');
     }
 
     public function contributions(Group $group)

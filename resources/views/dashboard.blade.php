@@ -82,6 +82,54 @@
     </div>
   </div>
 
+  <!-- QUICK ACCESS & REPORTS -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <a href="{{ route('finance.reports') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-green-50 to-white">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex-center group-hover:bg-green-600 group-hover:text-white transition-all">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Financial</div>
+          <div class="text-sm font-black text-gray-800">Reports</div>
+        </div>
+      </div>
+    </a>
+    <a href="{{ route('activity-logs.index') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-blue-50 to-white">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <div>
+          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Admin</div>
+          <div class="text-sm font-black text-gray-800">Reports</div>
+        </div>
+      </div>
+    </a>
+    <a href="{{ route('communications.index') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-purple-50 to-white">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex-center group-hover:bg-purple-600 group-hover:text-white transition-all">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+        </div>
+        <div>
+          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Comm</div>
+          <div class="text-sm font-black text-gray-800">Reports</div>
+        </div>
+      </div>
+    </a>
+    <a href="{{ route('groups.communities') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-amber-50 to-white">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex-center group-hover:bg-amber-600 group-hover:text-white transition-all">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div>
+          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Meeting</div>
+          <div class="text-sm font-black text-gray-800">Reports</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
   <!-- KEY METRICS OVERVIEW -->
   <div class="metrics-overview mb-6">
     <div class="metrics-header">

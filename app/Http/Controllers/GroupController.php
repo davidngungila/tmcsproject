@@ -13,11 +13,13 @@ class GroupController extends Controller
     {
         $groups = Group::with(['chairperson', 'secretary', 'accountant'])
             ->withCount('members')
-            ->get()
-            ->map(function($group) {
-                $group->total_giving = $group->meetings()->sum('total_collected');
-                return $group;
-            });
+            ->paginate(10);
+            
+        // Transform the collection within the paginator
+        $groups->getCollection()->transform(function($group) {
+            $group->total_giving = $group->meetings()->sum('total_collected');
+            return $group;
+        });
             
         $totalGroups = Group::count();
         $totalMembers = Member::count();
@@ -59,6 +61,7 @@ class GroupController extends Controller
     {
         $group->load([
             'members', 
+            'leader',
             'chairperson', 
             'secretary', 
             'accountant',
@@ -127,12 +130,162 @@ class GroupController extends Controller
 
     public function communities()
     {
-        $groups = Group::where('type', 'Community')->paginate(10);
-        return view('groups.communities', compact('groups'));
+        $groups = Group::where('type', 'Community')
+            ->withCount('members')
+            ->paginate(10);
+            
+        $totalCommunities = Group::where('type', 'Community')->count();
+        $totalCommunityMembers = \App\Models\Member::whereHas('groups', function($query) {
+            $query->where('type', 'Community');
+        })->count();
+        
+        $communityCollections = \App\Models\GroupMeeting::whereHas('group', function($query) {
+            $query->where('type', 'Community');
+        })->sum('total_collected');
+        
+        $activeCommunities = Group::where('type', 'Community')->where('is_active', true)->count();
+
+        return view('groups.communities', compact(
+            'groups', 
+            'totalCommunities', 
+            'totalCommunityMembers', 
+            'communityCollections', 
+            'activeCommunities'
+        ));
     }
 
     public function activities()
     {
         return view('groups.activities');
+    }
+
+    public function assignLeadership(Request $request, Group $group)
+    {
+        $validated = $request->validate([
+            'role' => 'required|string|in:leader_id,chairperson_id,secretary_id,accountant_id',
+            'member_id' => 'required|exists:members,id'
+        ]);
+
+        try {
+            $group->update([
+                $validated['role'] => $validated['member_id']
+            ]);
+
+            return back()->with('success', 'Leadership role assigned successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to assign leadership: ' . $e->getMessage());
+        }
+    }
+
+    public function reports(Group $group)
+    {
+        $group->loadCount('members');
+        $totalCollected = $group->meetings()->sum('total_collected');
+        $activePlans = $group->plans()->where('status', 'active')->count();
+        
+        return view('groups.reports.index', compact('group', 'totalCollected', 'activePlans'));
+    }
+
+    public function viewReport(Group $group, $type)
+    {
+        $group->load(['members', 'meetings.attendances', 'plans']);
+
+        $data = [];
+        $data['type'] = $type;
+        $data['title'] = ucfirst($type) . " Report";
+
+        // Common Data
+        $data['totalMembers'] = $group->members->count();
+        $data['totalCollected'] = $group->meetings->sum('total_collected');
+        
+        // Initialize chart data with zeros
+        $data['chartData'] = array_fill(1, 12, 0);
+
+        if ($type === 'financial') {
+            $data['title'] = "Financial Performance Report";
+            $data['avgMeetingGiving'] = $group->meetings()->avg('total_collected') ?: 0;
+            $monthlyData = $group->meetings()
+                ->selectRaw('MONTH(meeting_date) as month, SUM(total_collected) as total')
+                ->whereYear('meeting_date', date('Y'))
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->pluck('total', 'month')
+                ->toArray();
+            
+            foreach ($monthlyData as $month => $total) {
+                $data['chartData'][$month] = $total;
+            }
+
+            $data['recentTransactions'] = $group->meetings()
+                ->latest('meeting_date')
+                ->limit(10)
+                ->get();
+        } elseif ($type === 'administrative') {
+            $data['title'] = "Administrative & Membership Report";
+            
+            // Fix SQL error by using direct DB query on pivot table
+            $growthData = \DB::table('member_groups')
+                ->selectRaw('MONTH(join_date) as month, COUNT(*) as count')
+                ->where('group_id', $group->id)
+                ->whereYear('join_date', date('Y'))
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->pluck('count', 'month')
+                ->toArray();
+            
+            foreach ($growthData as $month => $count) {
+                $data['chartData'][$month] = $count;
+            }
+
+            $data['genderDist'] = $group->members()
+                ->selectRaw('gender, COUNT(*) as count')
+                ->groupBy('gender')
+                ->get();
+            
+            $data['membershipTable'] = $group->members()->paginate(15);
+        } elseif ($type === 'meetings') {
+            $data['title'] = "Meetings & Attendance Report";
+            
+            $attendanceData = $group->meetings()
+                ->selectRaw('MONTH(meeting_date) as month, AVG(total_collected) as avg_collected') // Using collected as proxy for activity if attendance is complex
+                ->whereYear('meeting_date', date('Y'))
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->pluck('avg_collected', 'month')
+                ->toArray();
+            
+            foreach ($attendanceData as $month => $avg) {
+                $data['chartData'][$month] = round($avg, 0);
+            }
+            
+            $data['recentMeetings'] = $group->meetings()->latest()->limit(10)->get();
+        } elseif ($type === 'communication') {
+            $data['title'] = "Communication & Engagement Report";
+            $data['scheduledCount'] = \App\Models\GroupScheduledMessage::where('group_id', $group->id)->count();
+            $data['templateCount'] = \App\Models\MessageTemplate::where('group_id', $group->id)->count();
+            
+            $messageData = \App\Models\Communication::where('group_id', $group->id)
+                ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+                ->whereYear('created_at', date('Y'))
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->pluck('count', 'month')
+                ->toArray();
+
+            foreach ($messageData as $month => $count) {
+                $data['chartData'][$month] = $count;
+            }
+
+            $data['recentMessages'] = \App\Models\Communication::where('group_id', $group->id)
+                ->latest()
+                ->limit(10)
+                ->get();
+        }
+
+        return view("groups.reports.view", compact('group', 'data'));
     }
 }
