@@ -65,6 +65,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/settings/security/update', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
 
     // Members
+    Route::get('/members/import-template', [MemberController::class, 'downloadTemplate'])->name('members.template');
+    Route::post('/members/import', [MemberController::class, 'import'])->name('members.import');
     Route::resource('members/categories', MemberCategoryController::class)->names([
         'index' => 'members.categories',
         'create' => 'members.categories.create',

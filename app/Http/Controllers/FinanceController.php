@@ -110,20 +110,23 @@ class FinanceController extends Controller
         return redirect()->route('finance.index')->with('success', 'Contribution recorded successfully');
     }
 
-    public function show(Contribution $contribution)
+    public function show(Contribution $finance)
     {
+        $contribution = $finance;
         $contribution->load(['member', 'recorder']);
         return view('finance.show', compact('contribution'));
     }
 
-    public function edit(Contribution $contribution)
+    public function edit(Contribution $finance)
     {
+        $contribution = $finance;
         $members = Member::all();
         return view('finance.edit', compact('contribution', 'members'));
     }
 
-    public function update(Request $request, Contribution $contribution)
+    public function update(Request $request, Contribution $finance)
     {
+        $contribution = $finance;
         $validated = $request->validate([
             'member_id' => 'required|exists:members,id',
             'contribution_type' => 'required|string',
@@ -138,8 +141,9 @@ class FinanceController extends Controller
         return redirect()->route('finance.index')->with('success', 'Contribution updated successfully');
     }
 
-    public function destroy(Contribution $contribution)
+    public function destroy(Contribution $finance)
     {
+        $contribution = $finance;
         $contribution->delete();
 
         return redirect()->route('finance.index')->with('success', 'Contribution deleted successfully');
