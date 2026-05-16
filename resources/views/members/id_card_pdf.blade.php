@@ -3,90 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        @page { margin: 0; }
+        @page { 
+            size: 85.6mm 53.98mm;
+            margin: 0; 
+        }
         body {
             font-family: 'Helvetica', sans-serif;
             margin: 0;
             padding: 0;
             background: #fff;
+            width: 85.6mm;
+            height: 53.98mm;
+        }
+        .page-break {
+            page-break-after: always;
         }
         .id-card {
             width: 85.6mm;
             height: 53.98mm;
             position: relative;
             overflow: hidden;
-            border: 0.1mm solid #eee;
+            box-sizing: border-box;
         }
         .header-section {
             height: 14mm;
             background: #064e3b;
             color: white;
-            padding: 0 5mm;
+            padding: 0 4mm;
+            display: table;
+            width: 100%;
+            box-sizing: border-box;
         }
         .church-info {
-            padding-top: 2mm;
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 2mm;
         }
         .church-info h1 {
             margin: 0;
-            font-size: 2.8mm;
+            font-size: 2.6mm;
             font-weight: bold;
             text-transform: uppercase;
+            line-height: 1.2;
         }
         .church-info p {
             margin: 0;
-            font-size: 1.5mm;
+            font-size: 1.4mm;
             opacity: 0.9;
+            line-height: 1.2;
         }
         .card-main {
-            padding: 3mm 5mm;
+            padding: 3mm 4mm;
+            width: 100%;
+            box-sizing: border-box;
         }
         .photo-container {
             width: 22mm;
             height: 28mm;
             float: left;
-            margin-right: 4mm;
-            border: 0.5mm solid #059669;
+            margin-right: 3mm;
+            border: 0.4mm solid #059669;
+            box-sizing: border-box;
         }
         .photo-container img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
         }
         .member-details {
             float: left;
-            width: 48mm;
+            width: 50mm;
         }
         .name-tag h2 {
             margin: 0;
-            font-size: 3.5mm;
+            font-size: 3.2mm;
             color: #111827;
+            line-height: 1.1;
         }
         .name-tag span {
-            font-size: 2mm;
+            font-size: 1.8mm;
             color: #059669;
             font-weight: bold;
             text-transform: uppercase;
+            display: block;
+            margin-top: 0.5mm;
         }
         .info-grid {
-            margin-top: 2mm;
+            margin-top: 1.5mm;
         }
         .info-item {
-            margin-bottom: 1mm;
+            margin-bottom: 0.8mm;
         }
         .info-item label {
             display: block;
-            font-size: 1.5mm;
+            font-size: 1.3mm;
             color: #6b7280;
             text-transform: uppercase;
+            margin-bottom: 0.2mm;
         }
         .info-item p {
             margin: 0;
-            font-size: 2mm;
+            font-size: 1.8mm;
             font-weight: bold;
             color: #111827;
+            line-height: 1;
         }
         .valid-thru {
-            margin-top: 2mm;
-            font-size: 1.8mm;
+            margin-top: 1.5mm;
+            font-size: 1.6mm;
             font-weight: bold;
             color: #ef4444;
         }
@@ -95,35 +119,40 @@
         .card-back {
             background: #111827;
             color: white;
-            padding: 4mm 5mm;
+            padding: 4mm 4mm;
+            box-sizing: border-box;
         }
         .back-title h3 {
             margin: 0;
-            font-size: 2.5mm;
+            font-size: 2.2mm;
             color: #fbbf24;
             text-transform: uppercase;
         }
         .qr-section {
-            margin-top: 3mm;
+            margin-top: 2.5mm;
+            width: 100%;
+            display: table;
         }
         .qr-box {
             width: 20mm;
             height: 20mm;
             background: white;
             padding: 1mm;
-            float: left;
+            display: table-cell;
+            vertical-align: top;
         }
         .terms {
-            float: left;
-            width: 48mm;
-            margin-left: 3mm;
-            font-size: 1.5mm;
+            display: table-cell;
+            vertical-align: top;
+            padding-left: 3mm;
+            font-size: 1.4mm;
             color: #9ca3af;
+            line-height: 1.4;
         }
-        .terms strong { color: white; display: block; margin-bottom: 0.5mm; }
+        .terms strong { color: white; display: block; margin-bottom: 0.5mm; font-size: 1.6mm; }
         .signature-section {
-            margin-top: 4mm;
-            clear: both;
+            margin-top: 3mm;
+            width: 100%;
         }
         .sig-box {
             width: 35mm;
@@ -134,13 +163,13 @@
             border-top: 0.1mm solid #fff;
             margin-bottom: 0.5mm;
         }
-        .sig-label { font-size: 1.5mm; opacity: 0.7; }
+        .sig-label { font-size: 1.4mm; opacity: 0.7; }
         .footer-text {
             position: absolute;
             bottom: 2mm;
             width: 100%;
             text-align: center;
-            font-size: 1.6mm;
+            font-size: 1.5mm;
             color: #059669;
         }
     </style>
@@ -188,7 +217,7 @@
         </div>
     </div>
 
-    <div style="page-break-after: always;"></div>
+    <div class="page-break"></div>
 
     <!-- BACK -->
     <div class="id-card card-back">
@@ -204,7 +233,7 @@
                     $qrContent .= "NAME: " . $member->full_name . "\n";
                     $qrContent .= "REG NO: " . $member->registration_number;
                 @endphp
-                <img src="data:image/png;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(100)->margin(0)->generate($qrContent)) !!} ">
+                <img src="data:image/png;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(80)->margin(0)->generate($qrContent)) !!} " style="width: 18mm; height: 18mm;">
             </div>
             <div class="terms">
                 <strong>Terms & Conditions</strong>

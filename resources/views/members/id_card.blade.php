@@ -22,10 +22,12 @@
     .id-card-container {
         font-family: 'Montserrat', sans-serif;
         display: flex;
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
         gap: 30px;
-        padding: 20px;
+        padding: 40px 20px;
+        flex-wrap: wrap;
     }
 
     .id-card {
