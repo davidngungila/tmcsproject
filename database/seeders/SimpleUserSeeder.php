@@ -27,8 +27,15 @@ class SimpleUserSeeder extends Seeder
                 'is_active' => true,
             ]
         );
-        $adminRole = Role::where('name', 'chaplain')->first();
-        if ($adminRole && !$admin->roles()->where('role_id', $adminRole->id)->exists()) {
+        
+        // Ensure 'chaplain' (Super Admin) role exists
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'chaplain'],
+            ['display_name' => 'Chaplain', 'description' => 'Full system access', 'is_active' => true]
+        );
+
+        // Assign Chaplain role to Admin User
+        if (!$admin->roles()->where('role_id', $adminRole->id)->exists()) {
             $admin->roles()->attach($adminRole->id);
         }
 
