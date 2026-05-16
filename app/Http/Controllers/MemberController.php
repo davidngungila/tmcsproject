@@ -218,13 +218,21 @@ class MemberController extends Controller
         // 3. Activate Group Memberships
         $member->groups()->updateExistingPivot($member->groups->pluck('id'), ['is_active' => true]);
 
-        // 4. Send Notification (Optional but recommended)
+        // 4. Send Notifications
         if ($member->phone) {
             try {
                 $smsMessage = "Congratulations {$member->full_name}! Your TMCS account has been approved. Your ID is {$member->registration_number}. You can now login to your portal.";
                 $this->messagingService->sendSms($member->phone, $smsMessage);
             } catch (\Exception $e) {
-                // Log and continue
+                \Illuminate\Support\Facades\Log::error("Failed to send approval SMS: " . $e->getMessage());
+            }
+        }
+
+        if ($member->email) {
+            try {
+                Mail::to($member->email)->send(new WelcomeMemberMailable($member, '******'));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send welcome email on approval: " . $e->getMessage());
             }
         }
 
