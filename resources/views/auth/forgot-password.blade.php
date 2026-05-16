@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - TmcsSmart</title>
+  <title>Forgot Password - TmcsSmart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -109,6 +109,17 @@
       margin-top: -0.5rem;
       margin-bottom: 1rem;
     }
+    .alert {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      font-size: 13px;
+    }
+    .alert-danger {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fee2e2;
+    }
   </style>
 </head>
 <body>
@@ -116,43 +127,31 @@
     <div class="card">
       <div class="brand-logo">TM</div>
       
-      <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem;">Welcome Back</h2>
-      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.875rem; line-height: 1.5;">Sign in to TmcsSmart Church Management System</p>
+      <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem;">Reset Password</h2>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.875rem; line-height: 1.5;">Enter your email address and we'll send you a new password.</p>
       
-      @if(session('success'))
-        <div style="background: #ecfdf5; color: #065f46; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 13px; border: 1px solid #d1fae5;">
-          {{ session('success') }}
+      @if(session('error'))
+        <div class="alert alert-danger">
+          {{ session('error') }}
         </div>
       @endif
 
-      <form method="POST" action="{{ route('login.post') }}">
+      <form method="POST" action="{{ route('password.email') }}">
         @csrf
         
-        <div style="margin-bottom: 1.25rem;">
+        <div style="margin-bottom: 1.5rem;">
           <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="Enter your email" required autofocus style="margin-bottom: 0;">
+          <input type="email" name="email" class="form-control" placeholder="Enter your registered email" required autofocus style="margin-bottom: 0;">
           @error('email')
             <div class="error" style="margin-top: 0.5rem; margin-bottom: 0;">{{ $message }}</div>
           @enderror
         </div>
         
-        <div style="margin-bottom: 0.5rem;">
-          <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Enter password" required style="margin-bottom: 0;">
-          @error('password')
-            <div class="error" style="margin-top: 0.5rem; margin-bottom: 0;">{{ $message }}</div>
-          @enderror
-        </div>
-
-        <div style="text-align: right; margin-bottom: 1.5rem;">
-          <a href="{{ route('password.request') }}" style="color: var(--text-secondary); font-size: 12px; text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--green-600)'" onmouseout="this.style.color='var(--text-secondary)'">Forgot Password?</a>
-        </div>
-        
-        <button type="submit" class="btn" style="padding: 14px; font-size: 15px;">Sign In</button>
+        <button type="submit" class="btn" style="padding: 14px; font-size: 15px; font-weight: 700;">Send New Password</button>
       </form>
 
       <div style="text-align: center; margin-top: 2rem; font-size: 13px;">
-        <p style="color: var(--text-secondary);">Don't have an account? <a href="{{ route('register') }}" style="color: var(--green-600); font-weight: 700; text-decoration: none;">Register here</a></p>
+        <p style="color: var(--text-secondary);">Remember your password? <a href="{{ route('login') }}" style="color: var(--green-600); font-weight: 700; text-decoration: none;">Sign In here</a></p>
       </div>
     </div>
     

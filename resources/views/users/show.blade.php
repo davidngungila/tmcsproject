@@ -93,7 +93,7 @@
       </div>
 
       <!-- ACCOUNT SECURITY -->
-      @if(auth()->user()->hasPermission('users.edit'))
+
       <div class="card bg-white shadow-sm p-6 border-l-4 border-l-amber-500">
         <h4 class="text-xs font-black uppercase tracking-widest text-primary border-b pb-3 mb-4">Account Security</h4>
         <p class="text-xs text-muted mb-4">Reset the user's password to a random string and send it via email.</p>
@@ -108,7 +108,7 @@
           </button>
         </form>
       </div>
-      @endif
+     
     </div>
 
     <!-- ACTIVITY & LOGS -->

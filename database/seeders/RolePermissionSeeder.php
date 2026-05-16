@@ -18,10 +18,10 @@ class RolePermissionSeeder extends Seeder
         // 1. Get all permissions
         $allPermissions = Permission::all();
 
-        // 2. Assign ALL permissions to Chaplain (Super Admin)
-        $chaplain = Role::where('name', 'chaplain')->first();
-        if ($chaplain) {
-            $chaplain->permissions()->sync($allPermissions->pluck('id'));
+        // 2. Assign ALL permissions to Chaplain, Administrator and Admin (Super Admins)
+        $superAdminRoles = Role::whereIn('name', ['chaplain', 'administrator', 'admin'])->get();
+        foreach ($superAdminRoles as $role) {
+            $role->permissions()->sync($allPermissions->pluck('id'));
         }
 
         // 3. Chairperson Permissions

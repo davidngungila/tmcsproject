@@ -14,6 +14,16 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
+                'name' => 'Admin User',
+                'email' => 'admin@tmcssmart.com',
+                'password' => bcrypt('password'),
+                'phone' => '+1234567899',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+                'role' => 'administrator',
+            ],
+            [
                 'name' => 'Fr. John Chaplain',
                 'email' => 'chaplain@tmcssmart.com',
                 'password' => bcrypt('password'),

@@ -14,6 +14,14 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             [
+                'name' => 'administrator',
+                'display_name' => 'Administrator',
+                'description' => 'System administrator with full access to all settings and configurations',
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
                 'name' => 'chaplain',
                 'display_name' => 'Chaplain',
                 'description' => 'Full access to all modules and features',

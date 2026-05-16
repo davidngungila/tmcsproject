@@ -41,13 +41,23 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem 0;
+      padding: 1.5rem;
     }
     h1,h2,h3,h4,h5 { font-family: 'Sora', sans-serif; }
     .registration-container {
       width: 100%;
       max-width: 800px;
-      padding: 2rem;
+    }
+    @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+      .registration-container {
+        padding: 0;
+      }
+      .card-body {
+        padding: 1.5rem !important;
+      }
     }
     .brand-logo {
       width: 60px; height: 60px;
@@ -95,9 +105,9 @@
       color: #fff;
       border: none;
       border-radius: 10px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
       transition: all .15s;
     }
@@ -144,11 +154,11 @@
   <div class="registration-container">
     <div class="brand-logo">TM</div>
     
-    <h2 style="text-align: center; margin-bottom: 0.5rem;">Join TmcsSmart</h2>
-    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">Register your self to our Church Management System</p>
+    <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.75rem;">Join TmcsSmart</h2>
+    <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.9375rem; line-height: 1.5;">Register yourself to our Church Management System</p>
     
     <div class="card">
-      <div style="padding: 2rem;">
+      <div class="card-body" style="padding: 2.5rem 2rem;">
         <form method="POST" action="{{ route('register.post') }}">
           @csrf
           

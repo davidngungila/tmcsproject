@@ -7,11 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use App\Models\User;
 use App\Models\Member;
 use App\Models\Group;
 use App\Models\MemberCategory;
 use Illuminate\Support\Str;
+use App\Mail\PasswordResetMailable;
 
 class AuthController extends Controller
 {
@@ -21,6 +23,43 @@ class AuthController extends Controller
     public function showLoginForm()
     {
         return view('auth.login');
+    }
+
+    /**
+     * Show the forgot password form.
+     */
+    public function showForgotPasswordForm()
+    {
+        return view('auth.forgot-password');
+    }
+
+    /**
+     * Send a new password to the user's email.
+     */
+    public function sendResetPasswordEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        // 1. Generate a random secure password
+        $newPassword = Str::random(10);
+
+        // 2. Update user record
+        $user->update([
+            'password' => Hash::make($newPassword),
+            'force_password_change' => true, // Force change on next login
+        ]);
+
+        // 3. Send notification email
+        try {
+            Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to send forgot password email to {$user->email}: " . $e->getMessage());
+            return back()->with('error', 'Failed to send reset email. Please contact the administrator.');
+        }
+
+        return redirect()->route('login')->with('success', 'A new password has been sent to your email address.');
     }
 
     /**
