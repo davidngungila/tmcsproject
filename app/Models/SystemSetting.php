@@ -24,11 +24,13 @@ class SystemSetting extends Model
         if (!$setting) return $default;
 
         switch ($setting->type) {
-            'boolean':
+            case 'boolean':
+
+
                 return filter_var($setting->value, FILTER_VALIDATE_BOOLEAN);
-            'integer':
+            case 'integer':
                 return (int) $setting->value;
-            'json':
+            case 'json':
                 return json_decode($setting->value, true);
             default:
                 return $setting->value;

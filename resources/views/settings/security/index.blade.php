@@ -22,24 +22,24 @@
               <div class="form-group">
                 <label class="text-[10px] font-black uppercase tracking-widest text-muted block mb-2">Two-Factor Authentication (2FA)</label>
                 <select name="settings[enable_2fa]" class="form-control">
-                  <option value="1" {{ SystemSetting::get('enable_2fa') == '1' ? 'selected' : '' }}>Enabled (Recommended)</option>
-                  <option value="0" {{ SystemSetting::get('enable_2fa') == '0' ? 'selected' : '' }}>Disabled</option>
+                  <option value="1" {{ \App\Models\SystemSetting::get('enable_2fa') == '1' ? 'selected' : '' }}>Enabled (Recommended)</option>
+                  <option value="0" {{ \App\Models\SystemSetting::get('enable_2fa') == '0' ? 'selected' : '' }}>Disabled</option>
                 </select>
               </div>
 
               <div class="form-group">
                 <label class="text-[10px] font-black uppercase tracking-widest text-muted block mb-2">Session Timeout (Minutes)</label>
-                <input type="number" name="settings[session_timeout]" class="form-control" value="{{ SystemSetting::get('session_timeout', 120) }}">
+                <input type="number" name="settings[session_timeout]" class="form-control" value="{{ \App\Models\SystemSetting::get('session_timeout', 120) }}">
               </div>
 
               <div class="form-group">
                 <label class="text-[10px] font-black uppercase tracking-widest text-muted block mb-2">Max Login Attempts</label>
-                <input type="number" name="settings[max_login_attempts]" class="form-control" value="{{ SystemSetting::get('max_login_attempts', 5) }}">
+                <input type="number" name="settings[max_login_attempts]" class="form-control" value="{{ \App\Models\SystemSetting::get('max_login_attempts', 5) }}">
               </div>
 
               <div class="form-group">
                 <label class="text-[10px] font-black uppercase tracking-widest text-muted block mb-2">Lockout Duration (Minutes)</label>
-                <input type="number" name="settings[lockout_duration]" class="form-control" value="{{ SystemSetting::get('lockout_duration', 30) }}">
+                <input type="number" name="settings[lockout_duration]" class="form-control" value="{{ \App\Models\SystemSetting::get('lockout_duration', 30) }}">
               </div>
             </div>
 
@@ -76,7 +76,7 @@
           </form>
 
           <div class="mt-6 space-y-2">
-            @php $blocked = SystemSetting::get('blocked_ips', []); @endphp
+            @php $blocked = \App\Models\SystemSetting::get('blocked_ips', []); @endphp
             @forelse($blocked as $ip)
             <div class="flex items-center justify-between p-3 bg-muted/5 rounded-lg border text-xs">
               <span class="font-mono">{{ $ip }}</span>
