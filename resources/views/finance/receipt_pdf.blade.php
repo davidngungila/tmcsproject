@@ -95,7 +95,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">TMCS Smart Church</div>
+            <div class="logo">ST. JOSEPH THE WORKER CHAPLAINCY</div>
+            <div style="font-size: 14px; color: #16a34a; font-weight: bold; margin-top: 5px;">CATHOLIC COMMUNITY OF MOSHI CO-OPERATIVE UNIVERSITY</div>
             <div class="receipt-title">OFFICIAL PAYMENT RECEIPT</div>
         </div>
 

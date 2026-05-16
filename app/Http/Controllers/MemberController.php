@@ -203,7 +203,14 @@ class MemberController extends Controller
 
     public function idCard(Member $member)
     {
-        $member->load('groups');
+        $member->load(['groups', 'category']);
+
+        if (request()->has('download')) {
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('members.id_card_pdf', compact('member'))
+                ->setPaper([0, 0, 242.65, 153.01], 'portrait'); // CR80 Size in points
+            return $pdf->download("ID_Card_{$member->registration_number}.pdf");
+        }
+
         return view('members.id_card', compact('member'));
     }
 
