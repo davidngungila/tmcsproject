@@ -43,9 +43,46 @@ class ContributionTypeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ContributionType $contributionType)
+    public function show(ContributionType $type, Request $request)
     {
-        return view('finance.types.show', compact('contributionType'));
+        $query = $type->contributions()->with('member');
+
+        // Filtering
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('receipt_number', 'like', "%$search%")
+                  ->orWhereHas('member', function($mq) use ($search) {
+                      $mq->where('full_name', 'like', "%$search%");
+                  });
+            });
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('contribution_date', $request->date);
+        }
+
+        $contributions = $query->latest()->paginate(15);
+        
+        // Statistics
+        $totalCollected = $type->contributions()->sum('amount');
+        $thisMonth = $type->contributions()->whereMonth('contribution_date', now()->month)->sum('amount');
+        $thisYear = $type->contributions()->whereYear('contribution_date', now()->year)->sum('amount');
+        
+        // Chart Data (Last 6 Months)
+        $monthlyTrend = $type->contributions()
+            ->selectRaw('MONTH(contribution_date) as month, SUM(amount) as total')
+            ->whereYear('contribution_date', date('Y'))
+            ->groupBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        $chartData = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $chartData[] = $monthlyTrend[$i] ?? 0;
+        }
+
+        return view('finance.types.show', compact('type', 'contributions', 'totalCollected', 'thisMonth', 'thisYear', 'chartData'));
     }
 
     /**

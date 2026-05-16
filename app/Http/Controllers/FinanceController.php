@@ -12,6 +12,9 @@ use App\Mail\ContributionReceiptMailable;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+use App\Models\ContributionType;
+use Illuminate\Support\Facades\DB;
+
 class FinanceController extends Controller
 {
     protected $snipeService;
@@ -23,16 +26,76 @@ class FinanceController extends Controller
         $this->messagingService = $messagingService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $contributions = Contribution::with('member')->latest()->paginate(10);
+        $query = Contribution::with('member');
+
+        // Time Filters
+        $period = $request->get('period', 'month'); // week, month, year, all
+        if ($period == 'week') {
+            $query->whereBetween('contribution_date', [now()->startOfWeek(), now()->endOfWeek()]);
+        } elseif ($period == 'month') {
+            $query->whereMonth('contribution_date', now()->month)
+                  ->whereYear('contribution_date', now()->year);
+        } elseif ($period == 'year') {
+            $query->whereYear('contribution_date', now()->year);
+        }
+
+        // Search & Other Filters
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('receipt_number', 'like', "%$search%")
+                  ->orWhereHas('member', function($mq) use ($search) {
+                      $mq->where('full_name', 'like', "%$search%")
+                        ->orWhere('registration_number', 'like', "%$search%");
+                  });
+            });
+        }
+
+        if ($request->filled('type')) {
+            $query->where('contribution_type', $request->type);
+        }
+
+        if ($request->filled('method')) {
+            $query->where('payment_method', $request->method);
+        }
+
+        if ($request->filled('date')) {
+            $query->whereDate('contribution_date', $request->date);
+        }
+
+        $contributions = $query->latest()->paginate(15);
         $totalContributions = Contribution::sum('amount');
         $thisMonthContributions = Contribution::whereMonth('contribution_date', now()->month)->sum('amount');
         $pendingReceipts = Contribution::where('is_verified', false)->count();
         $contributionsCount = Contribution::count();
 
-        // Data for monthly chart
-        $monthlyContributions = Contribution::selectRaw('MONTH(contribution_date) as month, SUM(amount) as total')
+        // Data for Pie Chart (Distribution by Type)
+        $typeDistribution = Contribution::select('contribution_type', DB::raw('SUM(amount) as total'))
+            ->groupBy('contribution_type')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'label' => ucfirst(str_replace('_', ' ', $item->contribution_type)),
+                    'value' => (float)$item->total
+                ];
+            });
+
+        // Data for Trend Line Chart
+        $trendQuery = Contribution::selectRaw('DATE(contribution_date) as date, SUM(amount) as total')
+            ->where('contribution_date', '>=', now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
+        $trendData = [
+            'labels' => $trendQuery->pluck('date')->map(fn($d) => date('M d', strtotime($d)))->toArray(),
+            'values' => $trendQuery->pluck('total')->toArray()
+        ];
+
+        // Monthly Summary for Comparison
+        $monthlySummary = Contribution::selectRaw('MONTH(contribution_date) as month, SUM(amount) as total')
             ->whereYear('contribution_date', date('Y'))
             ->groupBy('month')
             ->orderBy('month')
@@ -40,13 +103,16 @@ class FinanceController extends Controller
             ->toArray();
 
         $chartData = array_fill(1, 12, 0);
-        foreach ($monthlyContributions as $month => $total) {
+        foreach ($monthlySummary as $month => $total) {
             $chartData[$month] = (float)$total;
         }
+
+        $contributionTypes = ContributionType::where('is_active', true)->get();
         
         return view('finance.index', compact(
             'contributions', 'totalContributions', 'thisMonthContributions', 
-            'pendingReceipts', 'contributionsCount', 'chartData'
+            'pendingReceipts', 'contributionsCount', 'chartData', 'typeDistribution', 
+            'trendData', 'contributionTypes', 'period'
         ));
     }
 
