@@ -1029,7 +1029,7 @@
         </div>
         @endif
 
-        @if(auth()->user()->hasPermission('system.settings'))
+      
         <div class="nav-section-label">Administrator</div>
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('settings*') ? 'open' : '' }}">
@@ -1045,7 +1045,7 @@
             <a href="{{ route('settings.index') }}" class="dropdown-item {{ request()->is('settings') ? 'active' : '' }}">General Config</a>
           </div>
         </div>
-        @endif
+   
       </div>
 
       <!-- SIDEBAR FOOTER REMOVED -->

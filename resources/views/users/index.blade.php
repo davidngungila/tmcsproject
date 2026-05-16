@@ -118,15 +118,15 @@
 </div>
 
 <!-- RESET PASSWORD MODAL -->
-<div id="resetPasswordModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in">
-    <div class="p-6 border-b flex items-center justify-between">
+<div id="resetPasswordModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in">
+    <div class="p-6 border-b flex items-center justify-between bg-muted/5">
       <h3 class="font-bold text-lg">Reset Password</h3>
       <button onclick="closeResetModal()" class="text-muted hover:text-primary">&times;</button>
     </div>
     <form id="resetPasswordForm" method="POST" class="p-6 space-y-4">
       @csrf
-      <p class="text-xs text-muted">Setting a new password for <span id="resetUserName" class="font-bold text-primary"></span>. The user will be forced to change this password on their next login.</p>
+      <p class="text-[11px] text-muted">Setting a new password for <span id="resetUserName" class="font-bold text-primary"></span>. The user will be forced to change this password on their next login.</p>
       
       <div class="form-group">
         <label class="form-label">New Password</label>

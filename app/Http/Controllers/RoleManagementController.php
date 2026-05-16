@@ -15,7 +15,8 @@ class RoleManagementController extends Controller
     public function index()
     {
         $roles = Role::with('permissions')->get();
-        return view('settings.roles.index', compact('roles'));
+        $permissions = Permission::all()->groupBy('module');
+        return view('settings.roles.index', compact('roles', 'permissions'));
     }
 
     /**
