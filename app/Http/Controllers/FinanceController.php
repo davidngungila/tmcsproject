@@ -7,13 +7,20 @@ use App\Models\Member;
 use App\Services\SnipePaymentService;
 use Illuminate\Http\Request;
 
+use App\Services\MessagingService;
+use App\Mail\ContributionReceiptMailable;
+use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class FinanceController extends Controller
 {
     protected $snipeService;
+    protected $messagingService;
 
-    public function __construct(SnipePaymentService $snipeService)
+    public function __construct(SnipePaymentService $snipeService, MessagingService $messagingService)
     {
         $this->snipeService = $snipeService;
+        $this->messagingService = $messagingService;
     }
 
     public function index()
@@ -92,8 +99,11 @@ class FinanceController extends Controller
             ]);
 
             if ($paymentResponse['status'] === 'success') {
-                Contribution::create($contributionData);
+                $contribution = Contribution::create($contributionData);
                 
+                // Send notifications
+                $this->sendContributionNotifications($contribution);
+
                 $message = 'Payment initialized successfully.';
                 if (isset($paymentResponse['data']['payment_url'])) {
                     return redirect($paymentResponse['data']['payment_url']);
@@ -105,9 +115,38 @@ class FinanceController extends Controller
             return back()->with('error', $paymentResponse['message']);
         }
 
-        Contribution::create($contributionData);
+        $contribution = Contribution::create($contributionData);
+
+        // Send notifications
+        $this->sendContributionNotifications($contribution);
 
         return redirect()->route('finance.index')->with('success', 'Contribution recorded successfully');
+    }
+
+    /**
+     * Send SMS and Email notifications for a contribution
+     */
+    protected function sendContributionNotifications(Contribution $contribution)
+    {
+        $member = $contribution->member;
+        $amount = number_format($contribution->amount, 0);
+        $type = ucfirst(str_replace('_', ' ', $contribution->contribution_type));
+        
+        // 1. Send SMS
+        if ($member->phone) {
+            $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
+            $this->messagingService->sendSms($member->phone, $smsMessage);
+        }
+
+        // 2. Send Email with PDF attachment
+        if ($member->email) {
+            try {
+                $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution'))->output();
+                Mail::to($member->email)->send(new ContributionReceiptMailable($contribution, $pdf));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send contribution email: " . $e->getMessage());
+            }
+        }
     }
 
     public function show(Contribution $finance)

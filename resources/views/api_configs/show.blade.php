@@ -153,6 +153,25 @@
 
     <!-- Side Panel: Actions & Status -->
     <div class="space-y-6">
+      <div class="card bg-blue-600 text-white overflow-hidden relative">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+        <div class="card-body relative z-10">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.407 2.631 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.407-2.631-1M12 16v-1m4-4V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <div>
+              <div class="text-[10px] font-bold uppercase tracking-wider opacity-80">SMS Wallet Balance</div>
+              <div class="text-2xl font-black" id="smsBalanceDisplay">Fetching...</div>
+            </div>
+          </div>
+          <button onclick="refreshBalance()" class="w-full py-2 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2">
+            <svg id="refreshIcon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Refresh Balance
+          </button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header">
           <div class="card-title">Service Connectivity</div>
@@ -183,16 +202,37 @@
             <form action="{{ route('api-configs.test', $apiConfig->id) }}" method="POST" class="space-y-3">
               @csrf
               <div class="space-y-2">
+                <label class="text-[10px] font-bold text-muted uppercase">Test Type</label>
+                <select name="test_type" class="form-control text-sm py-2" onchange="toggleTestFields(this.value)">
+                  <option value="SMS" {{ $apiConfig->provider_type === 'SMS' ? 'selected' : '' }}>SMS Message</option>
+                  <option value="Email" {{ $apiConfig->provider_type === 'Email' ? 'selected' : '' }}>Email Message</option>
+                  @if($apiConfig->provider_type === 'Payment')
+                  <option value="Payment" selected>Payment Transaction</option>
+                  @endif
+                </select>
+              </div>
+
+              <div id="phone_field" class="space-y-2">
                 <label class="text-[10px] font-bold text-muted uppercase">Test Phone Number</label>
-                <input type="text" name="test_phone" value="0622239304" placeholder="255XXXXXXXXX" class="form-control text-sm py-2" required>
+                <input type="text" name="test_phone" placeholder="e.g. 0622239304" class="form-control text-sm py-2">
+              </div>
+
+              <div id="email_field" class="space-y-2" style="display: none;">
+                <label class="text-[10px] font-bold text-muted uppercase">Test Email Address</label>
+                <input type="email" name="test_email" placeholder="e.g. davidngungila@gmail.com" class="form-control text-sm py-2">
               </div>
 
               @if($apiConfig->provider_type === 'Payment')
-              <div class="space-y-2">
+              <div id="payment_field" class="space-y-2">
                 <label class="text-[10px] font-bold text-muted uppercase">Test Amount (TZS)</label>
-                <input type="number" name="test_amount" value="500" class="form-control text-sm py-2" required>
+                <input type="number" name="test_amount" placeholder="e.g. 500" class="form-control text-sm py-2">
               </div>
               @endif
+
+              <div class="space-y-2">
+                <label class="text-[10px] font-bold text-muted uppercase">Message Content</label>
+                <textarea name="test_message" rows="2" class="form-control text-sm py-2" placeholder="Enter your test message here..."></textarea>
+              </div>
 
               <button type="submit" class="btn btn-secondary w-full py-3 flex items-center justify-center gap-2 hover:bg-gray-100 transition-all border-2 border-gray-200 shadow-sm">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -201,6 +241,7 @@
             </form>
             <p class="text-[10px] text-center text-muted">Performs a real-time handshake or transaction test with the provider endpoint.</p>
           </div>
+
         </div>
       </div>
 
@@ -229,4 +270,70 @@
     </div>
   </div>
 </div>
+
+@push('scripts')
+<script>
+  async function refreshBalance() {
+    const display = document.getElementById('smsBalanceDisplay');
+    const icon = document.getElementById('refreshIcon');
+    
+    icon.classList.add('animate-spin');
+    display.classList.add('opacity-50');
+    
+    try {
+      const response = await fetch("{{ route('api-configs.balance', $apiConfig->id) }}");
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        display.textContent = result.data.display || (result.data.sms_balance + ' SMS');
+        display.classList.remove('text-red-200');
+      } else {
+        display.textContent = 'Error';
+        display.classList.add('text-red-200');
+        console.error(result.message);
+      }
+    } catch (error) {
+      display.textContent = 'Failed';
+      display.classList.add('text-red-200');
+      console.error(error);
+    } finally {
+      icon.classList.remove('animate-spin');
+      display.classList.remove('opacity-50');
+    }
+  }
+
+  // Initialize on load if SMS
+  @if($apiConfig->provider_type === 'SMS')
+    document.addEventListener('DOMContentLoaded', refreshBalance);
+  @endif
+
+  function toggleTestFields(type) {
+    const phoneField = document.getElementById('phone_field');
+    const emailField = document.getElementById('email_field');
+    const paymentField = document.getElementById('payment_field');
+
+    if (type === 'Email') {
+      phoneField.style.display = 'none';
+      emailField.style.display = 'block';
+      if (paymentField) paymentField.style.display = 'none';
+    } else if (type === 'SMS') {
+      phoneField.style.display = 'block';
+      emailField.style.display = 'none';
+      if (paymentField) paymentField.style.display = 'none';
+    } else if (type === 'Payment') {
+      phoneField.style.display = 'block';
+      emailField.style.display = 'none';
+      if (paymentField) paymentField.style.display = 'block';
+    }
+  }
+
+  // Initialize correct fields on load
+  document.addEventListener('DOMContentLoaded', function() {
+    const testTypeSelect = document.querySelector('select[name="test_type"]');
+    if (testTypeSelect) {
+      toggleTestFields(testTypeSelect.value);
+    }
+  });
+</script>
+@endpush
 @endsection

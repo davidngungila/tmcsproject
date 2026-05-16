@@ -63,18 +63,30 @@ class CommunicationController extends Controller
         ]);
 
         $recipients = [];
+        $emailRecipients = [];
+
         if ($validated['recipient_type'] === 'All') {
             $recipients = Member::whereNotNull('phone')->pluck('phone')->toArray();
+            $emailRecipients = Member::whereNotNull('email')->pluck('email')->toArray();
         } elseif ($validated['recipient_type'] === 'Group') {
-            $recipients = Group::find($request->group_id)->members()->whereNotNull('phone')->pluck('phone')->toArray();
+            $group = Group::find($request->group_id);
+            $recipients = $group->members()->whereNotNull('phone')->pluck('phone')->toArray();
+            $emailRecipients = $group->members()->whereNotNull('email')->pluck('email')->toArray();
         } elseif ($validated['recipient_type'] === 'Individual') {
-            $recipients = [Member::find($request->member_id)->phone];
+            $member = Member::find($request->member_id);
+            $recipients = [$member->phone];
+            $emailRecipients = [$member->email];
         }
 
         $recipients = array_filter($recipients); // Remove nulls
+        $emailRecipients = array_filter($emailRecipients); // Remove nulls
 
-        if (empty($recipients) && $validated['type'] !== 'Email') {
+        if ($validated['type'] === 'SMS' && empty($recipients)) {
             return back()->with('error', 'No valid phone numbers found for the selected recipients.');
+        }
+
+        if ($validated['type'] === 'Email' && empty($emailRecipients)) {
+            return back()->with('error', 'No valid email addresses found for the selected recipients.');
         }
 
         $validated['sent_by'] = auth()->id();
@@ -83,24 +95,36 @@ class CommunicationController extends Controller
 
         $communication = Communication::create($validated);
 
-        if ($validated['type'] === 'SMS') {
-            $smsResponse = $this->messagingService->sendSms($recipients, $validated['message']);
-            if ($smsResponse['status'] === 'success') {
+        try {
+            if ($validated['type'] === 'SMS') {
+                $smsResponse = $this->messagingService->sendSms($recipients, $validated['message']);
+                if ($smsResponse['status'] === 'success') {
+                    $communication->update(['status' => 'Sent']);
+                } else {
+                    $communication->update(['status' => 'Failed']);
+                    return back()->with('error', 'SMS sending failed: ' . $smsResponse['message']);
+                }
+            } elseif ($validated['type'] === 'WhatsApp') {
+                $waResponse = $this->messagingService->sendWhatsApp($recipients, $validated['message']);
+                if ($waResponse['status'] === 'success') {
+                    $communication->update(['status' => 'Sent']);
+                } else {
+                    $communication->update(['status' => 'Failed']);
+                }
+            } elseif ($validated['type'] === 'Email') {
+                $subject = $validated['subject'];
+                $content = $validated['message'];
+                
+                \Illuminate\Support\Facades\Mail::raw($content, function ($message) use ($emailRecipients, $subject) {
+                    $message->to($emailRecipients)
+                            ->subject($subject);
+                });
+                
                 $communication->update(['status' => 'Sent']);
-            } else {
-                $communication->update(['status' => 'Failed']);
-                return back()->with('error', 'SMS sending failed: ' . $smsResponse['message']);
             }
-        } elseif ($validated['type'] === 'WhatsApp') {
-            $waResponse = $this->messagingService->sendWhatsApp($recipients, $validated['message']);
-            if ($waResponse['status'] === 'success') {
-                $communication->update(['status' => 'Sent']);
-            } else {
-                $communication->update(['status' => 'Failed']);
-            }
-        } elseif ($validated['type'] === 'Email') {
-            // Email logic would go here
-            $communication->update(['status' => 'Sent']);
+        } catch (\Exception $e) {
+            $communication->update(['status' => 'Failed']);
+            return back()->with('error', 'Communication failed: ' . $e->getMessage());
         }
 
         return redirect()->route('communications.index')->with('success', 'Message processed successfully');

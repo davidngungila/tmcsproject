@@ -12,8 +12,19 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 
+use App\Services\MessagingService;
+use App\Mail\WelcomeMemberMailable;
+use Illuminate\Support\Facades\Mail;
+
 class MemberController extends Controller
 {
+    protected $messagingService;
+
+    public function __construct(MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
     public function index()
     {
         $members = Member::with(['groups', 'category'])->paginate(10);
@@ -93,7 +104,32 @@ class MemberController extends Controller
             $member->groups()->attach($request->groups, ['join_date' => now(), 'is_active' => true]);
         }
 
+        // Send Welcome Notifications
+        $this->sendWelcomeNotifications($member, $password ?? null);
+
         return redirect()->route('members.index')->with('success', 'Member registered successfully. User account created (Username: ' . $member->email . ')');
+    }
+
+    /**
+     * Send welcome SMS and Email to new member
+     */
+    protected function sendWelcomeNotifications(Member $member, $password = null)
+    {
+        // 1. Send SMS
+        if ($member->phone) {
+            $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
+            $this->messagingService->sendSms($member->phone, $smsMessage);
+        }
+
+        // 2. Send Welcome Email
+        if ($member->email) {
+            try {
+                // If no password provided (e.g. member already had a user), we don't send credentials
+                Mail::to($member->email)->send(new WelcomeMemberMailable($member, $password ?? '******'));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send welcome email: " . $e->getMessage());
+            }
+        }
     }
 
     public function show(Member $member)

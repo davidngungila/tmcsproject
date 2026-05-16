@@ -8,6 +8,23 @@ use Illuminate\Support\Facades\Http;
 
 class ApiConfigController extends Controller
 {
+    protected $messagingService;
+
+    public function __construct(\App\Services\MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
+    public function getBalance(ApiConfig $apiConfig)
+    {
+        if ($apiConfig->provider_type !== 'SMS') {
+            return response()->json(['status' => 'error', 'message' => 'Not an SMS provider']);
+        }
+
+        $result = $this->messagingService->getBalance();
+        return response()->json($result);
+    }
+
     public function index()
     {
         $configs = ApiConfig::paginate(10);
@@ -19,17 +36,37 @@ class ApiConfigController extends Controller
      */
     public function testConnection(Request $request, ApiConfig $apiConfig)
     {
-        $phone = $request->input('test_phone', '0622239304');
-        $amount = $request->input('test_amount', 500);
+        $type = $request->input('test_type', $apiConfig->provider_type);
+        $phone = $request->input('test_phone');
+        $email = $request->input('test_email');
+        $amount = $request->input('test_amount');
+        $message = $request->input('test_message');
 
-        // Normalize phone to 255XXXXXXXXX format
-        $normalizedPhone = preg_replace('/^0/', '255', $phone);
-        if (!str_starts_with($normalizedPhone, '255')) {
-            $normalizedPhone = '255' . $normalizedPhone;
+        // Validation for required fields based on type
+        if ($type === 'SMS' && empty($phone)) {
+            return back()->with('error', 'Phone number is required for SMS test.');
+        }
+        if ($type === 'Email' && empty($email)) {
+            return back()->with('error', 'Email address is required for Email test.');
+        }
+        if ($type === 'Payment' && empty($amount)) {
+            return back()->with('error', 'Amount is required for Payment test.');
+        }
+        if (empty($message) && $type !== 'Payment') {
+            return back()->with('error', 'Message content is required.');
+        }
+
+        // Normalize phone to 255XXXXXXXXX format if provided
+        $normalizedPhone = null;
+        if ($phone) {
+            $normalizedPhone = preg_replace('/^0/', '255', $phone);
+            if (!str_starts_with($normalizedPhone, '255')) {
+                $normalizedPhone = '255' . $normalizedPhone;
+            }
         }
 
         try {
-            if ($apiConfig->provider_type === 'SMS') {
+            if ($type === 'SMS') {
                 // Test Messaging Service / NextSMS connection
                 $endpoint = $apiConfig->api_endpoint ?? 'https://messaging-service.co.tz/api/sms/v2/text/single';
                 $endpoint = str_replace('/test/', '/', $endpoint);
@@ -37,15 +74,21 @@ class ApiConfigController extends Controller
                 $response = Http::withoutVerifying()
                     ->withToken($apiConfig->api_key)
                     ->post($endpoint, [
-                        'from' => $apiConfig->sender_id ?? 'TMCS MOCU',
+                        'from' => $apiConfig->sender_id ?? 'TMCS MoCU',
                         'to' => $normalizedPhone,
-                        'text' => 'TMCS Test Message: Connection verified successfully.'
+                        'text' => $message
                     ]);
                 
                 if ($response->successful()) {
                     return back()->with('success', 'SMS Sent Successfully to ' . $phone . '! Provider: ' . $apiConfig->name);
                 }
-            } elseif ($apiConfig->provider_type === 'Payment') {
+            } elseif ($type === 'Email') {
+                \Illuminate\Support\Facades\Mail::raw($message, function ($mail) use ($email) {
+                    $mail->to($email)
+                         ->subject('TMCS API Configuration Test Email');
+                });
+                return back()->with('success', 'Test Email sent successfully to ' . $email);
+            } elseif ($type === 'Payment') {
                 // Test Snippe Payment connection (Initiate Mobile Payment)
                 $response = Http::withoutVerifying()
                     ->withToken($apiConfig->api_key)

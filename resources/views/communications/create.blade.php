@@ -19,14 +19,30 @@
           </div>
           <div class="card-body">
             <div class="form-group">
-              <label class="form-label">Quick Templates</label>
-              <select id="messageTemplate" class="form-control">
-                <option value="">Select a template...</option>
-                @foreach($templates as $template)
-                <option value="{{ $template->content }}" data-subject="{{ $template->subject }}">{{ $template->name }}</option>
-                @endforeach
-              </select>
-              <p class="text-[10px] text-muted mt-1">Selecting a template will populate the message field below.</p>
+              <label class="form-label font-bold text-blue-600 flex items-center gap-2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Advanced Message Templates
+              </label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                <div>
+                  <select id="messageTemplate" class="form-control select2">
+                    <option value="">Choose a pre-defined template...</option>
+                    @foreach($templates as $template)
+                    <option value="{{ $template->content }}" data-subject="{{ $template->subject }}" data-type="{{ $template->type }}">{{ $template->name }} ({{ $template->type }})</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="flex gap-2">
+                  <button type="button" id="editTemplateBtn" class="btn btn-secondary flex-1 opacity-50 cursor-not-allowed" disabled>
+                    <svg width="14" height="14" class="mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Edit & Apply
+                  </button>
+                  <button type="button" id="resetMessageBtn" class="btn btn-light" title="Reset Message">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  </button>
+                </div>
+              </div>
+              <p class="text-[10px] text-muted">Select a template to instantly populate the subject and message body. You can modify them further after selecting.</p>
             </div>
 
             <div class="form-group">
@@ -158,6 +174,9 @@ const charCount = document.getElementById('charCount');
 const smsCount = document.getElementById('smsCount');
 const templateSelect = document.getElementById('messageTemplate');
 const subjectInput = document.querySelector('input[name="subject"]');
+const editTemplateBtn = document.getElementById('editTemplateBtn');
+const resetMessageBtn = document.getElementById('resetMessageBtn');
+const communicationTypes = document.querySelectorAll('input[name="type"]');
 
 document.addEventListener('DOMContentLoaded', function() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -174,13 +193,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
 templateSelect.addEventListener('change', function() {
   if (this.value) {
-    messageArea.value = this.value;
     const selectedOption = this.options[this.selectedIndex];
+    const content = this.value;
     const subject = selectedOption.getAttribute('data-subject');
-    if (subject) {
-      subjectInput.value = subject;
+    const type = selectedOption.getAttribute('data-type');
+
+    messageArea.value = content;
+    if (subject) subjectInput.value = subject;
+    
+    // Auto-select channel if template has a type
+    if (type) {
+      communicationTypes.forEach(radio => {
+        if (radio.value.toUpperCase() === type.toUpperCase()) {
+          radio.checked = true;
+        }
+      });
     }
+
+    // Enable edit button
+    editTemplateBtn.disabled = false;
+    editTemplateBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    
     // Trigger input event to update char count
+    messageArea.dispatchEvent(new Event('input'));
+  } else {
+    editTemplateBtn.disabled = true;
+    editTemplateBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  }
+});
+
+editTemplateBtn.addEventListener('click', function() {
+  if (!templateSelect.value) return;
+  // This button currently just re-applies the template but we can add advanced editing logic if needed
+  messageArea.focus();
+});
+
+resetMessageBtn.addEventListener('click', function() {
+  if (confirm('Are you sure you want to clear the message and subject?')) {
+    messageArea.value = '';
+    subjectInput.value = '';
+    templateSelect.value = '';
+    editTemplateBtn.disabled = true;
+    editTemplateBtn.classList.add('opacity-50', 'cursor-not-allowed');
     messageArea.dispatchEvent(new Event('input'));
   }
 });

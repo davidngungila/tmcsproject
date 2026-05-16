@@ -120,6 +120,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/message-templates/test', [MessageTemplateController::class, 'test'])->name('message-templates.test');
     Route::resource('message-templates', MessageTemplateController::class);
     Route::post('/api-configs/{api_config}/test', [ApiConfigController::class, 'testConnection'])->name('api-configs.test');
+    Route::get('/api-configs/{api_config}/balance', [ApiConfigController::class, 'getBalance'])->name('api-configs.balance');
     Route::resource('api-configs', ApiConfigController::class);
 
     // Events

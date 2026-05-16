@@ -108,6 +108,97 @@ class MessagingService
     }
 
     /**
+     * Get SMS balance from Messaging Service
+     * 
+     * @return array
+     */
+    public function getBalance()
+    {
+        if (!$this->config) {
+            return [
+                'status' => 'error',
+                'message' => 'No active SMS gateway configuration found.',
+            ];
+        }
+
+        try {
+            $endpoint = 'https://messaging-service.co.tz/api/v2/balance';
+            
+            $response = Http::withoutVerifying()
+                ->withToken($this->config->api_key)
+                ->withHeaders([
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ])
+                ->get($endpoint);
+
+            if ($response->successful()) {
+                return [
+                    'status' => 'success',
+                    'data' => $response->json(),
+                ];
+            }
+
+            return [
+                'status' => 'error',
+                'message' => 'Failed to fetch balance (Status: ' . $response->status() . ')',
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'System Error: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get SMS logs from Messaging Service
+     * 
+     * @param array $filters
+     * @return array
+     */
+    public function getLogs(array $filters = [])
+    {
+        if (!$this->config) {
+            return [
+                'status' => 'error',
+                'message' => 'No active SMS gateway configuration found.',
+            ];
+        }
+
+        try {
+            $endpoint = 'https://messaging-service.co.tz/api/v2/logs';
+            
+            $response = Http::withoutVerifying()
+                ->withToken($this->config->api_key)
+                ->withHeaders([
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ])
+                ->get($endpoint, $filters);
+
+            if ($response->successful()) {
+                return [
+                    'status' => 'success',
+                    'data' => $response->json(),
+                ];
+            }
+
+            return [
+                'status' => 'error',
+                'message' => 'Failed to fetch logs (Status: ' . $response->status() . ')',
+            ];
+
+        } catch (\Exception $e) {
+            return [
+                'status' => 'error',
+                'message' => 'System Error: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
      * Send WhatsApp message
      */
     public function sendWhatsApp($recipient, string $message)
