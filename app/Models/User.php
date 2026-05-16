@@ -36,19 +36,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if the user has a specific permission.
-     */
-    public function hasPermission($permissionName)
-    {
-        foreach ($this->roles as $role) {
-            if ($role->permissions()->where('name', $permissionName)->exists()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Get the authentication logs for the user.
      */
     public function authenticationLogs()
@@ -62,6 +49,24 @@ class User extends Authenticatable
     public function activityLogs()
     {
         return $this->hasMany(ActivityLog::class);
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     */
+    public function hasPermission($permissionName)
+    {
+        return $this->roles()->whereHas('permissions', function ($query) use ($permissionName) {
+            $query->where('name', $permissionName);
+        })->exists();
+    }
+
+    /**
+     * Check if user has a specific role.
+     */
+    public function hasRole($roleName)
+    {
+        return $this->roles()->where('name', $roleName)->exists();
     }
 
     /**
@@ -158,31 +163,5 @@ class User extends Authenticatable
     public function communications()
     {
         return $this->hasMany(Communication::class, 'sent_by');
-    }
-
-    /**
-     * Get the activity logs for the user.
-     */
-    public function activityLogs()
-    {
-        return $this->hasMany(ActivityLog::class);
-    }
-
-    /**
-     * Check if user has a specific role.
-     */
-    public function hasRole($roleName)
-    {
-        return $this->roles()->where('name', $roleName)->exists();
-    }
-
-    /**
-     * Check if user has a specific permission.
-     */
-    public function hasPermission($permissionName)
-    {
-        return $this->roles()->whereHas('permissions', function ($query) use ($permissionName) {
-            $query->where('name', $permissionName);
-        })->exists();
     }
 }
