@@ -49,8 +49,8 @@
       </div>
     </div>
 
-    <div class="table-wrap">
-      <table class="w-full">
+    <div class="table-wrap overflow-x-auto">
+      <table class="w-full" style="min-width: 900px;">
         <thead>
           <tr class="bg-muted/5 text-[10px] font-black uppercase tracking-widest text-muted">
             <th class="px-6 py-4 text-left">User</th>
@@ -106,9 +106,14 @@
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 </a>
                 
-                <button type="button" class="p-1.5 rounded-lg text-muted hover:text-purple-600 hover:bg-purple-500/10 transition-all" title="Reset Password" onclick="openResetModal({{ $user->id }}, '{{ $user->name }}')">
-                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 7a2 2 0 012 2m-2 4a2 2 0 012-2m-2-4a2 2 0 01-2-2m-2 4h-3a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2m-2 4h.01"/></svg>
-                </button>
+                <form action="{{ route('users.reset-password', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('⚠️ RESET PASSWORD CONFIRMATION\n\nAre you sure you want to reset the password for {{ $user->name }}?\n\nThis will:\n1. Generate a new random secure password\n2. Update the user account\n3. Send an email notification to {{ $user->email }} with the new credentials.\n\nContinue?')">
+                  @csrf
+                  <button type="submit" class="p-1.5 rounded-lg text-muted hover:text-amber-600 hover:bg-amber-500/10 transition-all" title="Reset Password & Send Email">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                    </svg>
+                  </button>
+                </form>
 
                 <form action="{{ route('users.toggle-status', $user->id) }}" method="POST" class="inline">
                   @csrf
@@ -150,35 +155,6 @@
   </div>
 </div>
 
-<!-- RESET PASSWORD MODAL -->
-<div id="resetPasswordModal" class="fixed inset-0 bg-black/60 hidden z-50 items-center justify-center p-4 backdrop-blur-sm">
-  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in">
-    <div class="p-6 border-b flex items-center justify-between bg-muted/5">
-      <h3 class="font-bold text-lg">Reset Password</h3>
-      <button onclick="closeResetModal()" class="text-muted hover:text-primary">&times;</button>
-    </div>
-    <form id="resetPasswordForm" method="POST" class="p-6 space-y-4">
-      @csrf
-      <p class="text-[11px] text-muted">Setting a new password for <span id="resetUserName" class="font-bold text-primary"></span>. The user will be forced to change this password on their next login.</p>
-      
-      <div class="form-group">
-        <label class="form-label">New Password</label>
-        <input type="password" name="password" class="form-control" placeholder="Min 8 characters" required>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">Confirm New Password</label>
-        <input type="password" name="password_confirmation" class="form-control" placeholder="Repeat new password" required>
-      </div>
-
-      <div class="flex justify-end gap-3 mt-6">
-        <button type="button" onclick="closeResetModal()" class="btn btn-secondary">Cancel</button>
-        <button type="submit" class="btn btn-primary px-8">Reset Password</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 @push('scripts')
 <script>
   // Live Search & Local Filtering
@@ -210,23 +186,6 @@
     if (status) url.searchParams.set('status', status); else url.searchParams.delete('status');
     
     window.location.href = url.toString();
-  }
-
-  function openResetModal(userId, userName) {
-    const modal = document.getElementById('resetPasswordModal');
-    const form = document.getElementById('resetPasswordForm');
-    const nameSpan = document.getElementById('resetUserName');
-    
-    nameSpan.textContent = userName;
-    form.action = `/users/${userId}/reset-password`;
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  }
-
-  function closeResetModal() {
-    const modal = document.getElementById('resetPasswordModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
   }
 </script>
 @endpush

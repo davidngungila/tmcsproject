@@ -6,6 +6,9 @@ use App\Models\User;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\PasswordResetMailable;
 
 class UserController extends Controller
 {
@@ -113,20 +116,28 @@ class UserController extends Controller
     }
 
     /**
-     * Reset user password.
+     * Reset user password to a randomly generated one.
      */
     public function resetPassword(Request $request, User $user)
     {
-        $request->validate([
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+        // 1. Generate a random secure password
+        $newPassword = Str::random(10);
 
+        // 2. Update user record
         $user->update([
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($newPassword),
             'force_password_change' => true, // Force change on next login
         ]);
 
-        return back()->with('success', "Password for {$user->name} has been reset.");
+        // 3. Send notification email
+        try {
+            Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to send password reset email to {$user->email}: " . $e->getMessage());
+            return back()->with('error', "Password reset to [ {$newPassword} ] but email notification failed. Please provide it manually.");
+        }
+
+        return back()->with('success', "Password for {$user->name} has been reset successfully and notification sent to their email.");
     }
 
     /**
