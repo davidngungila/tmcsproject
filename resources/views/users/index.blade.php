@@ -5,42 +5,71 @@
 @section('breadcrumb', 'TmcsSmart / Administration / Users')
 
 @section('content')
-<div class="animate-in">
-  <!-- PAGE HEADER -->
-  <div class="flex items-center justify-between mb-6">
+<div class="animate-in space-y-6">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-      <h2 class="text-lg font-bold">User Management</h2>
-      <p class="text-sm text-muted mt-1">Manage system users and their roles</p>
+      <h2 class="text-2xl font-bold tracking-tight">User Accounts</h2>
+      <p class="text-sm text-muted mt-1">Manage system access, roles, and security for all users.</p>
     </div>
     @if(auth()->user()->hasPermission('users.create'))
     <a href="{{ route('users.create') }}" class="btn btn-primary">
-      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
       Add New User
     </a>
     @endif
   </div>
 
-  <!-- USERS TABLE -->
-  <div class="card">
-    <div class="card-header border-b">
-      <div class="card-title">System Users</div>
+  <div class="card bg-white shadow-sm overflow-hidden">
+    <div class="p-6 border-b bg-muted/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div class="flex-grow max-w-md">
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-muted">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          </span>
+          <input type="text" id="userSearch" placeholder="Search by name, email or phone..." class="form-control pl-10 text-sm" value="{{ request('search') }}">
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <select id="roleFilter" class="form-control text-sm w-40">
+          <option value="">All Roles</option>
+          @foreach($roles as $role)
+            <option value="{{ $role->id }}" {{ request('role') == $role->id ? 'selected' : '' }}>{{ ucfirst($role->name) }}</option>
+          @endforeach
+        </select>
+        
+        <select id="statusFilter" class="form-control text-sm w-32">
+          <option value="">All Status</option>
+          <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+          <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
+        </select>
+        
+        <button onclick="applyFilters()" class="btn btn-secondary btn-sm">Filter</button>
+        <a href="{{ route('users.index') }}" class="btn btn-secondary btn-sm">Clear</a>
+      </div>
     </div>
+
     <div class="table-wrap">
-      <table>
+      <table class="w-full">
         <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Actions</th>
+          <tr class="bg-muted/5 text-[10px] font-black uppercase tracking-widest text-muted">
+            <th class="px-6 py-4 text-left">User</th>
+            <th class="px-6 py-4 text-left">Email</th>
+            <th class="px-6 py-4 text-left">Phone</th>
+            <th class="px-6 py-4 text-left">Role</th>
+            <th class="px-6 py-4 text-left">Status</th>
+            <th class="px-6 py-4 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-muted/10" id="usersTableBody">
           @forelse($users as $user)
-          <tr>
-            <td>
+          <tr class="hover:bg-primary/5 transition-colors text-xs user-row" 
+              data-name="{{ strtolower($user->name) }}" 
+              data-email="{{ strtolower($user->email) }}" 
+              data-phone="{{ $user->phone }}"
+              data-role="{{ $user->roles->first()?->id }}"
+              data-status="{{ $user->is_active ? 'active' : 'inactive' }}">
+            <td class="px-6 py-4">
               <div class="flex items-center gap-2">
                 <div class="w-6 h-6 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center overflow-hidden text-[10px] font-bold border border-green-500/20">
                   @if($user->profile_image)
@@ -52,20 +81,26 @@
                 <div style="font-weight:700;font-size:12px;" class="text-primary">{{ $user->name }}</div>
               </div>
             </td>
-            <td>{{ $user->email }}</td>
-            <td>{{ $user->phone ?? 'N/A' }}</td>
-            <td>
+            <td class="px-6 py-4 text-muted">{{ $user->email }}</td>
+            <td class="px-6 py-4 text-muted">{{ $user->phone ?: 'N/A' }}</td>
+            <td class="px-6 py-4">
               @foreach($user->roles as $role)
-                <span class="badge bg-blue-100 text-blue-700">{{ $role->display_name }}</span>
+                <span class="px-2 py-0.5 rounded bg-muted/10 text-muted text-[10px] font-bold uppercase">{{ $role->name }}</span>
               @endforeach
             </td>
-            <td>
-              <span class="badge {{ $user->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full {{ $user->is_active ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600' }} text-[10px] font-black uppercase tracking-wider">
+                <span class="w-1.5 h-1.5 rounded-full {{ $user->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
                 {{ $user->is_active ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td class="px-4 py-3">
-              <div class="flex items-center gap-1">
+            <td class="px-6 py-4">
+              <div class="flex items-center justify-end gap-1">
+                <!-- VIEW USER (Always available for admin-level users) -->
+                <a href="{{ route('users.show', $user->id) }}" class="p-1.5 rounded-lg text-muted hover:text-green-600 hover:bg-green-500/10 transition-all" title="View Details">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </a>
+
                 @if(auth()->user()->hasPermission('users.edit'))
                 <a href="{{ route('users.edit', $user->id) }}" class="p-1.5 rounded-lg text-muted hover:text-blue-600 hover:bg-blue-500/10 transition-all" title="Edit User">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -108,8 +143,8 @@
       </table>
     </div>
     @if($users->hasPages())
-    <div class="card-footer border-t">
-      {{ $users->links() }}
+    <div class="card-footer border-t bg-muted/5 px-6 py-4">
+      {{ $users->appends(request()->query())->links() }}
     </div>
     @endif
   </div>
@@ -146,6 +181,37 @@
 
 @push('scripts')
 <script>
+  // Live Search & Local Filtering
+  document.getElementById('userSearch').addEventListener('input', function(e) {
+    const term = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('.user-row');
+    
+    rows.forEach(row => {
+      const name = row.dataset.name;
+      const email = row.dataset.email;
+      const phone = row.dataset.phone;
+      
+      if (name.includes(term) || email.includes(term) || (phone && phone.includes(term))) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  });
+
+  function applyFilters() {
+    const search = document.getElementById('userSearch').value;
+    const role = document.getElementById('roleFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    
+    let url = new URL(window.location.href);
+    if (search) url.searchParams.set('search', search); else url.searchParams.delete('search');
+    if (role) url.searchParams.set('role', role); else url.searchParams.delete('role');
+    if (status) url.searchParams.set('status', status); else url.searchParams.delete('status');
+    
+    window.location.href = url.toString();
+  }
+
   function openResetModal(userId, userName) {
     const modal = document.getElementById('resetPasswordModal');
     const form = document.getElementById('resetPasswordForm');

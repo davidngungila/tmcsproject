@@ -9,10 +9,42 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('roles')->latest()->paginate(10);
-        return view('users.index', compact('users'));
+        $query = User::with('roles');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%$search%")
+                  ->orWhere('email', 'like', "%$search%")
+                  ->orWhere('phone', 'like', "%$search%");
+            });
+        }
+
+        if ($request->filled('role')) {
+            $query->whereHas('roles', function($q) use ($request) {
+                $q->where('roles.id', $request->role);
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->status == 'active');
+        }
+
+        $users = $query->latest()->paginate(15);
+        $roles = Role::all();
+        
+        return view('users.index', compact('users', 'roles'));
+    }
+
+    /**
+     * Display the specified user.
+     */
+    public function show(User $user)
+    {
+        $user->load(['roles.permissions', 'authenticationLogs', 'activityLogs']);
+        return view('users.show', compact('user'));
     }
 
     public function create()
