@@ -147,17 +147,17 @@
 </div>
 @endsection
 
-<!-- PAYMENT SPLASH OVERLAY -->
-<div id="paymentSplash" class="fixed inset-0 z-[9999] bg-white hidden flex-col items-center justify-center" style="display: none !important;">
-    <div class="max-w-md w-full p-8 text-center">
+<!-- PAYMENT SPLASH OVERLAY (Centered Modal with Blur) -->
+<div id="paymentSplash" class="fixed inset-0 z-[9999] hidden items-center justify-center p-4 bg-black/40 backdrop-blur-md transition-all duration-300" style="display: none !important;">
+    <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-8 text-center animate-in zoom-in duration-300 border border-white/20">
         <div id="progressWrapper" class="mb-8 relative">
             <svg class="w-32 h-32 mx-auto transform -rotate-90">
                 <circle cx="64" cy="64" r="60" stroke="#f3f4f6" stroke-width="8" fill="transparent" />
-                <circle id="progressCircle" cx="64" cy="64" r="60" stroke="#059669" stroke-width="8" fill="transparent"
-                    stroke-dasharray="376.99" stroke-dashoffset="376.99" style="transition: stroke-dashoffset 0.5s ease;" />
+                <circle id="progressCircle" cx="64" cy="64" r="60" stroke="#059669" stroke-width="10" fill="transparent"
+                    stroke-dasharray="376.99" stroke-dashoffset="376.99" stroke-linecap="round" style="transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);" />
             </svg>
             <div class="absolute inset-0 flex items-center justify-center">
-                <span id="progressText" class="text-3xl font-black text-green-600">0%</span>
+                <span id="progressText" class="text-3xl font-black text-green-600 tracking-tighter">0%</span>
             </div>
         </div>
 
@@ -167,33 +167,34 @@
             </div>
         </div>
 
-        <h2 id="statusTitle" class="text-xl font-bold text-gray-900 mb-2">Initiating Secure Payment</h2>
-        <p id="statusDesc" class="text-sm text-gray-500 mb-8">Connecting to Snippe Payment Gateway...</p>
+        <h2 id="statusTitle" class="text-2xl font-black text-gray-900 mb-2">Initiating Payment</h2>
+        <p id="statusDesc" class="text-sm text-gray-500 mb-8 font-medium">Connecting to secure gateway...</p>
 
-        <div class="space-y-4">
-            <div class="step-item flex items-center gap-3 text-left">
-                <div id="step1" class="w-7 h-7 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center text-white transition-all">
-                    <span class="text-[10px] font-bold">1</span>
+        <div class="space-y-4 max-w-xs mx-auto">
+            <div class="step-item flex items-center gap-4 text-left">
+                <div id="step1" class="w-8 h-8 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-100 transition-all">
+                    <span class="text-xs font-black">1</span>
                 </div>
                 <span id="step1Text" class="text-xs font-bold text-gray-900">Validating transaction details</span>
             </div>
-            <div id="step2Wrapper" class="step-item flex items-center gap-3 text-left opacity-40">
-                <div id="step2" class="w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 transition-all">
-                    <span class="text-[10px] font-bold">2</span>
+            <div id="step2Wrapper" class="step-item flex items-center gap-4 text-left opacity-30">
+                <div id="step2" class="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 transition-all">
+                    <span class="text-xs font-black">2</span>
                 </div>
-                <span id="step2Text" class="text-xs font-medium text-gray-400">Requesting USSD Push / Session</span>
+                <span id="step2Text" class="text-xs font-medium text-gray-400">Requesting USSD Session</span>
             </div>
-            <div id="step3Wrapper" class="step-item flex items-center gap-3 text-left opacity-40">
-                <div id="step3" class="w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 transition-all">
-                    <span class="text-[10px] font-bold">3</span>
+            <div id="step3Wrapper" class="step-item flex items-center gap-4 text-left opacity-30">
+                <div id="step3" class="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 transition-all">
+                    <span class="text-xs font-black">3</span>
                 </div>
-                <span id="step3Text" class="text-xs font-medium text-gray-400">Waiting for your confirmation</span>
+                <span id="step3Text" class="text-xs font-medium text-gray-400">Waiting for confirmation</span>
             </div>
         </div>
 
-        <div id="countdownArea" class="mt-10" style="display: none;">
-            <div class="text-[10px] uppercase font-bold text-gray-400 mb-1">Time remaining to confirm</div>
-            <div id="timer" class="text-2xl font-mono font-bold text-red-500">01:00</div>
+        <div id="countdownArea" class="mt-10 p-4 bg-red-50 rounded-2xl border border-red-100" style="display: none;">
+            <div class="text-[10px] uppercase font-black text-red-400 mb-1 tracking-widest">Action Required</div>
+            <div class="text-xs text-red-600 font-bold mb-2">Enter PIN on your phone now</div>
+            <div id="timer" class="text-3xl font-mono font-black text-red-500">01:00</div>
         </div>
     </div>
 </div>
