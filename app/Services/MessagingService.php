@@ -39,10 +39,10 @@ class MessagingService
         $formattedRecipients = array_map(function($phone) {
             // Remove any non-numeric characters
             $phone = preg_replace('/[^0-9]/', '', $phone);
-            // Ensure 255 prefix for Tanzania if it starts with 0 or 7
+            // Ensure 255 prefix for Tanzania if it starts with 0, 7 or 6
             if (str_starts_with($phone, '0')) {
                 $phone = '255' . substr($phone, 1);
-            } elseif (str_starts_with($phone, '7')) {
+            } elseif (str_starts_with($phone, '7') || str_starts_with($phone, '6')) {
                 $phone = '255' . $phone;
             }
             return $phone;
@@ -62,7 +62,7 @@ class MessagingService
             }
 
             $payload = [
-                'from' => $this->config->sender_id ?? 'TMCS MOCU',
+                'from' => $this->config->sender_id ?? 'TMCS MoCU',
                 'text' => $message,
             ];
 

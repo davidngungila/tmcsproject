@@ -42,7 +42,7 @@ class MemberController extends Controller
     {
         $validated = $request->validate([
             'full_name' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:members,email',
+            'email' => 'nullable|email|unique:members,email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'category_id' => 'required|exists:member_categories,id',
             'registration_number' => 'nullable|string|unique:members,registration_number',
@@ -117,8 +117,12 @@ class MemberController extends Controller
     {
         // 1. Send SMS
         if ($member->phone) {
-            $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
-            $this->messagingService->sendSms($member->phone, $smsMessage);
+            try {
+                $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
+                $this->messagingService->sendSms($member->phone, $smsMessage);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send welcome SMS: " . $e->getMessage());
+            }
         }
 
         // 2. Send Welcome Email

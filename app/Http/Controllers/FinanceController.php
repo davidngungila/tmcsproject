@@ -134,8 +134,12 @@ class FinanceController extends Controller
         
         // 1. Send SMS
         if ($member->phone) {
-            $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
-            $this->messagingService->sendSms($member->phone, $smsMessage);
+            try {
+                $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
+                $this->messagingService->sendSms($member->phone, $smsMessage);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Failed to send contribution SMS: " . $e->getMessage());
+            }
         }
 
         // 2. Send Email with PDF attachment
