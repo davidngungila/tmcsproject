@@ -64,6 +64,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::resource('users', UserController::class);
 
+    // Admin Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
     // System Settings & Monitoring
     Route::prefix('settings')->name('settings.')->group(function () {
         // Activity Monitoring
@@ -83,6 +86,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/roles/{role}', [RoleManagementController::class, 'update'])->name('roles.update');
         Route::post('/roles/{role}/clone', [RoleManagementController::class, 'clone'])->name('roles.clone');
         Route::delete('/roles/{role}', [RoleManagementController::class, 'destroy'])->name('roles.destroy');
+
+        // Profile Settings (Restored from previous version)
+        Route::post('/profile/update', [SettingsController::class, 'updateProfile'])->name('profile.update');
 
         // General Settings
         Route::get('/', [SystemSettingsController::class, 'index'])->name('index');
