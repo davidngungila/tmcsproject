@@ -5,59 +5,158 @@
 @section('breadcrumb', 'Home / Member / Contributions')
 
 @section('content')
-<div class="animate-in">
-  <div class="card overflow-hidden">
-    <div class="card-header border-b flex items-center justify-between">
+<div class="animate-in space-y-6">
+  <!-- STATS OVERVIEW -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="card p-6 bg-green-50 border-green-100 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
       <div>
-        <div class="card-title">Full Contribution History</div>
-        <div class="card-subtitle">Complete list of all your church offerings and tithes</div>
+        <div class="text-[10px] text-green-600 uppercase font-black tracking-widest">Total Verified</div>
+        <div class="text-xl font-black text-green-700 tracking-tighter">{{ number_format($member->contributions()->where('is_verified', true)->sum('amount')) }} TZS</div>
       </div>
-      <a href="{{ route('member.profile.pay') }}" class="btn btn-primary btn-sm">Make New Payment</a>
     </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-light/50 border-b">
-          <tr>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Receipt #</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Date</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted">Type</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted text-right">Amount</th>
-            <th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-muted text-center">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          @forelse($contributions as $contribution)
-            <tr class="hover:bg-light/30 transition-colors">
-              <td class="px-6 py-4 text-sm font-mono text-xs">{{ $contribution->receipt_number }}</td>
-              <td class="px-6 py-4 text-sm">{{ $contribution->contribution_date->format('d M, Y') }}</td>
-              <td class="px-6 py-4 text-sm font-bold">{{ $contribution->contribution_type }}</td>
-              <td class="px-6 py-4 text-sm font-bold text-right">{{ number_format($contribution->amount) }} TZS</td>
-              <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <a href="{{ route('finance.receipt', $contribution->id) }}" class="btn btn-ghost btn-xs text-blue-500" title="View Details">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  </a>
-                  <a href="{{ route('finance.receipt', $contribution->id) }}?download=1" target="_blank" class="btn btn-ghost btn-xs text-green-500" title="Download Receipt">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  </a>
-                </div>
-              </td>
-            </tr>
-          @empty
+    <div class="card p-6 bg-amber-50 border-amber-100 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <div>
+        <div class="text-[10px] text-amber-600 uppercase font-black tracking-widest">Awaiting Verification</div>
+        <div class="text-xl font-black text-amber-700 tracking-tighter">{{ number_format($member->contributions()->where('is_verified', false)->sum('amount')) }} TZS</div>
+      </div>
+    </div>
+    <div class="card p-6 bg-blue-50 border-blue-100 flex items-center gap-4">
+      <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+      </div>
+      <div>
+        <div class="text-[10px] text-blue-600 uppercase font-black tracking-widest">Total Given</div>
+        <div class="text-xl font-black text-blue-700 tracking-tighter">{{ number_format($member->contributions()->sum('amount')) }} TZS</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card overflow-hidden">
+    <!-- Tab Headers -->
+    <div class="card-header border-b p-0 bg-gray-50/30">
+      <div class="flex">
+        <button onclick="switchTab('verified')" id="verifiedTabBtn" class="flex-1 px-6 py-4 text-xs font-black uppercase tracking-widest border-b-2 border-green-600 text-green-600 bg-white transition-all">
+          Verified Records ({{ $member->contributions()->where('is_verified', true)->count() }})
+        </button>
+        <button onclick="switchTab('pending')" id="pendingTabBtn" class="flex-1 px-6 py-4 text-xs font-black uppercase tracking-widest border-b-2 border-transparent text-muted hover:bg-gray-100 transition-all">
+          Awaiting Verification ({{ $member->contributions()->where('is_verified', false)->count() }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Verified Tab Content -->
+    <div id="verifiedTabContent" class="tab-content">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-light/30 border-b">
             <tr>
-              <td colspan="6" class="px-6 py-12 text-center text-muted">
-                <p>No contributions found in your record.</p>
-              </td>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Receipt #</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Date</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Purpose</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-right">Amount</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-center">Receipt</th>
             </tr>
-          @endforelse
-        </tbody>
-      </table>
-    </div>
-    @if($contributions->hasPages())
-      <div class="p-4 border-t">
-        {{ $contributions->links() }}
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @forelse($member->contributions()->where('is_verified', true)->latest()->get() as $contribution)
+              <tr class="hover:bg-light/30 transition-colors">
+                <td class="px-6 py-4 font-mono text-xs font-bold text-blue-600">#{{ $contribution->receipt_number }}</td>
+                <td class="px-6 py-4 text-xs font-bold">{{ $contribution->contribution_date->format('d M, Y') }}</td>
+                <td class="px-6 py-4 text-xs font-bold">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</td>
+                <td class="px-6 py-4 text-sm font-black text-right text-green-600">{{ number_format($contribution->amount) }}</td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <a href="{{ route('finance.receipt', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </a>
+                    <a href="{{ route('finance.receipt', $contribution->id) }}?download=1" target="_blank" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Download">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center">
+                  <div class="text-muted text-xs font-bold">No verified contributions found.</div>
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
       </div>
-    @endif
+    </div>
+
+    <!-- Pending Tab Content -->
+    <div id="pendingTabContent" class="tab-content hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-light/30 border-b">
+            <tr>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Reference</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Initiated</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Purpose</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-right">Amount</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @forelse($member->contributions()->where('is_verified', false)->latest()->get() as $contribution)
+              <tr class="hover:bg-light/30 transition-colors">
+                <td class="px-6 py-4 font-mono text-xs font-bold text-gray-500">#{{ $contribution->receipt_number }}</td>
+                <td class="px-6 py-4 text-xs font-bold">{{ $contribution->created_at->format('d M, h:i A') }}</td>
+                <td class="px-6 py-4 text-xs font-bold text-muted">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</td>
+                <td class="px-6 py-4 text-sm font-black text-right text-amber-600">{{ number_format($contribution->amount) }}</td>
+                <td class="px-6 py-4 text-center">
+                  <span class="badge amber px-2 py-0.5 text-[9px] font-black">AWAITING</span>
+                </td>
+              </tr>
+            @empty
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center">
+                  <div class="text-muted text-xs font-bold">No pending contributions found.</div>
+                </td>
+              </tr>
+            @endforelse
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+function switchTab(tab) {
+    const verifiedBtn = document.getElementById('verifiedTabBtn');
+    const pendingBtn = document.getElementById('pendingTabBtn');
+    const verifiedContent = document.getElementById('verifiedTabContent');
+    const pendingContent = document.getElementById('pendingTabContent');
+
+    if (tab === 'verified') {
+        verifiedBtn.classList.add('border-green-600', 'text-green-600', 'bg-white');
+        verifiedBtn.classList.remove('border-transparent', 'text-muted');
+        pendingBtn.classList.add('border-transparent', 'text-muted');
+        pendingBtn.classList.remove('border-green-600', 'text-green-600', 'bg-white');
+        
+        verifiedContent.classList.remove('hidden');
+        pendingContent.classList.add('hidden');
+    } else {
+        pendingBtn.classList.add('border-green-600', 'text-green-600', 'bg-white');
+        pendingBtn.classList.remove('border-transparent', 'text-muted');
+        verifiedBtn.classList.add('border-transparent', 'text-muted');
+        verifiedBtn.classList.remove('border-green-600', 'text-green-600', 'bg-white');
+        
+        pendingContent.classList.remove('hidden');
+        verifiedContent.classList.add('hidden');
+    }
+}
+</script>
+@endpush
