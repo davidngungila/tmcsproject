@@ -798,7 +798,6 @@
       .sidebar { position: fixed; transform: translateX(-100%); }
       .sidebar.mobile-open { transform: translateX(0); }
       .sidebar-backdrop.show { display: block; }
-      .search-bar input { width: 120px; }
     }
 
     /* UTILS */
@@ -1044,39 +1043,6 @@
           <div class="breadcrumb">@yield('breadcrumb', 'TmcsSmart / Dashboard')</div>
         </div>
         <div class="topbar-right">
-          <div class="search-bar hidden lg:flex">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search..." />
-          </div>
-
-          <!-- ADMIN DROPDOWN -->
-          <div class="topbar-dropdown">
-            <button class="icon-btn" onclick="toggleTopbarDropdown('adminMenu')" title="Administration">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-            </button>
-            <div class="dropdown-menu" id="adminMenu">
-              <div class="px-3 py-2 text-xs font-bold text-muted uppercase tracking-wider">Administration</div>
-              @if(auth()->user()->hasPermission('users.view'))
-              <a href="{{ route('users.index') }}" class="dropdown-menu-item">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                Users
-              </a>
-              @endif
-              @if(auth()->user()->hasPermission('system.activity_logs'))
-              <a href="{{ route('activity-logs.index') }}" class="dropdown-menu-item">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Activity Logs
-              </a>
-              @endif
-              @if(auth()->user()->hasPermission('system.settings'))
-              <a href="{{ route('settings.index') }}" class="dropdown-menu-item">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
-                Settings
-              </a>
-              @endif
-            </div>
-          </div>
-
           <button class="icon-btn" title="Notifications">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
             <span class="notif-dot"></span>
