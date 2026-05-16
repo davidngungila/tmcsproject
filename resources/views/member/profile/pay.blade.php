@@ -202,159 +202,163 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('paymentSplash');
-    splash.style.setProperty('display', 'none', 'important');
+    const form = document.getElementById('paymentForm');
+    
+    // Ensure splash is hidden on load
     splash.classList.add('hidden');
-});
+    splash.style.display = 'none';
 
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-    const form = this;
-    const splash = document.getElementById('paymentSplash');
-    const circle = document.getElementById('progressCircle');
-    const text = document.getElementById('progressText');
-    const title = document.getElementById('statusTitle');
-    const desc = document.getElementById('statusDesc');
-    const step2 = document.getElementById('step2');
-    const step2Wrapper = document.getElementById('step2Wrapper');
-    const step3 = document.getElementById('step3');
-    const step3Wrapper = document.getElementById('step3Wrapper');
-    const step2Text = document.getElementById('step2Text');
-    const step3Text = document.getElementById('step3Text');
-    const countdownArea = document.getElementById('countdownArea');
-    const timerDisplay = document.getElementById('timer');
-    const progressWrapper = document.getElementById('progressWrapper');
-    const successIcon = document.getElementById('successIcon');
+            const circle = document.getElementById('progressCircle');
+            const text = document.getElementById('progressText');
+            const title = document.getElementById('statusTitle');
+            const desc = document.getElementById('statusDesc');
+            const step2 = document.getElementById('step2');
+            const step2Wrapper = document.getElementById('step2Wrapper');
+            const step3 = document.getElementById('step3');
+            const step3Wrapper = document.getElementById('step3Wrapper');
+            const step2Text = document.getElementById('step2Text');
+            const step3Text = document.getElementById('step3Text');
+            const countdownArea = document.getElementById('countdownArea');
+            const timerDisplay = document.getElementById('timer');
+            const progressWrapper = document.getElementById('progressWrapper');
+            const successIcon = document.getElementById('successIcon');
 
-    splash.classList.remove('hidden');
-    splash.style.setProperty('display', 'flex', 'important');
-    
-    let progress = 0;
-    const circumference = 376.99;
-    let contributionId = null;
-    let pollingInterval = null;
-    
-    const updateProgress = (val) => {
-        const offset = circumference - (val / 100 * circumference);
-        circle.style.strokeDashoffset = offset;
-        text.textContent = Math.round(val) + '%';
-    };
-
-    const markStepComplete = (stepEl, textEl) => {
-        stepEl.classList.replace('border-gray-300', 'border-green-500');
-        stepEl.classList.add('bg-green-500', 'text-white');
-        stepEl.classList.remove('text-gray-400');
-        textEl.classList.replace('text-gray-400', 'text-gray-900');
-        textEl.classList.add('font-bold');
-    };
-
-    // PHASE 1: Validating
-    const phase1 = setInterval(() => {
-        progress += 2;
-        updateProgress(progress);
-        if (progress >= 30) {
-            clearInterval(phase1);
+            // Show Splash
+            splash.classList.remove('hidden');
+            splash.style.display = 'flex';
             
-            // PHASE 2: Gateway
-            title.textContent = "Connecting Gateway";
-            desc.textContent = "Requesting secure payment channel...";
-            step2Wrapper.classList.remove('opacity-40');
-            markStepComplete(step2, step2Text);
-
-            const formData = new FormData(form);
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
-            })
-            .then(async response => {
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Payment failed.');
-                
-                contributionId = data.contribution_id;
-
-                if (data.checkout_url) {
-                    updateProgress(100);
-                    window.location.href = data.checkout_url;
-                    return;
-                }
-
-                // PHASE 3: USSD Push
-                const finishPhase2 = setInterval(() => {
-                    progress += 2;
-                    updateProgress(progress);
-                    if (progress >= 70) {
-                        clearInterval(finishPhase2);
-                        title.textContent = "Check Your Phone";
-                        desc.textContent = "USSD Push sent to {{ $member->phone }}";
-                        step3Wrapper.classList.remove('opacity-40');
-                        markStepComplete(step3, step3Text);
-                        countdownArea.style.display = 'block';
-
-                        // Start Polling & Countdown
-                        startPolling(contributionId);
-                        startCountdown();
-                    }
-                }, 50);
-            })
-            .catch(error => {
-                alert(error.message);
-                splash.style.setProperty('display', 'none', 'important');
-                splash.classList.add('hidden');
-            });
-        }
-    }, 50);
-
-    function startPolling(id) {
-        pollingInterval = setInterval(() => {
-            fetch(`/member/payment-status/${id}`)
-            .then(r => r.json())
-            .then(data => {
-                if (data.is_verified) {
-                    handleSuccess();
-                }
-            });
-        }, 3000);
-    }
-
-    function handleSuccess() {
-        clearInterval(pollingInterval);
-        updateProgress(100);
-        progressWrapper.classList.add('hidden');
-        successIcon.classList.remove('hidden');
-        title.textContent = "Payment Successful!";
-        desc.textContent = "God bless you for your contribution.";
-        countdownArea.style.display = 'none';
-        
-        setTimeout(() => {
-            window.location.href = "{{ route('member.contributions.index') }}";
-        }, 3000);
-    }
-
-    function startCountdown() {
-        let seconds = 60;
-        const countdown = setInterval(() => {
-            seconds--;
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            let progress = 0;
+            const circumference = 376.99;
+            let contributionId = null;
+            let pollingInterval = null;
             
-            if (progress < 95) {
-                progress += 0.4;
+            const updateProgress = (val) => {
+                const offset = circumference - (val / 100 * circumference);
+                circle.style.strokeDashoffset = offset;
+                text.textContent = Math.round(val) + '%';
+            };
+
+            const markStepComplete = (stepEl, textEl) => {
+                stepEl.classList.replace('border-gray-300', 'border-green-500');
+                stepEl.classList.add('bg-green-500', 'text-white');
+                stepEl.classList.remove('text-gray-400');
+                textEl.classList.replace('text-gray-400', 'text-gray-900');
+                textEl.classList.add('font-bold');
+            };
+
+            // PHASE 1: Validating
+            const phase1 = setInterval(() => {
+                progress += 2;
                 updateProgress(progress);
+                if (progress >= 30) {
+                    clearInterval(phase1);
+                    
+                    // PHASE 2: Gateway
+                    title.textContent = "Connecting Gateway";
+                    desc.textContent = "Requesting secure payment channel...";
+                    step2Wrapper.classList.remove('opacity-40');
+                    markStepComplete(step2, step2Text);
+
+                    const formData = new FormData(form);
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+                    })
+                    .then(async response => {
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.error || 'Payment failed.');
+                        
+                        contributionId = data.contribution_id;
+
+                        if (data.checkout_url) {
+                            updateProgress(100);
+                            window.location.href = data.checkout_url;
+                            return;
+                        }
+
+                        // PHASE 3: USSD Push
+                        const finishPhase2 = setInterval(() => {
+                            progress += 2;
+                            updateProgress(progress);
+                            if (progress >= 70) {
+                                clearInterval(finishPhase2);
+                                title.textContent = "Check Your Phone";
+                                desc.textContent = "USSD Push sent to {{ $member->phone }}";
+                                step3Wrapper.classList.remove('opacity-40');
+                                markStepComplete(step3, step3Text);
+                                countdownArea.style.display = 'block';
+
+                                // Start Polling & Countdown
+                                startPolling(contributionId);
+                                startCountdown();
+                            }
+                        }, 50);
+                    })
+                    .catch(error => {
+                        alert(error.message);
+                        splash.style.display = 'none';
+                        splash.classList.add('hidden');
+                    });
+                }
+            }, 50);
+
+            function startPolling(id) {
+                pollingInterval = setInterval(() => {
+                    fetch(`/member/payment-status/${id}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.is_verified) {
+                            handleSuccess();
+                        }
+                    });
+                }, 3000);
             }
 
-            if (seconds <= 0) {
-                clearInterval(countdown);
+            function handleSuccess() {
                 if (pollingInterval) clearInterval(pollingInterval);
+                updateProgress(100);
+                progressWrapper.classList.add('hidden');
+                successIcon.classList.remove('hidden');
+                title.textContent = "Payment Successful!";
+                desc.textContent = "God bless you for your contribution.";
+                countdownArea.style.display = 'none';
                 
-                title.textContent = "Processing...";
-                desc.textContent = "Taking you to your contributions history...";
                 setTimeout(() => {
                     window.location.href = "{{ route('member.contributions.index') }}";
-                }, 2000);
+                }, 3000);
             }
-        }, 1000);
+
+            function startCountdown() {
+                let seconds = 60;
+                const countdown = setInterval(() => {
+                    seconds--;
+                    const mins = Math.floor(seconds / 60);
+                    const secs = seconds % 60;
+                    timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    
+                    if (progress < 95) {
+                        progress += 0.4;
+                        updateProgress(progress);
+                    }
+
+                    if (seconds <= 0) {
+                        clearInterval(countdown);
+                        if (pollingInterval) clearInterval(pollingInterval);
+                        
+                        title.textContent = "Processing...";
+                        desc.textContent = "Taking you to your contributions history...";
+                        setTimeout(() => {
+                            window.location.href = "{{ route('member.contributions.index') }}";
+                        }, 2000);
+                    }
+                }, 1000);
+            }
+        });
     }
 });
 </script>

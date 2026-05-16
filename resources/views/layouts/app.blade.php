@@ -1468,5 +1468,6 @@
       showToast('{{ session('warning') }}', 'warning');
     @endif
   </script>
+  @stack('scripts')
 </body>
 </html>
