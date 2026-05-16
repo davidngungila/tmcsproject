@@ -46,8 +46,8 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-// Webhooks (Exempt from CSRF)
-Route::post('/webhooks/snipe', [WebhookController::class, 'handleSnipe'])->name('webhooks.snipe');
+// Webhooks
+Route::post('/webhooks/snipe', [WebhookController::class, 'handleSnipe']);
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {

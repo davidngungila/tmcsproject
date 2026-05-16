@@ -48,40 +48,24 @@ class ProfileController extends Controller
         $receiptNumber = 'RCP-ONLINE-' . date('Ymd') . '-' . strtoupper(Str::random(5));
         $type = $validated['payment_method'] === 'mobile_money' ? 'mobile' : 'card';
 
-        $paymentResponse = $this->snipeService->initializePayment($type, [
+        $contribution = Contribution::create([
+            'member_id' => $member->id,
+            'contribution_type' => $validated['contribution_type'],
             'amount' => $validated['amount'],
-            'phone' => $member->phone,
-            'name' => $member->full_name,
-            'email' => $member->email,
-            'reference' => $receiptNumber,
-            'metadata' => [
-                'member_id' => $member->id,
-                'contribution_type' => $validated['contribution_type'],
-                'source' => 'member_portal'
-            ]
+            'contribution_date' => now(),
+            'payment_method' => $validated['payment_method'],
+            'notes' => 'Online payment initiated via Member Portal.',
+            'receipt_number' => $receiptNumber,
+            'is_verified' => false,
         ]);
 
-        if ($paymentResponse['status'] === 'success') {
-            // Create pending contribution
-            Contribution::create([
-                'member_id' => $member->id,
-                'contribution_type' => $validated['contribution_type'],
-                'amount' => $validated['amount'],
-                'contribution_date' => now(),
-                'payment_method' => $validated['payment_method'],
-                'notes' => 'Online payment initiated via Member Portal.',
-                'receipt_number' => $receiptNumber,
-                'is_verified' => false,
-            ]);
+        $checkoutResponse = $this->snipeService->createCheckout($contribution);
 
-            if (isset($paymentResponse['data']['payment_url'])) {
-                return redirect($paymentResponse['data']['payment_url']);
-            }
-
-            return redirect()->route('member.profile.index')->with('success', 'Payment initialized! Please check your phone for the USSD prompt.');
+        if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
+            return redirect($checkoutResponse['checkout_url']);
         }
 
-        return back()->with('error', 'Payment failed: ' . $paymentResponse['message']);
+        return back()->with('error', 'Failed to initiate payment session. Please try again.');
     }
 
     public function index()

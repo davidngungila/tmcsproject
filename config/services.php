@@ -35,9 +35,12 @@ return [
         ],
     ],
 
-    'snipe' => [
-        'key' => env('SNIPE_API_KEY'),
-        'base_url' => env('SNIPE_BASE_URL', 'https://api.snippe.sh'),
+    'snippe' => [
+        'api_key' => env('SNIPPE_API_KEY'),
+        'webhook_secret' => env('SNIPPE_WEBHOOK_SECRET'),
+        'base_url' => rtrim(env('SNIPPE_API_BASE_URL', 'https://api.snippe.sh'), '/'),
+        'post_payment_redirect_url' => env('SNIPPE_POST_PAYMENT_REDIRECT_URL', 'https://tmcs.feedtancmg.org/member/profile'),
+        'webhook_url' => env('SNIPPE_WEBHOOK_URL'),
     ],
 
     'messaging' => [

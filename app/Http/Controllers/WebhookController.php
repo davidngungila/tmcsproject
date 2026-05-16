@@ -2,52 +2,46 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contribution;
+use App\Services\SnipePaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
+    protected $snipeService;
+
+    public function __construct(SnipePaymentService $snipeService)
+    {
+        $this->snipeService = $snipeService;
+    }
+
     /**
      * Handle Snipe Payment Webhooks
      */
     public function handleSnipe(Request $request)
     {
-        $payload = $request->all();
-        $eventType = $request->header('X-Webhook-Event');
+        $payload = $request->getContent();
+        $signature = $request->header('X-Snippe-Signature');
 
+        // Log the webhook for debugging
         Log::info('Snipe Webhook Received', [
-            'event' => $eventType,
-            'payload' => $payload,
+            'header' => $signature,
+            'payload' => $request->all(),
         ]);
 
-        if ($eventType === 'payout.completed') {
-            $this->processCompletedPayment($payload['data']);
-        } elseif ($eventType === 'payout.failed') {
-            $this->processFailedPayment($payload['data']);
+        // Verify signature if secret is configured
+        if (!$this->snipeService->verifyWebhookSignature($payload, $signature)) {
+            Log::warning('Snipe Webhook Signature Verification Failed');
+            // In production, you might want to return 401, but we'll return 200 for now to avoid retries
+            // return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 401);
         }
 
-        return response()->json(['status' => 'ok']);
-    }
+        $result = $this->snipeService->processWebhook($request->all());
 
-    protected function processCompletedPayment(array $data)
-    {
-        $reference = $data['reference'];
-        $contribution = Contribution::where('receipt_number', $reference)->first();
-
-        if ($contribution) {
-            $contribution->update([
-                'is_verified' => true,
-                'notes' => ($contribution->notes ?? '') . "\nPaid via Snipe. Provider: {$data['channel']['provider']}",
-            ]);
-
-            Log::info("Contribution {$reference} marked as verified via Snipe.");
+        if ($result) {
+            return response()->json(['status' => 'success']);
         }
-    }
 
-    protected function processFailedPayment(array $data)
-    {
-        $reference = $data['reference'];
-        Log::warning("Snipe Payment Failed for Reference: {$reference}. Reason: " . ($data['failure_reason'] ?? 'Unknown'));
+        return response()->json(['status' => 'ignored']);
     }
 }

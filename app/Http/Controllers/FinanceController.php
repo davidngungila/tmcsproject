@@ -84,35 +84,17 @@ class FinanceController extends Controller
 
         // Handle digital payments via Snipe
         if (in_array($validated['payment_method'], ['mobile_money', 'card', 'dynamic-qr'])) {
-            $type = $validated['payment_method'] === 'mobile_money' ? 'mobile' : ($validated['payment_method'] === 'card' ? 'card' : 'dynamic-qr');
+            $contribution = Contribution::create($contributionData);
             
-            $paymentResponse = $this->snipeService->initializePayment($type, [
-                'amount' => $validated['amount'],
-                'phone' => $member->phone,
-                'name' => $member->full_name,
-                'email' => $member->email,
-                'reference' => $receiptNumber,
-                'metadata' => [
-                    'member_id' => $member->id,
-                    'contribution_type' => $validated['contribution_type'],
-                ]
-            ]);
+            $checkoutResponse = $this->snipeService->createCheckout($contribution);
 
-            if ($paymentResponse['status'] === 'success') {
-                $contribution = Contribution::create($contributionData);
-                
-                // Send notifications
+            if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
+                // Send notifications (maybe wait for confirmation, but we send 'initiated' for now)
                 $this->sendContributionNotifications($contribution);
-
-                $message = 'Payment initialized successfully.';
-                if (isset($paymentResponse['data']['payment_url'])) {
-                    return redirect($paymentResponse['data']['payment_url']);
-                }
-                
-                return redirect()->route('finance.index')->with('success', $message . ' Please follow the prompts on your device.');
+                return redirect($checkoutResponse['checkout_url']);
             }
 
-            return back()->with('error', $paymentResponse['message']);
+            return back()->with('error', 'Failed to initiate payment session. Please check your configuration.');
         }
 
         $contribution = Contribution::create($contributionData);
