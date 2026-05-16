@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SnipePaymentService;
+use App\Services\SnippePaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

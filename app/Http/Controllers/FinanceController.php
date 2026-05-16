@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contribution;
 use App\Models\Member;
-use App\Services\SnipePaymentService;
+use App\Services\SnippePaymentService;
 use Illuminate\Http\Request;
 
 use App\Services\MessagingService;
@@ -86,6 +86,17 @@ class FinanceController extends Controller
         if (in_array($validated['payment_method'], ['mobile_money', 'card', 'dynamic-qr'])) {
             $contribution = Contribution::create($contributionData);
             
+            if ($validated['payment_method'] === 'mobile_money') {
+                $response = $this->snipeService->createMobileMoneyPayment($contribution);
+                
+                if (isset($response['error'])) {
+                    return back()->with('error', 'Payment failed: ' . $response['error']);
+                }
+
+                $this->sendContributionNotifications($contribution);
+                return redirect()->route('finance.index')->with('success', 'Payment initiated! Please check the member\'s phone for the USSD prompt.');
+            }
+
             $checkoutResponse = $this->snipeService->createCheckout($contribution);
 
             if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {

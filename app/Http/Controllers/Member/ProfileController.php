@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use App\Services\SnipePaymentService;
+use App\Services\SnippePaymentService;
 use App\Models\Contribution;
 
 use App\Models\Group;
@@ -57,7 +57,18 @@ class ProfileController extends Controller
             'notes' => 'Online payment initiated via Member Portal.',
             'receipt_number' => $receiptNumber,
             'is_verified' => false,
+            'recorded_by' => 1, // System admin or appropriate user
         ]);
+
+        if ($validated['payment_method'] === 'mobile_money') {
+            $response = $this->snipeService->createMobileMoneyPayment($contribution);
+            
+            if (isset($response['error'])) {
+                return back()->with('error', 'Payment failed: ' . $response['error']);
+            }
+
+            return redirect()->route('member.profile.index')->with('success', 'Payment initiated! Please check your phone for the USSD prompt.');
+        }
 
         $checkoutResponse = $this->snipeService->createCheckout($contribution);
 
