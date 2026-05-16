@@ -274,15 +274,22 @@
             <p class="text-sm text-muted">Review and download the member ID card</p>
         </div>
         <div class="flex gap-3">
+            @if(auth()->user()->roles()->whereIn('name', ['admin', 'leader', 'finance'])->exists())
             <a href="{{ route('members.show', $member->id) }}" class="btn btn-secondary">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
                 Back to Profile
             </a>
+            @else
+            <a href="{{ route('member.profile.index') }}" class="btn btn-secondary">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to My Profile
+            </a>
+            @endif
             <button onclick="window.print()" class="btn btn-secondary">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print
             </button>
-            <a href="{{ route('members.id-card', ['member' => $member->id, 'download' => 1]) }}" class="btn btn-primary">
+            <a href="{{ request()->routeIs('member.id-card') ? route('member.id-card', ['download' => 1]) : route('members.id-card', ['member' => $member->id, 'download' => 1]) }}" class="btn btn-primary">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                 Download PDF
             </a>

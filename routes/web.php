@@ -155,6 +155,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/groups', [MemberProfileController::class, 'groups'])->name('groups');
         Route::get('/contributions', [MemberProfileController::class, 'contributions'])->name('contributions.index');
         Route::get('/events', [MemberProfileController::class, 'events'])->name('events');
+        Route::get('/id-card', [MemberProfileController::class, 'idCard'])->name('id-card');
     });
 
     // Elections

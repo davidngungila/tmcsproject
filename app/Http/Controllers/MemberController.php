@@ -207,6 +207,15 @@ class MemberController extends Controller
 
     public function idCard(Member $member)
     {
+        // Authorization check: User can only see their own ID card, unless they are admin/leader
+        $user = auth()->user();
+        $isOwner = $user->member && $user->member->id === $member->id;
+        $isAdmin = $user->roles()->whereIn('name', ['admin', 'leader', 'finance'])->exists();
+
+        if (!$isOwner && !$isAdmin) {
+            abort(403, 'Unauthorized access to this ID card.');
+        }
+
         $member->load(['groups', 'category']);
 
         if (request()->has('download')) {

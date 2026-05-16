@@ -138,7 +138,7 @@
           <div class="text-[10px] text-muted uppercase font-bold tracking-widest">{{ $member->registration_number }}</div>
           
           <div class="mt-6 w-full max-w-[240px]">
-            <a href="{{ route('members.id-card', $member->id) }}" class="btn btn-dark btn-sm w-full rounded-xl flex items-center justify-center gap-2">
+            <a href="{{ route('member.id-card') }}" class="btn btn-dark btn-sm w-full rounded-xl flex items-center justify-center gap-2">
                 <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                 Print My ID Card
             </a>

@@ -189,4 +189,17 @@ class ProfileController extends Controller
         $attendance = $member->eventAttendance()->with('event')->latest()->paginate(15);
         return view('member.profile.events', compact('member', 'attendance'));
     }
+
+    public function idCard()
+    {
+        $user = Auth::user();
+        $member = $user->member;
+
+        if (!$member) {
+            return redirect()->route('dashboard')->with('error', 'Member profile not found.');
+        }
+
+        // Reuse the logic from MemberController if possible, or just call it
+        return app(\App\Http\Controllers\MemberController::class)->idCard($member);
+    }
 }
