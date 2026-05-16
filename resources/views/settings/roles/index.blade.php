@@ -66,7 +66,7 @@
 </div>
 
 <!-- NEW ROLE MODAL -->
-<div id="newRoleModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+<div id="newRoleModal" class="fixed inset-0 bg-black/60 hidden z-50 items-center justify-center p-4 backdrop-blur-sm">
   <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in">
     <div class="p-6 border-b flex items-center justify-between bg-muted/5">
       <h3 class="font-bold text-lg">Create New Role</h3>
@@ -88,7 +88,7 @@
 </div>
 
 <!-- PERMISSIONS MODAL -->
-<div id="permissionsModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+<div id="permissionsModal" class="fixed inset-0 bg-black/60 hidden z-50 items-center justify-center p-4 backdrop-blur-sm">
   <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in">
     <div class="p-6 border-b flex items-center justify-between bg-muted/5">
       <div>
@@ -142,11 +142,15 @@
 @push('scripts')
 <script>
   function openNewRoleModal() {
-    document.getElementById('newRoleModal').classList.remove('hidden');
+    const modal = document.getElementById('newRoleModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
   }
 
   function closeNewRoleModal() {
-    document.getElementById('newRoleModal').classList.add('hidden');
+    const modal = document.getElementById('newRoleModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
   }
 
   function editPermissions(roleId, roleName, assignedIds) {
@@ -167,10 +171,13 @@
     });
     
     modal.classList.remove('hidden');
+    modal.classList.add('flex');
   }
 
   function closePermissionsModal() {
-    document.getElementById('permissionsModal').classList.add('hidden');
+    const modal = document.getElementById('permissionsModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
   }
 
   function toggleModule(module) {

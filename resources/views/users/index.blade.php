@@ -118,7 +118,7 @@
 </div>
 
 <!-- RESET PASSWORD MODAL -->
-<div id="resetPasswordModal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+<div id="resetPasswordModal" class="fixed inset-0 bg-black/60 hidden z-50 items-center justify-center p-4 backdrop-blur-sm">
   <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in">
     <div class="p-6 border-b flex items-center justify-between bg-muted/5">
       <h3 class="font-bold text-lg">Reset Password</h3>
@@ -156,10 +156,13 @@
     nameSpan.textContent = userName;
     form.action = `/users/${userId}/reset-password`;
     modal.classList.remove('hidden');
+    modal.classList.add('flex');
   }
 
   function closeResetModal() {
-    document.getElementById('resetPasswordModal').classList.add('hidden');
+    const modal = document.getElementById('resetPasswordModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
   }
 </script>
 @endpush
