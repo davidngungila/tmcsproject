@@ -58,12 +58,16 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|exists:roles,id',
             'phone' => 'nullable|string|max:20',
+            'is_active' => 'required|boolean',
+            'force_password_change' => 'required|boolean',
         ]);
 
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'is_active' => $request->is_active,
+            'force_password_change' => $request->force_password_change,
         ]);
 
         if ($request->password) {
@@ -74,6 +78,34 @@ class UserController extends Controller
         $user->roles()->sync([$request->role]);
 
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
+    }
+
+    /**
+     * Reset user password.
+     */
+    public function resetPassword(Request $request, User $user)
+    {
+        $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->update([
+            'password' => Hash::make($request->password),
+            'force_password_change' => true, // Force change on next login
+        ]);
+
+        return back()->with('success', "Password for {$user->name} has been reset.");
+    }
+
+    /**
+     * Toggle user active status.
+     */
+    public function toggleStatus(User $user)
+    {
+        $user->update(['is_active' => !$user->is_active]);
+        $status = $user->is_active ? 'activated' : 'deactivated';
+        
+        return back()->with('success', "User account has been {$status}.");
     }
 
     public function destroy(User $user)

@@ -37,6 +37,11 @@ use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 |
 */
 
+use App\Http\Controllers\ActivityMonitoringController;
+use App\Http\Controllers\RoleManagementController;
+use App\Http\Controllers\SecurityController;
+use App\Http\Controllers\SystemSettingsController;
+
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -55,17 +60,36 @@ Route::post('/webhooks/snipe', [WebhookController::class, 'handleSnipe']);
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     // User Management
+    Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
     Route::resource('users', UserController::class);
+
+    // System Settings & Monitoring
+    Route::prefix('settings')->name('settings.')->group(function () {
+        // Activity Monitoring
+        Route::get('/monitoring', [ActivityMonitoringController::class, 'dashboard'])->name('monitoring.dashboard');
+        Route::get('/monitoring/auth-logs', [ActivityMonitoringController::class, 'authLogs'])->name('monitoring.auth-logs');
+        Route::get('/monitoring/action-logs', [ActivityMonitoringController::class, 'actionLogs'])->name('monitoring.action-logs');
+
+        // Security Controls
+        Route::get('/security', [SecurityController::class, 'index'])->name('security.index');
+        Route::post('/security/update', [SecurityController::class, 'update'])->name('security.update');
+        Route::post('/security/force-logout-all', [SecurityController::class, 'forceLogoutAll'])->name('security.force-logout-all');
+        Route::post('/security/block-ip', [SecurityController::class, 'blockIp'])->name('security.block-ip');
+
+        // Role Management
+        Route::get('/roles', [RoleManagementController::class, 'index'])->name('roles.index');
+        Route::post('/roles', [RoleManagementController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{role}', [RoleManagementController::class, 'update'])->name('roles.update');
+        Route::post('/roles/{role}/clone', [RoleManagementController::class, 'clone'])->name('roles.clone');
+        Route::delete('/roles/{role}', [RoleManagementController::class, 'destroy'])->name('roles.destroy');
+
+        // General Settings
+        Route::get('/', [SystemSettingsController::class, 'index'])->name('index');
+        Route::post('/update', [SystemSettingsController::class, 'update'])->name('update');
+    });
+
     Route::get('activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
-
-    // Admin Dashboard
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
-    // Settings & Profile
-    Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::get('/settings/security', [SettingsController::class, 'security'])->name('settings.security');
-    Route::post('/settings/profile/update', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
-    Route::post('/settings/security/update', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
 
     // Members
     Route::get('/members/import-template', [MemberController::class, 'downloadTemplate'])->name('members.template');
