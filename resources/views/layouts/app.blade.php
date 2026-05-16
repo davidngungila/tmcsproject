@@ -913,6 +913,7 @@
           </button>
           <div class="nav-dropdown {{ request()->is('finance*') ? 'show' : '' }}">
             <a href="{{ route('finance.index') }}" class="dropdown-item {{ request()->is('finance') ? 'active' : '' }}">Contributions</a>
+            <a href="{{ route('finance.types.index') }}" class="dropdown-item {{ request()->is('finance/types*') ? 'active' : '' }}">Contribution Types</a>
             <a href="{{ route('finance.create') }}" class="dropdown-item {{ request()->is('finance/create') ? 'active' : '' }}">Record Giving</a>
             <a href="{{ route('expenses.index') }}" class="dropdown-item {{ request()->is('expenses*') ? 'active' : '' }}">Expenses</a>
             <a href="{{ route('reconciliation.index') }}" class="dropdown-item {{ request()->is('reconciliation*') ? 'active' : '' }}">Reconciliation</a>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContributionTypeController;
 use App\Http\Controllers\MessageTemplateController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
@@ -87,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/finance/reports', [FinancialReportController::class, 'index'])->name('finance.reports');
     Route::get('/finance/settings', [FinanceController::class, 'settings'])->name('finance.settings');
     Route::get('/finance/receipt/{contribution}', [FinanceController::class, 'receipt'])->name('finance.receipt');
+    Route::resource('finance/types', ContributionTypeController::class)->names('finance.types');
     Route::resource('finance', FinanceController::class);
     Route::resource('expenses', ExpenseController::class);
     Route::resource('reconciliation', ReconciliationController::class);

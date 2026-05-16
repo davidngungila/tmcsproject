@@ -46,6 +46,7 @@ class MemberCategoryController extends Controller
      */
     public function show(MemberCategory $category)
     {
+        $category->load('members');
         return view('members.categories.show', ['memberCategory' => $category]);
     }
 

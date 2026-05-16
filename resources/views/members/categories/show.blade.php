@@ -62,20 +62,52 @@
         <div class="card-body">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="stat-card blue">
-              <div class="stat-value">0</div>
+              <div class="stat-value">{{ $memberCategory->members->count() }}</div>
               <div class="stat-label">Total Members</div>
             </div>
             <div class="stat-card green">
-              <div class="stat-value">0%</div>
+              @php
+                $thisMonth = $memberCategory->members->where('registration_date', '>=', now()->startOfMonth())->count();
+                $total = $memberCategory->members->count();
+                $growth = $total > 0 ? ($thisMonth / $total) * 100 : 0;
+              @endphp
+              <div class="stat-value">{{ round($growth, 1) }}%</div>
               <div class="stat-label">Growth (This Month)</div>
             </div>
           </div>
 
           <div class="mt-8">
-            <h4 class="font-bold mb-4">Recent Members in this Category</h4>
+            <h4 class="font-bold mb-4">Members in this Category</h4>
+            @if($memberCategory->members->count() > 0)
+            <div class="table-wrap">
+              <table class="w-full">
+                <thead>
+                  <tr class="bg-muted/5 text-[10px] font-black uppercase tracking-widest text-muted">
+                    <th class="px-4 py-3 text-left">Registration</th>
+                    <th class="px-4 py-3 text-left">Name</th>
+                    <th class="px-4 py-3 text-left">Contact</th>
+                    <th class="px-4 py-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-muted/10">
+                  @foreach($memberCategory->members as $member)
+                  <tr class="hover:bg-primary/5 transition-colors text-xs">
+                    <td class="px-4 py-3 mono font-bold text-primary">{{ $member->registration_number }}</td>
+                    <td class="px-4 py-3 font-bold">{{ $member->full_name }}</td>
+                    <td class="px-4 py-3 text-muted">{{ $member->phone }}</td>
+                    <td class="px-4 py-3 text-right">
+                      <a href="{{ route('members.show', $member->id) }}" class="text-primary hover:text-primary-dark">View</a>
+                    </td>
+                  </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+            @else
             <div class="text-center py-12 bg-gray-50 rounded border border-dashed">
               <p class="text-muted text-sm">No members found in this category yet.</p>
             </div>
+            @endif
           </div>
         </div>
       </div>
