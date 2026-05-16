@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('receipt_number')->unique();
             $table->foreignId('member_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 10, 2);
-            $table->enum('contribution_type', ['almsgiving', 'offering', 'tithe', 'special_donation']);
-            $table->enum('payment_method', ['cash', 'bank_transfer', 'mobile_money', 'card', 'dynamic-qr']);
+            $table->string('contribution_type'); // Changed from enum to string for flexibility
+            $table->string('payment_method'); // Changed from enum to string for flexibility
             $table->date('contribution_date');
             $table->string('transaction_reference')->nullable();
             $table->text('notes')->nullable();
