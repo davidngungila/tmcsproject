@@ -67,13 +67,35 @@
             <td>
               <div class="flex gap-2">
                 @if(auth()->user()->hasPermission('users.edit'))
-                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-secondary btn-sm" title="Edit User">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </a>
+                
+                <!-- RESET PASSWORD TRIGGER -->
+                <button type="button" class="btn btn-secondary btn-sm" title="Reset Password" onclick="openResetModal({{ $user->id }}, '{{ $user->name }}')">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 7a2 2 0 012 2m-2 4a2 2 0 012-2m-2-4a2 2 0 01-2-2m-2 4h-3a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2m-2 4h.01"/></svg>
+                </button>
+
+                <!-- TOGGLE STATUS -->
+                <form action="{{ route('users.toggle-status', $user->id) }}" method="POST" class="inline">
+                  @csrf
+                  <button type="submit" class="btn btn-secondary btn-sm {{ $user->is_active ? 'text-amber-600' : 'text-green-600' }}" title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
+                    @if($user->is_active)
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                    @else
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    @endif
+                  </button>
+                </form>
                 @endif
-                @if(auth()->user()->hasPermission('users.delete'))
+
+                @if(auth()->user()->hasPermission('users.delete') && $user->id !== auth()->id())
                 <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?')">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" class="btn btn-secondary btn-sm text-red-600">Delete</button>
+                  <button type="submit" class="btn btn-secondary btn-sm text-red-600" title="Delete User">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
                 </form>
                 @endif
               </div>
@@ -94,4 +116,51 @@
     @endif
   </div>
 </div>
+
+<!-- RESET PASSWORD MODAL -->
+<div id="resetPasswordModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in">
+    <div class="p-6 border-b flex items-center justify-between">
+      <h3 class="font-bold text-lg">Reset Password</h3>
+      <button onclick="closeResetModal()" class="text-muted hover:text-primary">&times;</button>
+    </div>
+    <form id="resetPasswordForm" method="POST" class="p-6 space-y-4">
+      @csrf
+      <p class="text-xs text-muted">Setting a new password for <span id="resetUserName" class="font-bold text-primary"></span>. The user will be forced to change this password on their next login.</p>
+      
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Min 8 characters" required>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input type="password" name="password_confirmation" class="form-control" placeholder="Repeat new password" required>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-6">
+        <button type="button" onclick="closeResetModal()" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary px-8">Reset Password</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+  function openResetModal(userId, userName) {
+    const modal = document.getElementById('resetPasswordModal');
+    const form = document.getElementById('resetPasswordForm');
+    const nameSpan = document.getElementById('resetUserName');
+    
+    nameSpan.textContent = userName;
+    form.action = `/users/${userId}/reset-password`;
+    modal.classList.remove('hidden');
+  }
+
+  function closeResetModal() {
+    document.getElementById('resetPasswordModal').classList.add('hidden');
+  }
+</script>
+@endpush
 @endsection
