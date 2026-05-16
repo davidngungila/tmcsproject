@@ -6,6 +6,25 @@
 
 @section('content')
 <div class="animate-in space-y-6">
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-bold tracking-tight">User Details</h2>
+      <p class="text-sm text-muted mt-1">Detailed information and activity logs for {{ $user->name }}.</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a href="{{ route('users.index') }}" class="btn btn-secondary">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to Users
+      </a>
+      @if(auth()->user()->hasPermission('users.edit'))
+      <a href="{{ route('users.edit', $user->id) }}" class="btn btn-primary">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        Edit Profile
+      </a>
+      @endif
+    </div>
+  </div>
+
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- USER CARD -->
     <div class="lg:col-span-1 space-y-6">
@@ -72,6 +91,24 @@
           </div>
         </div>
       </div>
+
+      <!-- ACCOUNT SECURITY -->
+      @if(auth()->user()->hasPermission('users.edit'))
+      <div class="card bg-white shadow-sm p-6 border-l-4 border-l-amber-500">
+        <h4 class="text-xs font-black uppercase tracking-widest text-primary border-b pb-3 mb-4">Account Security</h4>
+        <p class="text-xs text-muted mb-4">Reset the user's password to a random string and send it via email.</p>
+        
+        <form action="{{ route('users.reset-password', $user->id) }}" method="POST" onsubmit="return confirm('⚠️ RESET PASSWORD CONFIRMATION\n\nAre you sure you want to reset the password for {{ $user->name }}?\n\nA new random secure password will be sent to {{ $user->email }}.')">
+          @csrf
+          <button type="submit" class="btn btn-gold w-full flex justify-center py-2.5">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+            Reset & Email Password
+          </button>
+        </form>
+      </div>
+      @endif
     </div>
 
     <!-- ACTIVITY & LOGS -->
