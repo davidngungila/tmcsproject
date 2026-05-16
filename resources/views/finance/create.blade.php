@@ -33,10 +33,14 @@
             <label class="form-label">Contribution Type *</label>
             <select name="contribution_type" class="form-control" required>
               <option value="">Select Type</option>
-              <option value="almsgiving" {{ old('contribution_type') == 'almsgiving' ? 'selected' : '' }}>Almsgiving/Zaka</option>
-              <option value="offering" {{ old('contribution_type') == 'offering' ? 'selected' : '' }}>Offering</option>
-              <option value="tithe" {{ old('contribution_type') == 'tithe' ? 'selected' : '' }}>Tithe</option>
-              <option value="special_donation" {{ old('contribution_type') == 'special_donation' ? 'selected' : '' }}>Special Donation</option>
+              @foreach($contributionTypes as $type)
+              <option value="{{ $type->name }}" 
+                data-min="{{ $type->min_amount }}" 
+                data-mandatory="{{ $type->is_mandatory }}"
+                {{ old('contribution_type') == $type->name ? 'selected' : '' }}>
+                {{ $type->name }} ({{ $type->code }})
+              </option>
+              @endforeach
             </select>
             @error('contribution_type') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
           </div>
@@ -196,9 +200,30 @@ document.querySelector('select[name="member_id"]').addEventListener('change', fu
 // Amount formatting
 document.querySelector('input[name="amount"]').addEventListener('input', function(e) {
   const value = parseFloat(e.target.value);
-  if (!isNaN(value) && value > 0) {
-    // You could show formatted amount here
-    console.log('Amount:', value);
+  const typeSelect = document.querySelector('select[name="contribution_type"]');
+  const selectedOption = typeSelect.options[typeSelect.selectedIndex];
+  
+  if (selectedOption && selectedOption.value) {
+    const minAmount = parseFloat(selectedOption.getAttribute('data-min'));
+    if (!isNaN(value) && value < minAmount) {
+      // You could show a warning here
+      console.warn(`Amount is below the minimum required for this type: TZS ${minAmount}`);
+    }
+  }
+});
+
+// Update min amount placeholder when type changes
+document.querySelector('select[name="contribution_type"]').addEventListener('change', function(e) {
+  const selectedOption = e.target.options[e.target.selectedIndex];
+  const amountInput = document.querySelector('input[name="amount"]');
+  
+  if (selectedOption && selectedOption.value) {
+    const minAmount = selectedOption.getAttribute('data-min');
+    amountInput.placeholder = `Minimum: TZS ${parseFloat(minAmount).toLocaleString()}`;
+    amountInput.min = minAmount;
+  } else {
+    amountInput.placeholder = "Enter amount";
+    amountInput.min = 0;
   }
 });
 </script>

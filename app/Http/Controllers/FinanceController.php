@@ -118,8 +118,9 @@ class FinanceController extends Controller
 
     public function create()
     {
-        $members = Member::all();
-        return view('finance.create', compact('members'));
+        $members = Member::where('is_active', true)->get();
+        $contributionTypes = ContributionType::where('is_active', true)->get();
+        return view('finance.create', compact('members', 'contributionTypes'));
     }
 
     public function store(Request $request)
