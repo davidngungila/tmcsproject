@@ -822,6 +822,7 @@
     .text-red { color: var(--red-500); }
     .w-full { width: 100%; }
     .rounded-full { border-radius: 50%; }
+    .border-light { border-color: var(--border-light); }
   </style>
 
   @stack('scripts')
@@ -1124,7 +1125,24 @@
 
       <!-- CONTENT -->
       <div class="content">
-        @yield('content')
+        <div style="min-height: calc(100vh - 160px);">
+          @yield('content')
+        </div>
+        
+        <!-- FOOTER -->
+        <footer class="mt-10 py-6 border-t border-light flex flex-col md:flex-row justify-between items-center gap-4 text-muted text-xs">
+          <div>
+            &copy; {{ date('Y') }} <span class="font-bold text-green-600">TmcsSmart</span>. Church Management System.
+          </div>
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+               System Active
+             </span>
+             <span class="opacity-30">|</span>
+             <span>v1.0.4</span>
+           </div>
+         </footer>
       </div>
     </div>
   </div>
