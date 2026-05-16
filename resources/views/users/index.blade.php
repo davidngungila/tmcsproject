@@ -42,14 +42,14 @@
           <tr>
             <td>
               <div class="flex items-center gap-2">
-                <div class="avatar overflow-hidden">
+                <div class="w-6 h-6 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center overflow-hidden text-[10px] font-bold border border-green-500/20">
                   @if($user->profile_image)
                     <img src="{{ asset('storage/' . $user->profile_image) }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
                   @else
-                    {{ substr($user->name, 0, 2) }}
+                    {{ substr($user->name, 0, 1) }}
                   @endif
                 </div>
-                <div style="font-weight:600;font-size:13px;">{{ $user->name }}</div>
+                <div style="font-weight:700;font-size:12px;" class="text-primary">{{ $user->name }}</div>
               </div>
             </td>
             <td>{{ $user->email }}</td>
@@ -64,22 +64,20 @@
                 {{ $user->is_active ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td>
-              <div class="flex gap-2">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-1">
                 @if(auth()->user()->hasPermission('users.edit'))
-                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-secondary btn-sm" title="Edit User">
+                <a href="{{ route('users.edit', $user->id) }}" class="p-1.5 rounded-lg text-muted hover:text-blue-600 hover:bg-blue-500/10 transition-all" title="Edit User">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                 </a>
                 
-                <!-- RESET PASSWORD TRIGGER -->
-                <button type="button" class="btn btn-secondary btn-sm" title="Reset Password" onclick="openResetModal({{ $user->id }}, '{{ $user->name }}')">
+                <button type="button" class="p-1.5 rounded-lg text-muted hover:text-purple-600 hover:bg-purple-500/10 transition-all" title="Reset Password" onclick="openResetModal({{ $user->id }}, '{{ $user->name }}')">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 7a2 2 0 012 2m-2 4a2 2 0 012-2m-2-4a2 2 0 01-2-2m-2 4h-3a2 2 0 00-2 2v7a2 2 0 002 2h2a2 2 0 002-2v-7a2 2 0 00-2-2m-2 4h.01"/></svg>
                 </button>
 
-                <!-- TOGGLE STATUS -->
                 <form action="{{ route('users.toggle-status', $user->id) }}" method="POST" class="inline">
                   @csrf
-                  <button type="submit" class="btn btn-secondary btn-sm {{ $user->is_active ? 'text-amber-600' : 'text-green-600' }}" title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
+                  <button type="submit" class="p-1.5 rounded-lg {{ $user->is_active ? 'text-muted hover:text-amber-600 hover:bg-amber-500/10' : 'text-muted hover:text-green-600 hover:bg-green-500/10' }} transition-all" title="{{ $user->is_active ? 'Deactivate' : 'Activate' }}">
                     @if($user->is_active)
                       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
                     @else
@@ -90,10 +88,10 @@
                 @endif
 
                 @if(auth()->user()->hasPermission('users.delete') && $user->id !== auth()->id())
-                <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?')">
+                <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user?')" class="inline">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" class="btn btn-secondary btn-sm text-red-600" title="Delete User">
+                  <button type="submit" class="p-1.5 rounded-lg text-muted hover:text-red-600 hover:bg-red-500/10 transition-all" title="Delete User">
                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                   </button>
                 </form>
