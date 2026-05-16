@@ -122,6 +122,10 @@
       
       <button type="submit" class="btn">Sign In</button>
     </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 13px;">
+      <p style="color: var(--text-secondary);">Don't have an account? <a href="{{ route('register') }}" style="color: var(--green-600); font-weight: 600; text-decoration: none;">Register here</a></p>
+    </div>
     
     <div style="text-align: center; margin-top: 2rem; color: var(--text-secondary); font-size: 12px;">
       <p>© 2026 TmcsSmart Church Management System</p>

@@ -40,6 +40,8 @@ use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
 // Root redirect to login
 Route::get('/', function () {
@@ -77,6 +79,7 @@ Route::middleware('auth')->group(function () {
         'destroy' => 'members.categories.destroy',
     ]);
     Route::get('/members/{member}/id-card', [MemberController::class, 'idCard'])->name('members.id-card');
+    Route::post('/members/{member}/approve', [MemberController::class, 'approve'])->name('members.approve');
     Route::resource('members', MemberController::class)->except(['categories']);
 
     // Finance

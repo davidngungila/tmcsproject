@@ -199,6 +199,38 @@ class MemberController extends Controller
         return redirect()->route('members.index')->with('success', 'Member updated successfully');
     }
 
+    /**
+     * Approve a self-registered member.
+     */
+    public function approve(Member $member)
+    {
+        // 1. Activate User
+        if ($member->user) {
+            $member->user->update(['is_active' => true]);
+        }
+
+        // 2. Activate Member
+        $member->update([
+            'is_active' => true,
+            'registration_number' => 'TMCS-' . date('Y') . '-' . str_pad(Member::where('is_active', true)->count() + 1, 3, '0', STR_PAD_LEFT),
+        ]);
+
+        // 3. Activate Group Memberships
+        $member->groups()->updateExistingPivot($member->groups->pluck('id'), ['is_active' => true]);
+
+        // 4. Send Notification (Optional but recommended)
+        if ($member->phone) {
+            try {
+                $smsMessage = "Congratulations {$member->full_name}! Your TMCS account has been approved. Your ID is {$member->registration_number}. You can now login to your portal.";
+                $this->messagingService->sendSms($member->phone, $smsMessage);
+            } catch (\Exception $e) {
+                // Log and continue
+            }
+        }
+
+        return back()->with('success', 'Member approved successfully! Registration number assigned: ' . $member->registration_number);
+    }
+
     public function destroy(Member $member)
     {
         $member->delete();
