@@ -10,7 +10,7 @@ class WebhookController extends Controller
 {
     protected $snipeService;
 
-    public function __construct(SnipePaymentService $snipeService)
+    public function __construct(SnippePaymentService $snipeService)
     {
         $this->snipeService = $snipeService;
     }

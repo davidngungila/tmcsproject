@@ -17,7 +17,7 @@ class FinanceController extends Controller
     protected $snipeService;
     protected $messagingService;
 
-    public function __construct(SnipePaymentService $snipeService, MessagingService $messagingService)
+    public function __construct(SnippePaymentService $snipeService, MessagingService $messagingService)
     {
         $this->snipeService = $snipeService;
         $this->messagingService = $messagingService;
