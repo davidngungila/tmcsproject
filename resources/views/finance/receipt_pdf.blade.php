@@ -182,7 +182,7 @@
                             $qrContent .= "AMOUNT: TZS " . number_format($contribution->amount) . "\n";
                             $qrContent .= "VERIFIED: " . ($contribution->is_verified ? 'YES' : 'NO');
                         @endphp
-                        <img src="data:image/png;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')->size(80)->margin(0)->generate($qrContent)) !!} " style="width: 25mm; height: 25mm;">
+                        <img src="data:image/svg+xml;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(80)->margin(0)->generate($qrContent)) !!} " style="width: 25mm; height: 25mm;">
                     </td>
                 </tr>
                 <tr>

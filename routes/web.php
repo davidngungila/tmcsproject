@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/profile/update', [MemberProfileController::class, 'update'])->name('profile.update');
         Route::get('/pay', [MemberProfileController::class, 'pay'])->name('profile.pay');
         Route::post('/pay', [MemberProfileController::class, 'processPayment'])->name('profile.process-payment');
+        Route::get('/payment-status/{contribution}', [MemberProfileController::class, 'checkStatus'])->name('profile.payment-status');
         
         // New specific member portal views
         Route::get('/communities', [MemberProfileController::class, 'communities'])->name('communities');

@@ -5,51 +5,6 @@
 @section('breadcrumb', 'Home / Member / Pay')
 
 @section('content')
-<!-- PAYMENT SPLASH OVERLAY -->
-<div id="paymentSplash" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center hidden">
-    <div class="max-w-md w-full p-8 text-center">
-        <div class="mb-8 relative">
-            <svg class="w-32 h-32 mx-auto transform -rotate-90">
-                <circle cx="64" cy="64" r="60" stroke="#f3f4f6" stroke-width="8" fill="transparent" />
-                <circle id="progressCircle" cx="64" cy="64" r="60" stroke="#059669" stroke-width="8" fill="transparent"
-                    stroke-dasharray="376.99" stroke-dashoffset="376.99" class="transition-all duration-500" />
-            </svg>
-            <div class="absolute inset-0 flex items-center justify-center">
-                <span id="progressText" class="text-3xl font-black text-green-600">0%</span>
-            </div>
-        </div>
-
-        <h2 id="statusTitle" class="text-xl font-bold text-gray-900 mb-2">Initiating Secure Payment</h2>
-        <p id="statusDesc" class="text-sm text-gray-500 mb-8">Connecting to Snippe Payment Gateway...</p>
-
-        <div class="space-y-4">
-            <div class="step-item flex items-center gap-3 text-left">
-                <div id="step1" class="w-6 h-6 rounded-full border-2 border-green-500 flex items-center justify-center text-green-500 transition-all">
-                    <span class="text-[10px] font-bold">1</span>
-                </div>
-                <span class="text-xs font-medium text-gray-700">Validating transaction details</span>
-            </div>
-            <div class="step-item flex items-center gap-3 text-left">
-                <div id="step2" class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 transition-all">
-                    <span class="text-[10px] font-bold">2</span>
-                </div>
-                <span class="text-xs font-medium text-gray-400">Requesting USSD Push / Session</span>
-            </div>
-            <div class="step-item flex items-center gap-3 text-left">
-                <div id="step3" class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 transition-all">
-                    <span class="text-[10px] font-bold">3</span>
-                </div>
-                <span class="text-xs font-medium text-gray-400">Waiting for your confirmation</span>
-            </div>
-        </div>
-
-        <div id="countdownArea" class="mt-10 hidden">
-            <div class="text-[10px] uppercase font-bold text-gray-400 mb-1">Time remaining to confirm</div>
-            <div id="timer" class="text-2xl font-mono font-bold text-red-500">01:00</div>
-        </div>
-    </div>
-</div>
-
 <div class="animate-in">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- PAYMENT FORM -->
@@ -192,23 +147,92 @@
 </div>
 @endsection
 
+<!-- PAYMENT SPLASH OVERLAY -->
+<div id="paymentSplash" class="fixed inset-0 z-[9999] bg-white hidden flex-col items-center justify-center" style="display: none !important;">
+    <div class="max-w-md w-full p-8 text-center">
+        <div id="progressWrapper" class="mb-8 relative">
+            <svg class="w-32 h-32 mx-auto transform -rotate-90">
+                <circle cx="64" cy="64" r="60" stroke="#f3f4f6" stroke-width="8" fill="transparent" />
+                <circle id="progressCircle" cx="64" cy="64" r="60" stroke="#059669" stroke-width="8" fill="transparent"
+                    stroke-dasharray="376.99" stroke-dashoffset="376.99" style="transition: stroke-dashoffset 0.5s ease;" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span id="progressText" class="text-3xl font-black text-green-600">0%</span>
+            </div>
+        </div>
+
+        <div id="successIcon" class="mb-8 hidden">
+            <div class="w-24 h-24 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto animate-bounce">
+                <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+        </div>
+
+        <h2 id="statusTitle" class="text-xl font-bold text-gray-900 mb-2">Initiating Secure Payment</h2>
+        <p id="statusDesc" class="text-sm text-gray-500 mb-8">Connecting to Snippe Payment Gateway...</p>
+
+        <div class="space-y-4">
+            <div class="step-item flex items-center gap-3 text-left">
+                <div id="step1" class="w-7 h-7 rounded-full border-2 border-green-500 bg-green-500 flex items-center justify-center text-white transition-all">
+                    <span class="text-[10px] font-bold">1</span>
+                </div>
+                <span id="step1Text" class="text-xs font-bold text-gray-900">Validating transaction details</span>
+            </div>
+            <div id="step2Wrapper" class="step-item flex items-center gap-3 text-left opacity-40">
+                <div id="step2" class="w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 transition-all">
+                    <span class="text-[10px] font-bold">2</span>
+                </div>
+                <span id="step2Text" class="text-xs font-medium text-gray-400">Requesting USSD Push / Session</span>
+            </div>
+            <div id="step3Wrapper" class="step-item flex items-center gap-3 text-left opacity-40">
+                <div id="step3" class="w-7 h-7 rounded-full border-2 border-gray-300 flex items-center justify-center text-gray-400 transition-all">
+                    <span class="text-[10px] font-bold">3</span>
+                </div>
+                <span id="step3Text" class="text-xs font-medium text-gray-400">Waiting for your confirmation</span>
+            </div>
+        </div>
+
+        <div id="countdownArea" class="mt-10" style="display: none;">
+            <div class="text-[10px] uppercase font-bold text-gray-400 mb-1">Time remaining to confirm</div>
+            <div id="timer" class="text-2xl font-mono font-bold text-red-500">01:00</div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const splash = document.getElementById('paymentSplash');
+    splash.style.setProperty('display', 'none', 'important');
+    splash.classList.add('hidden');
+});
+
 document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const form = this;
     const splash = document.getElementById('paymentSplash');
     const circle = document.getElementById('progressCircle');
     const text = document.getElementById('progressText');
     const title = document.getElementById('statusTitle');
     const desc = document.getElementById('statusDesc');
     const step2 = document.getElementById('step2');
+    const step2Wrapper = document.getElementById('step2Wrapper');
     const step3 = document.getElementById('step3');
+    const step3Wrapper = document.getElementById('step3Wrapper');
+    const step2Text = document.getElementById('step2Text');
+    const step3Text = document.getElementById('step3Text');
     const countdownArea = document.getElementById('countdownArea');
     const timerDisplay = document.getElementById('timer');
+    const progressWrapper = document.getElementById('progressWrapper');
+    const successIcon = document.getElementById('successIcon');
 
     splash.classList.remove('hidden');
+    splash.style.setProperty('display', 'flex', 'important');
     
     let progress = 0;
     const circumference = 376.99;
+    let contributionId = null;
+    let pollingInterval = null;
     
     const updateProgress = (val) => {
         const offset = circumference - (val / 100 * circumference);
@@ -216,62 +240,122 @@ document.getElementById('paymentForm').addEventListener('submit', function(e) {
         text.textContent = Math.round(val) + '%';
     };
 
-    // Phase 1: Local validation (0-30%)
+    const markStepComplete = (stepEl, textEl) => {
+        stepEl.classList.replace('border-gray-300', 'border-green-500');
+        stepEl.classList.add('bg-green-500', 'text-white');
+        stepEl.classList.remove('text-gray-400');
+        textEl.classList.replace('text-gray-400', 'text-gray-900');
+        textEl.classList.add('font-bold');
+    };
+
+    // PHASE 1: Validating
     const phase1 = setInterval(() => {
         progress += 2;
         updateProgress(progress);
         if (progress >= 30) {
             clearInterval(phase1);
             
-            // Phase 2: Gateway Handshake (30-70%)
+            // PHASE 2: Gateway
             title.textContent = "Connecting Gateway";
             desc.textContent = "Requesting secure payment channel...";
-            step2.classList.replace('border-gray-200', 'border-green-500');
-            step2.classList.replace('text-gray-400', 'text-green-500');
-            step2.nextElementSibling.classList.replace('text-gray-400', 'text-gray-700');
+            step2Wrapper.classList.remove('opacity-40');
+            markStepComplete(step2, step2Text);
 
-            const phase2 = setInterval(() => {
-                progress += 1;
-                updateProgress(progress);
-                if (progress >= 70) {
-                    clearInterval(phase2);
-                    
-                    // Phase 3: Awaiting User (70-95%)
-                    title.textContent = "Check Your Phone";
-                    desc.textContent = "USSD Push sent to {{ $member->phone }}";
-                    step3.classList.replace('border-gray-200', 'border-green-500');
-                    step3.classList.replace('text-gray-400', 'text-green-500');
-                    step3.nextElementSibling.classList.replace('text-gray-400', 'text-gray-700');
-                    countdownArea.classList.remove('hidden');
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+            })
+            .then(async response => {
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Payment failed.');
+                
+                contributionId = data.contribution_id;
 
-                    // Start 1 minute countdown
-                    let seconds = 60;
-                    const countdown = setInterval(() => {
-                        seconds--;
-                        const mins = Math.floor(seconds / 60);
-                        const secs = seconds % 60;
-                        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                        
-                        // Slowly crawl progress during wait
-                        if (progress < 95) {
-                            progress += 0.4;
-                            updateProgress(progress);
-                        }
-
-                        if (seconds <= 0) {
-                            clearInterval(countdown);
-                            updateProgress(100);
-                            title.textContent = "Refreshing Session";
-                            desc.textContent = "Updating payment status...";
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 1500);
-                        }
-                    }, 1000);
+                if (data.checkout_url) {
+                    updateProgress(100);
+                    window.location.href = data.checkout_url;
+                    return;
                 }
-            }, 100);
+
+                // PHASE 3: USSD Push
+                const finishPhase2 = setInterval(() => {
+                    progress += 2;
+                    updateProgress(progress);
+                    if (progress >= 70) {
+                        clearInterval(finishPhase2);
+                        title.textContent = "Check Your Phone";
+                        desc.textContent = "USSD Push sent to {{ $member->phone }}";
+                        step3Wrapper.classList.remove('opacity-40');
+                        markStepComplete(step3, step3Text);
+                        countdownArea.style.display = 'block';
+
+                        // Start Polling & Countdown
+                        startPolling(contributionId);
+                        startCountdown();
+                    }
+                }, 50);
+            })
+            .catch(error => {
+                alert(error.message);
+                splash.style.setProperty('display', 'none', 'important');
+                splash.classList.add('hidden');
+            });
         }
     }, 50);
+
+    function startPolling(id) {
+        pollingInterval = setInterval(() => {
+            fetch(`/member/payment-status/${id}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.is_verified) {
+                    handleSuccess();
+                }
+            });
+        }, 3000);
+    }
+
+    function handleSuccess() {
+        clearInterval(pollingInterval);
+        updateProgress(100);
+        progressWrapper.classList.add('hidden');
+        successIcon.classList.remove('hidden');
+        title.textContent = "Payment Successful!";
+        desc.textContent = "God bless you for your contribution.";
+        countdownArea.style.display = 'none';
+        
+        setTimeout(() => {
+            window.location.href = "{{ route('member.contributions.index') }}";
+        }, 3000);
+    }
+
+    function startCountdown() {
+        let seconds = 60;
+        const countdown = setInterval(() => {
+            seconds--;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            if (progress < 95) {
+                progress += 0.4;
+                updateProgress(progress);
+            }
+
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                if (pollingInterval) clearInterval(pollingInterval);
+                
+                title.textContent = "Processing...";
+                desc.textContent = "Taking you to your contributions history...";
+                setTimeout(() => {
+                    window.location.href = "{{ route('member.contributions.index') }}";
+                }, 2000);
+            }
+        }, 1000);
+    }
 });
 </script>
 @endpush

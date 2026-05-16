@@ -64,19 +64,50 @@ class ProfileController extends Controller
             $response = $this->snipeService->createMobileMoneyPayment($contribution);
             
             if (isset($response['error'])) {
+                if ($request->ajax()) {
+                    return response()->json(['error' => $response['error']], 422);
+                }
                 return back()->with('error', 'Payment failed: ' . $response['error']);
             }
 
-            return redirect()->route('member.profile.index')->with('success', 'Payment initiated! Please check your phone for the USSD prompt.');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Payment initiated! Please check your phone for the USSD prompt.',
+                    'contribution_id' => $contribution->id,
+                    'redirect_url' => route('member.contributions.index')
+                ]);
+            }
+
+            return redirect()->route('member.contributions.index')->with('success', 'Payment initiated! Please check your phone for the USSD prompt.');
         }
 
         $checkoutResponse = $this->snipeService->createCheckout($contribution);
 
         if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
+            if ($request->ajax()) {
+                return response()->json(['checkout_url' => $checkoutResponse['checkout_url']]);
+            }
             return redirect($checkoutResponse['checkout_url']);
         }
 
+        if ($request->ajax()) {
+            return response()->json(['error' => 'Failed to initiate payment session.'], 422);
+        }
         return back()->with('error', 'Failed to initiate payment session. Please try again.');
+    }
+
+    public function checkStatus(Contribution $contribution)
+    {
+        // Ensure the contribution belongs to the authenticated member
+        if ($contribution->member_id !== Auth::user()->member->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        return response()->json([
+            'is_verified' => (bool) $contribution->is_verified,
+            'status' => $contribution->is_verified ? 'Success' : 'Pending'
+        ]);
     }
 
     public function index()

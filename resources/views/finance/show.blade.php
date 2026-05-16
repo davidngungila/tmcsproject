@@ -33,6 +33,11 @@
                         <div>
                             <label class="text-[10px] text-muted uppercase font-bold tracking-wider">Amount</label>
                             <p class="text-xl font-bold text-green-600">TZS {{ number_format($contribution->amount, 0) }}</p>
+                            @php
+                                $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+                                $words = $f->format($contribution->amount);
+                            @endphp
+                            <p class="text-[10px] text-muted italic mt-1 capitalize">{{ $words }} Tanzanian Shillings Only</p>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
@@ -59,6 +64,22 @@
             </div>
 
             <!-- QUICK ACTIONS -->
+            <div class="card">
+                <div class="card-header"><h4 class="card-title">Verification QR</h4></div>
+                <div class="card-body text-center">
+                    @php
+                        $qrContent = "RECEIPT: " . $contribution->receipt_number . "\n";
+                        $qrContent .= "MEMBER: " . ($contribution->member->full_name ?? 'N/A') . "\n";
+                        $qrContent .= "AMOUNT: TZS " . number_format($contribution->amount) . "\n";
+                        $qrContent .= "VERIFIED: " . ($contribution->is_verified ? 'YES' : 'NO');
+                    @endphp
+                    <div class="p-4 bg-white rounded-xl border border-light inline-block mb-4">
+                        <img src="data:image/svg+xml;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(120)->margin(0)->generate($qrContent)) !!} ">
+                    </div>
+                    <p class="text-[10px] text-muted">Scan to verify this transaction authenticity using any QR scanner.</p>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header"><h4 class="card-title">Quick Actions</h4></div>
                 <div class="card-body space-y-2">

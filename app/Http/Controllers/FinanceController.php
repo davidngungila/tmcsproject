@@ -187,9 +187,16 @@ class FinanceController extends Controller
 
     public function receipt(Contribution $contribution)
     {
-        // Allow members to download their own receipts
-        if (auth()->user()->member && auth()->user()->member->id !== $contribution->member_id) {
-            abort(403, 'Unauthorized access to this receipt.');
+        // Check if the user is a member and ensure they can only access their own receipts
+        if (auth()->user()->member) {
+            if (auth()->user()->member->id !== $contribution->member_id) {
+                abort(403, 'Unauthorized access to this receipt.');
+            }
+        } else {
+            // For non-member users (Admins/Finance), check for global permission
+            if (!auth()->user()->hasPermission('finance.view')) {
+                abort(403, 'Unauthorized access to financial records.');
+            }
         }
 
         $contribution->load('member');
@@ -201,6 +208,11 @@ class FinanceController extends Controller
             // Sanitize filename to remove slashes
             $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
             return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
+        }
+
+        // Return a professional web view of the receipt (reusing finance.show or a dedicated member view)
+        if (auth()->user()->member) {
+            return view('member.profile.receipt_view', compact('contribution'));
         }
 
         return view('finance.show', compact('contribution'));
