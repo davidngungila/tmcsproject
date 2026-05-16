@@ -5,6 +5,51 @@
 @section('breadcrumb', 'Home / Member / Pay')
 
 @section('content')
+<!-- PAYMENT SPLASH OVERLAY -->
+<div id="paymentSplash" class="fixed inset-0 z-[9999] bg-white flex items-center justify-center hidden">
+    <div class="max-w-md w-full p-8 text-center">
+        <div class="mb-8 relative">
+            <svg class="w-32 h-32 mx-auto transform -rotate-90">
+                <circle cx="64" cy="64" r="60" stroke="#f3f4f6" stroke-width="8" fill="transparent" />
+                <circle id="progressCircle" cx="64" cy="64" r="60" stroke="#059669" stroke-width="8" fill="transparent"
+                    stroke-dasharray="376.99" stroke-dashoffset="376.99" class="transition-all duration-500" />
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <span id="progressText" class="text-3xl font-black text-green-600">0%</span>
+            </div>
+        </div>
+
+        <h2 id="statusTitle" class="text-xl font-bold text-gray-900 mb-2">Initiating Secure Payment</h2>
+        <p id="statusDesc" class="text-sm text-gray-500 mb-8">Connecting to Snippe Payment Gateway...</p>
+
+        <div class="space-y-4">
+            <div class="step-item flex items-center gap-3 text-left">
+                <div id="step1" class="w-6 h-6 rounded-full border-2 border-green-500 flex items-center justify-center text-green-500 transition-all">
+                    <span class="text-[10px] font-bold">1</span>
+                </div>
+                <span class="text-xs font-medium text-gray-700">Validating transaction details</span>
+            </div>
+            <div class="step-item flex items-center gap-3 text-left">
+                <div id="step2" class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 transition-all">
+                    <span class="text-[10px] font-bold">2</span>
+                </div>
+                <span class="text-xs font-medium text-gray-400">Requesting USSD Push / Session</span>
+            </div>
+            <div class="step-item flex items-center gap-3 text-left">
+                <div id="step3" class="w-6 h-6 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-400 transition-all">
+                    <span class="text-[10px] font-bold">3</span>
+                </div>
+                <span class="text-xs font-medium text-gray-400">Waiting for your confirmation</span>
+            </div>
+        </div>
+
+        <div id="countdownArea" class="mt-10 hidden">
+            <div class="text-[10px] uppercase font-bold text-gray-400 mb-1">Time remaining to confirm</div>
+            <div id="timer" class="text-2xl font-mono font-bold text-red-500">01:00</div>
+        </div>
+    </div>
+</div>
+
 <div class="animate-in">
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- PAYMENT FORM -->
@@ -15,8 +60,9 @@
           <div class="card-subtitle">Securely contribute to church funds using mobile money or card.</div>
         </div>
         <div class="card-body">
-          <form action="{{ route('member.profile.process-payment') }}" method="POST">
+          <form id="paymentForm" action="{{ route('member.profile.process-payment') }}" method="POST">
             @csrf
+            {{-- Form fields stay the same --}}
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div class="form-group">
@@ -145,3 +191,87 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+    const splash = document.getElementById('paymentSplash');
+    const circle = document.getElementById('progressCircle');
+    const text = document.getElementById('progressText');
+    const title = document.getElementById('statusTitle');
+    const desc = document.getElementById('statusDesc');
+    const step2 = document.getElementById('step2');
+    const step3 = document.getElementById('step3');
+    const countdownArea = document.getElementById('countdownArea');
+    const timerDisplay = document.getElementById('timer');
+
+    splash.classList.remove('hidden');
+    
+    let progress = 0;
+    const circumference = 376.99;
+    
+    const updateProgress = (val) => {
+        const offset = circumference - (val / 100 * circumference);
+        circle.style.strokeDashoffset = offset;
+        text.textContent = Math.round(val) + '%';
+    };
+
+    // Phase 1: Local validation (0-30%)
+    const phase1 = setInterval(() => {
+        progress += 2;
+        updateProgress(progress);
+        if (progress >= 30) {
+            clearInterval(phase1);
+            
+            // Phase 2: Gateway Handshake (30-70%)
+            title.textContent = "Connecting Gateway";
+            desc.textContent = "Requesting secure payment channel...";
+            step2.classList.replace('border-gray-200', 'border-green-500');
+            step2.classList.replace('text-gray-400', 'text-green-500');
+            step2.nextElementSibling.classList.replace('text-gray-400', 'text-gray-700');
+
+            const phase2 = setInterval(() => {
+                progress += 1;
+                updateProgress(progress);
+                if (progress >= 70) {
+                    clearInterval(phase2);
+                    
+                    // Phase 3: Awaiting User (70-95%)
+                    title.textContent = "Check Your Phone";
+                    desc.textContent = "USSD Push sent to {{ $member->phone }}";
+                    step3.classList.replace('border-gray-200', 'border-green-500');
+                    step3.classList.replace('text-gray-400', 'text-green-500');
+                    step3.nextElementSibling.classList.replace('text-gray-400', 'text-gray-700');
+                    countdownArea.classList.remove('hidden');
+
+                    // Start 1 minute countdown
+                    let seconds = 60;
+                    const countdown = setInterval(() => {
+                        seconds--;
+                        const mins = Math.floor(seconds / 60);
+                        const secs = seconds % 60;
+                        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                        
+                        // Slowly crawl progress during wait
+                        if (progress < 95) {
+                            progress += 0.4;
+                            updateProgress(progress);
+                        }
+
+                        if (seconds <= 0) {
+                            clearInterval(countdown);
+                            updateProgress(100);
+                            title.textContent = "Refreshing Session";
+                            desc.textContent = "Updating payment status...";
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1500);
+                        }
+                    }, 1000);
+                }
+            }, 100);
+        }
+    }, 50);
+});
+</script>
+@endpush
