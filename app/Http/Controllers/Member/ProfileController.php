@@ -11,6 +11,8 @@ use App\Models\Contribution;
 
 use App\Models\Group;
 
+use Illuminate\Support\Str;
+
 class ProfileController extends Controller
 {
     protected $snipeService;
