@@ -200,7 +200,10 @@ class FinanceController extends Controller
         // Check if the request wants a PDF download or a web view
         if (request()->has('download')) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finance.receipt_pdf', compact('contribution'));
-            return $pdf->download("Receipt_{$contribution->receipt_number}.pdf");
+            
+            // Sanitize filename to remove slashes
+            $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
+            return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
         }
 
         return view('finance.show', compact('contribution'));

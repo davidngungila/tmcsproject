@@ -208,7 +208,10 @@ class MemberController extends Controller
         if (request()->has('download')) {
             $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('members.id_card_pdf', compact('member'))
                 ->setPaper([0, 0, 242.65, 153.01], 'portrait'); // CR80 Size in points
-            return $pdf->download("ID_Card_{$member->registration_number}.pdf");
+            
+            // Sanitize filename to remove slashes
+            $safeRegNo = str_replace(['/', '\\'], '-', $member->registration_number);
+            return $pdf->download("ID_Card_{$safeRegNo}.pdf");
         }
 
         return view('members.id_card', compact('member'));
