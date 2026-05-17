@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\SnippePaymentService;
 use App\Models\Contribution;
+use App\Models\ContributionType;
+use App\Services\GroupService;
 
 use App\Models\Group;
 use App\Models\LedgerEntry;
@@ -187,6 +189,9 @@ class ProfileController extends Controller
             'address' => 'nullable|string',
             'baptismal_name' => 'nullable|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'region' => 'nullable|string',
+            'diocese' => 'nullable|string',
+            'parish' => 'nullable|string',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -200,7 +205,43 @@ class ProfileController extends Controller
 
         $member->update($validated);
 
-        return redirect()->route('member.profile.index')->with('success', 'Profile updated successfully.');
+        // Automatically assign to communities based on new info
+        app(GroupService::class)->autoAssignMemberToCommunities($member);
+
+        return redirect()->route('member.profile.index')->with('success', 'Profile updated successfully and communities reassigned.');
+    }
+
+    public function joinGroup(Request $request, Group $group)
+    {
+        $member = Auth::user()->member;
+
+        if ($group->type === 'Community') {
+            return back()->with('error', 'Communities are automatically assigned by the system.');
+        }
+
+        if ($member->groups()->where('groups.id', $group->id)->exists()) {
+            return back()->with('info', 'You are already a member of this group.');
+        }
+
+        $member->groups()->attach($group->id, [
+            'join_date' => now(),
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', 'You have successfully joined ' . $group->name);
+    }
+
+    public function leaveGroup(Request $request, Group $group)
+    {
+        $member = Auth::user()->member;
+
+        if ($group->type === 'Community') {
+            return back()->with('error', 'You cannot leave an automatically assigned community.');
+        }
+
+        $member->groups()->detach($group->id);
+
+        return back()->with('success', 'You have left ' . $group->name);
     }
 
     public function communities()
@@ -244,7 +285,14 @@ class ProfileController extends Controller
                     ->orWhere('accountant_id', $member->id);
             })->get();
 
-        return view('member.profile.groups', compact('member', 'groups', 'ledGroups'));
+        // Available groups to join (Active, NOT Community, NOT already a member)
+        $availableGroups = Group::where('type', '!=', 'Community')
+            ->where('is_active', true)
+            ->whereDoesntHave('members', function($query) use ($member) {
+                $query->where('members.id', $member->id);
+            })->get();
+
+        return view('member.profile.groups', compact('member', 'groups', 'ledGroups', 'availableGroups'));
     }
 
     public function contributions()

@@ -13,6 +13,7 @@ class Group extends Model
         'name',
         'description',
         'type',
+        'criteria',
         'leader_id',
         'chairperson_id',
         'secretary_id',
@@ -29,6 +30,7 @@ class Group extends Model
         'formation_date' => 'date',
         'is_active' => 'boolean',
         'regular_contribution_amount' => 'decimal:2',
+        'criteria' => 'array',
     ];
 
     /**

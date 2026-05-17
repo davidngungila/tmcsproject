@@ -88,10 +88,16 @@
               <div class="w-14 h-14 rounded-2xl bg-white flex-center shadow-sm text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all">
                 <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
               </div>
-              <div>
+              <div class="flex-1">
                 <div class="font-black text-gray-800 mb-1">{{ $group->name }}</div>
                 <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">{{ $group->type }} • Joined: {{ $group->pivot->join_date ? \Carbon\Carbon::parse($group->pivot->join_date)->format('M d, Y') : 'N/A' }}</div>
-                <span class="badge gold text-[9px] uppercase font-bold">Active Member</span>
+                <div class="flex items-center justify-between">
+                  <span class="badge gold text-[9px] uppercase font-bold">Active Member</span>
+                  <form action="{{ route('member.groups.leave', $group->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this group?')">
+                    @csrf
+                    <button type="submit" class="text-[10px] font-black text-red-500 uppercase tracking-widest hover:text-red-700 transition-colors">Leave Group</button>
+                  </form>
+                </div>
               </div>
             </div>
           @endforeach
@@ -102,6 +108,48 @@
             <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="text-gray-300"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </div>
           <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">No Group Memberships Found</p>
+        </div>
+      @endif
+    </div>
+  </div>
+
+  <!-- DISCOVERY SECTION -->
+  <div class="card border-none shadow-sm overflow-hidden">
+    <div class="card-header bg-gray-50/50 border-b p-6">
+      <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">Discover More Groups</h3>
+      <p class="text-xs text-muted font-medium">Join other ministries and associations within the chaplaincy</p>
+    </div>
+    <div class="card-body p-8">
+      @if($availableGroups->count() > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          @foreach($availableGroups as $group)
+            <div class="p-6 bg-white rounded-2xl border border-gray-100 flex flex-col hover:shadow-lg transition-all group">
+              <div class="flex items-start gap-5 mb-6">
+                <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all">
+                  <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </div>
+                <div>
+                  <div class="font-black text-gray-800 mb-1 line-clamp-1">{{ $group->name }}</div>
+                  <div class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ $group->type }}</div>
+                </div>
+              </div>
+              
+              <div class="mb-6 flex-1">
+                <p class="text-xs text-gray-500 line-clamp-2">{{ $group->description ?: 'No description available for this group.' }}</p>
+              </div>
+
+              <form action="{{ route('member.groups.join', $group->id) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-warning w-full py-3 rounded-xl font-black uppercase tracking-widest text-[10px] text-amber-900 shadow-sm hover:shadow-md transition-all">
+                  Join Group
+                </button>
+              </form>
+            </div>
+          @endforeach
+        </div>
+      @else
+        <div class="text-center py-12">
+          <p class="text-sm font-bold text-gray-400 uppercase tracking-widest">No new groups available to join at the moment.</p>
         </div>
       @endif
     </div>

@@ -76,11 +76,30 @@
 
   <!-- MEMBERSHIP SECTION -->
   <div class="card shadow-sm border-none">
-    <div class="card-header border-b p-6">
-      <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">My Community Memberships</h3>
-      <p class="text-xs text-muted font-medium">Communities you are a member of</p>
+    <div class="card-header border-b p-6 flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">My Community Memberships</h3>
+        <p class="text-xs text-muted font-medium">Communities you are a member of</p>
+      </div>
+      <div class="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
+        <svg width="16" height="16" class="text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest">Automatically Assigned</span>
+      </div>
     </div>
     <div class="card-body p-8">
+      <div class="mb-8 p-6 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex-center shrink-0">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-amber-900 uppercase tracking-wider mb-1">System Managed Assignments</h4>
+          <p class="text-[11px] text-amber-700 font-medium leading-relaxed">
+            Communities are automatically assigned by the system based on your profile information (Parish, Diocese, and Region). 
+            If your community assignment is incorrect, please update your profile details or contact the administrator.
+          </p>
+        </div>
+      </div>
+
       @if($communities->count() > 0)
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           @foreach($communities as $community)

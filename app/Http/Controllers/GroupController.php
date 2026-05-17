@@ -53,6 +53,7 @@ class GroupController extends Controller
             'chairperson_id' => 'nullable|exists:members,id',
             'secretary_id' => 'nullable|exists:members,id',
             'accountant_id' => 'nullable|exists:members,id',
+            'criteria' => 'nullable|array',
         ]);
 
         $validated['is_active'] = true;
@@ -121,6 +122,7 @@ class GroupController extends Controller
             'secretary_id' => 'nullable|exists:members,id',
             'accountant_id' => 'nullable|exists:members,id',
             'is_active' => 'required|boolean',
+            'criteria' => 'nullable|array',
         ]);
 
         $validated['updated_by'] = Auth::id();

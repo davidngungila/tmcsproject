@@ -202,6 +202,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/contributions', [MemberProfileController::class, 'contributions'])->name('contributions.index');
         Route::get('/contributions/{contribution}', [MemberProfileController::class, 'contributionShow'])->name('contributions.show');
         Route::get('/events', [MemberProfileController::class, 'events'])->name('events');
+        Route::post('/groups/{group}/join', [MemberProfileController::class, 'joinGroup'])->name('groups.join');
+        Route::post('/groups/{group}/leave', [MemberProfileController::class, 'leaveGroup'])->name('groups.leave');
         Route::get('/id-card', [MemberProfileController::class, 'idCard'])->name('id-card');
     });
 

@@ -92,6 +92,29 @@
             </div>
           </div>
         </div>
+        <div id="criteria-section" class="{{ old('type') == 'Community' ? '' : 'hidden' }} border-t pt-4 mt-4">
+          <h4 class="text-sm font-bold mb-4 uppercase text-muted">Community Assignment Criteria</h4>
+          <p class="text-xs text-muted mb-4 italic">Members matching these criteria will be automatically assigned to this community.</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="form-group">
+              <label class="form-label">Parish</label>
+              <input type="text" name="criteria[parish]" class="form-control" value="{{ old('criteria.parish') }}" placeholder="e.g. St. Jude">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Diocese</label>
+              <input type="text" name="criteria[diocese]" class="form-control" value="{{ old('criteria.diocese') }}" placeholder="e.g. Moshi">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Region</label>
+              <input type="text" name="criteria[region]" class="form-control" value="{{ old('criteria.region') }}" placeholder="e.g. Kilimanjaro">
+            </div>
+          </div>
+          <div class="form-group mt-3">
+            <label class="form-label">Address Keyword (Partial Match)</label>
+            <input type="text" name="criteria[address]" class="form-control" value="{{ old('criteria.address') }}" placeholder="e.g. Kibosho">
+            <p class="text-[10px] text-muted mt-1">System will check if member's address contains this word.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -104,4 +127,21 @@
     </div>
   </form>
 </div>
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typeSelect = document.querySelector('select[name="type"]');
+    const criteriaSection = document.getElementById('criteria-section');
+
+    typeSelect.addEventListener('change', function() {
+      if (this.value === 'Community') {
+        criteriaSection.classList.remove('hidden');
+      } else {
+        criteriaSection.classList.add('hidden');
+      }
+    });
+  });
+</script>
+@endpush
 @endsection
