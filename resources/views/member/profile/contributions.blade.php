@@ -66,17 +66,17 @@
           <tbody class="divide-y divide-gray-100">
             @forelse($member->contributions()->where('is_verified', true)->latest()->get() as $contribution)
               <tr class="hover:bg-light/30 transition-colors">
-                <td class="px-6 py-4 font-mono text-xs font-bold text-blue-600">#{{ $contribution->receipt_number }}</td>
+                <td class="px-6 py-4 font-mono text-xs font-bold text-primary">#{{ $contribution->receipt_number }}</td>
                 <td class="px-6 py-4 text-xs font-bold">{{ $contribution->contribution_date->format('d M, Y') }}</td>
-                <td class="px-6 py-4 text-xs font-bold">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</td>
+                <td class="px-6 py-4 text-xs font-bold text-muted">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</td>
                 <td class="px-6 py-4 text-sm font-black text-right text-green-600">{{ number_format($contribution->amount) }}</td>
                 <td class="px-6 py-4 text-center">
                   <div class="flex items-center justify-center gap-2">
-                    <a href="{{ route('finance.receipt', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View">
+                    <a href="{{ route('member.contributions.show', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Details">
                       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </a>
-                    <a href="{{ route('finance.receipt', $contribution->id) }}?download=1" target="_blank" class="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors" title="Download">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <a href="{{ route('finance.receipt', $contribution->id) }}" target="_blank" class="p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors" title="Download Receipt">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     </a>
                   </div>
                 </td>
@@ -119,7 +119,7 @@
                 </td>
                 <td class="px-6 py-4 text-center">
                   <div class="flex items-center justify-center gap-2">
-                    <a href="{{ route('finance.receipt', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Details">
+                    <a href="{{ route('member.contributions.show', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Details">
                       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </a>
                   </div>
@@ -127,9 +127,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="5" class="px-6 py-12 text-center">
-                  <div class="text-muted text-xs font-bold">No pending contributions found.</div>
-                </td>
+                <td colspan="5" class="px-6 py-8 text-center text-xs text-muted italic">No unverified contributions found</td>
               </tr>
             @endforelse
           </tbody>

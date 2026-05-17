@@ -10,7 +10,7 @@ use App\Services\SnippePaymentService;
 use App\Models\Contribution;
 
 use App\Models\Group;
-
+use App\Models\LedgerEntry;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -222,6 +222,24 @@ class ProfileController extends Controller
 
         $contributions = $member->contributions()->latest()->paginate(15);
         return view('member.profile.contributions', compact('member', 'contributions'));
+    }
+
+    public function contributionShow(Contribution $contribution)
+    {
+        $member = Auth::user()->member;
+
+        if (!$member || $contribution->member_id !== $member->id) {
+            abort(403, 'Unauthorized access to this transaction.');
+        }
+
+        $contribution->load(['member', 'recorder', 'verifier']);
+
+        $ledgerEntries = LedgerEntry::with('account')
+            ->where('reference_type', 'Contribution')
+            ->where('reference_id', $contribution->id)
+            ->get();
+
+        return view('member.profile.contribution_show', compact('member', 'contribution', 'ledgerEntries'));
     }
 
     public function events()

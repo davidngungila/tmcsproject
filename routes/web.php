@@ -200,6 +200,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/communities', [MemberProfileController::class, 'communities'])->name('communities');
         Route::get('/groups', [MemberProfileController::class, 'groups'])->name('groups');
         Route::get('/contributions', [MemberProfileController::class, 'contributions'])->name('contributions.index');
+        Route::get('/contributions/{contribution}', [MemberProfileController::class, 'contributionShow'])->name('contributions.show');
         Route::get('/events', [MemberProfileController::class, 'events'])->name('events');
         Route::get('/id-card', [MemberProfileController::class, 'idCard'])->name('id-card');
     });
