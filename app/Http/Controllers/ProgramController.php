@@ -49,7 +49,15 @@ class ProgramController extends Controller
      */
     public function show(Program $program)
     {
-        return view('programs.show', compact('program'));
+        $program->load(['members' => function($query) {
+            $query->latest()->paginate(15);
+        }]);
+        
+        $totalMembers = $program->members()->count();
+        $activeMembers = $program->members()->where('is_active', true)->count();
+        $recentMembers = $program->members()->latest()->take(5)->get();
+
+        return view('programs.show', compact('program', 'totalMembers', 'activeMembers', 'recentMembers'));
     }
 
     /**
