@@ -53,8 +53,13 @@ class GroupService
                 if ($member->category_id != $value) {
                     return false;
                 }
+            } elseif ($field === 'program_ids') {
+                // Support for multiple Program IDs matching (value is an array)
+                if (!is_array($value) || !in_array($member->program_id, $value)) {
+                    return false;
+                }
             } elseif ($field === 'program_id') {
-                // Support for Program ID matching
+                // Support for legacy single Program ID matching
                 if ($member->program_id != $value) {
                     return false;
                 }

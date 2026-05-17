@@ -55,14 +55,14 @@ class GroupController extends Controller
                     'formation_date' => now(),
                     'created_by' => Auth::id(),
                     'criteria' => [
-                        'program_id' => $program->id
+                        'program_ids' => [$program->id]
                     ]
                 ]);
                 $count++;
             }
         }
 
-        return redirect()->route('groups.index')->with('success', "Successfully generated $count communities based on academic programs.");
+        return redirect()->route('groups.index')->with('success', "Successfully generated $count communities based on academic programmes.");
     }
 
     public function create()
@@ -85,7 +85,26 @@ class GroupController extends Controller
             'secretary_id' => 'nullable|exists:members,id',
             'accountant_id' => 'nullable|exists:members,id',
             'criteria' => 'nullable|array',
+            'criteria.program_ids' => 'nullable|array',
+            'criteria.program_ids.*' => 'exists:programs,id',
         ]);
+
+        // Validate that selected programs are not already assigned to another community
+        if (!empty($validated['criteria']['program_ids'])) {
+            $assignedPrograms = Group::where('type', 'Community')
+                ->get()
+                ->pluck('criteria.program_ids')
+                ->flatten()
+                ->filter()
+                ->toArray();
+
+            foreach ($validated['criteria']['program_ids'] as $pid) {
+                if (in_array($pid, $assignedPrograms)) {
+                    $program = Program::find($pid);
+                    return back()->withInput()->with('error', "Programme [{$program->code}] is already assigned to another community.");
+                }
+            }
+        }
 
         $validated['is_active'] = true;
         $validated['formation_date'] = now();
@@ -156,7 +175,27 @@ class GroupController extends Controller
             'accountant_id' => 'nullable|exists:members,id',
             'is_active' => 'required|boolean',
             'criteria' => 'nullable|array',
+            'criteria.program_ids' => 'nullable|array',
+            'criteria.program_ids.*' => 'exists:programs,id',
         ]);
+
+        // Validate that selected programs are not already assigned to another community (excluding this one)
+        if (!empty($validated['criteria']['program_ids'])) {
+            $assignedPrograms = Group::where('type', 'Community')
+                ->where('id', '!=', $group->id)
+                ->get()
+                ->pluck('criteria.program_ids')
+                ->flatten()
+                ->filter()
+                ->toArray();
+
+            foreach ($validated['criteria']['program_ids'] as $pid) {
+                if (in_array($pid, $assignedPrograms)) {
+                    $program = Program::find($pid);
+                    return back()->withInput()->with('error', "Programme [{$program->code}] is already assigned to another community.");
+                }
+            }
+        }
 
         $validated['updated_by'] = Auth::id();
         $group->update($validated);

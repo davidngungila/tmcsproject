@@ -106,13 +106,13 @@
               </select>
             </div>
             <div class="form-group" id="criteria_program_group">
-              <label class="form-label">Academic Programme</label>
-              <select name="criteria[program_id]" class="form-control">
-                <option value="">Any Programme</option>
+              <label class="form-label">Academic Programmes (Multi-select)</label>
+              <select name="criteria[program_ids][]" class="form-control select2" multiple data-placeholder="Select one or more programmes">
                 @foreach($programs as $program)
-                <option value="{{ $program->id }}" {{ old('criteria.program_id') == $program->id ? 'selected' : '' }}>[{{ $program->code }}] {{ $program->name }}</option>
+                <option value="{{ $program->id }}" {{ (is_array(old('criteria.program_ids')) && in_array($program->id, old('criteria.program_ids'))) ? 'selected' : '' }}>[{{ $program->code }}] {{ $program->name }}</option>
                 @endforeach
               </select>
+              <p class="text-[10px] text-muted mt-1 italic">Note: A programme can only be assigned to one community.</p>
             </div>
             <div class="form-group">
               <label class="form-label">Parish</label>

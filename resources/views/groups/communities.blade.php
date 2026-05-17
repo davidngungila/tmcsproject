@@ -111,8 +111,18 @@
                 </div>
                 <div>
                   <div class="font-black text-base text-gray-800 tracking-tight">{{ $group->name }}</div>
-                  <div class="flex items-center gap-2 mt-1">
+                  <div class="flex flex-wrap gap-2 mt-1">
                     <span class="px-1.5 py-0.5 rounded bg-muted/10 text-muted text-[9px] font-black uppercase tracking-widest">{{ $group->meeting_day ?: 'No Fixed Day' }}</span>
+                    @if(isset($group->criteria['program_ids']) && is_array($group->criteria['program_ids']))
+                      @php 
+                        $programs = \App\Models\Program::whereIn('id', $group->criteria['program_ids'])->get(); 
+                      @endphp
+                      @foreach($programs as $program)
+                        <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 text-[9px] font-black uppercase tracking-widest">
+                          Track: {{ $program->code }}
+                        </span>
+                      @endforeach
+                    @endif
                     @if(isset($group->criteria['program_id']))
                       @php $program = \App\Models\Program::find($group->criteria['program_id']); @endphp
                       @if($program)
