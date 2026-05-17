@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\MemberCategoryController;
+use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\GroupOperationController;
 use App\Http\Controllers\FinanceController;
@@ -116,6 +117,7 @@ Route::middleware('auth')->group(function () {
     ]);
     Route::get('/members/{member}/id-card', [MemberController::class, 'idCard'])->name('members.id-card');
     Route::post('/members/{member}/approve', [MemberController::class, 'approve'])->name('members.approve');
+    Route::resource('members/programs', ProgramController::class)->names('programs');
     Route::resource('members', MemberController::class)->except(['categories']);
 
     // Finance

@@ -900,6 +900,7 @@
             <a href="{{ route('members.index') }}" class="dropdown-item {{ request()->is('members') ? 'active' : '' }}">All Members</a>
             <a href="{{ route('members.create') }}" class="dropdown-item {{ request()->is('members/create') ? 'active' : '' }}">Register Member</a>
             <a href="{{ route('members.categories') }}" class="dropdown-item {{ request()->is('members/categories') ? 'active' : '' }}">Member Categories</a>
+            <a href="{{ route('programs.index') }}" class="dropdown-item {{ request()->is('members/programs*') ? 'active' : '' }}">Academic Programmes</a>
           </div>
         </div>
         @endif
