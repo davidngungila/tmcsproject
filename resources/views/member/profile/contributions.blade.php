@@ -104,6 +104,7 @@
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted">Purpose</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-right">Amount</th>
               <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-center">Status</th>
+              <th class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted text-center">Action</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
@@ -114,7 +115,14 @@
                 <td class="px-6 py-4 text-xs font-bold text-muted">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</td>
                 <td class="px-6 py-4 text-sm font-black text-right text-amber-600">{{ number_format($contribution->amount) }}</td>
                 <td class="px-6 py-4 text-center">
-                  <span class="badge amber px-2 py-0.5 text-[9px] font-black">AWAITING</span>
+                  <span class="badge amber px-2 py-0.5 text-[9px] font-black uppercase">Pending</span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <a href="{{ route('finance.receipt', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Details">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    </a>
+                  </div>
                 </td>
               </tr>
             @empty

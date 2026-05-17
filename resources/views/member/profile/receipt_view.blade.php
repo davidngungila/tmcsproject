@@ -5,145 +5,200 @@
 @section('breadcrumb', 'Home / Profile / Receipt')
 
 @section('content')
-<div class="animate-in max-w-4xl mx-auto">
+<div class="animate-in max-w-5xl mx-auto">
+    <!-- Top Alert for Status -->
+    @if(!$contribution->is_verified)
+    <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-4 text-amber-800">
+        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm">Transaction Pending Verification</h4>
+            <p class="text-xs opacity-80">Your payment has been received and is currently being processed by the finance department.</p>
+        </div>
+    </div>
+    @else
+    <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center gap-4 text-green-800">
+        <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm">Official Receipt Verified</h4>
+            <p class="text-xs opacity-80">This contribution has been officially recorded and verified in the chaplaincy records.</p>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- MAIN RECEIPT COLUMN -->
+        <!-- Main Receipt Column -->
         <div class="lg:col-span-2 space-y-6">
             <div class="card overflow-hidden border-none shadow-xl">
-                <div class="h-3 bg-green-600"></div>
+                <div class="h-3 {{ $contribution->is_verified ? 'bg-green-600' : 'bg-amber-500' }}"></div>
                 <div class="card-body p-0">
-                    <!-- Receipt Header -->
-                    <div class="p-8 text-center border-b border-gray-50 bg-gray-50/30">
-                        <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                            <svg width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <!-- Header -->
+                    <div class="p-8 border-b border-gray-50 bg-gray-50/30 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-black text-gray-900 tracking-tight">OFFICIAL RECEIPT</h2>
+                            <p class="text-[10px] text-muted font-black uppercase tracking-widest mt-1">St. Joseph the Worker Chaplaincy</p>
                         </div>
-                        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Official Payment Receipt</h2>
-                        <p class="text-sm text-muted font-bold mt-1 uppercase tracking-widest">ST. JOSEPH THE WORKER CHAPLAINCY</p>
+                        <div class="text-right">
+                            <label class="text-[9px] text-muted uppercase font-black tracking-widest block mb-1">Receipt No.</label>
+                            <div class="text-xl font-mono font-black text-primary">#{{ $contribution->receipt_number }}</div>
+                        </div>
                     </div>
 
                     <div class="p-8">
-                        <div class="flex justify-between items-start mb-10">
+                        <!-- Key Stats Grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                            <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <label class="text-[9px] text-muted uppercase font-black tracking-widest block mb-1">Amount</label>
+                                <div class="text-lg font-black text-green-600">TZS {{ number_format($contribution->amount, 0) }}</div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <label class="text-[9px] text-muted uppercase font-black tracking-widest block mb-1">Date</label>
+                                <div class="text-sm font-bold text-gray-900">{{ $contribution->contribution_date->format('M d, Y') }}</div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <label class="text-[9px] text-muted uppercase font-black tracking-widest block mb-1">Type</label>
+                                <div class="text-sm font-bold text-gray-900">{{ ucfirst(str_replace('_', ' ', $contribution->contribution_type)) }}</div>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                <label class="text-[9px] text-muted uppercase font-black tracking-widest block mb-1">Method</label>
+                                <div class="text-sm font-bold text-gray-900 capitalize">{{ str_replace('_', ' ', $contribution->payment_method) }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Contributor Info -->
+                        <div class="mb-10 flex items-center gap-6 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+                            <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl font-black">
+                                {{ substr($contribution->member->full_name, 0, 1) }}
+                            </div>
                             <div>
-                                <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-1">Receipt Number</label>
-                                <div class="text-lg font-mono font-bold text-blue-600">#{{ $contribution->receipt_number }}</div>
-                            </div>
-                            <div class="text-right">
-                                <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-1">Date Issued</label>
-                                <div class="text-sm font-bold text-gray-900">{{ $contribution->contribution_date->format('d M, Y') }}</div>
-                                <div class="text-[10px] text-muted">{{ $contribution->contribution_date->format('h:i A') }}</div>
+                                <label class="text-[9px] text-muted uppercase font-black tracking-widest block mb-1">Contributor</label>
+                                <h3 class="text-lg font-black text-gray-900">{{ $contribution->member->full_name }}</h3>
+                                <p class="text-xs text-muted font-bold">{{ $contribution->member->registration_number }}</p>
                             </div>
                         </div>
 
-                        <!-- Amount Focus -->
-                        <div class="mb-10 p-6 bg-green-50 rounded-[2rem] border border-green-100 text-center relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-4 opacity-10">
-                                <svg width="100" height="100" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                        <!-- Ledger Entries (Only if verified) -->
+                        @if($contribution->is_verified && isset($ledgerEntries) && $ledgerEntries->count() > 0)
+                        <div class="mb-6">
+                            <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-3">Accounting Record (Double Entry)</label>
+                            <div class="table-wrap border rounded-2xl overflow-hidden">
+                                <table class="w-full text-xs">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left font-black uppercase tracking-widest text-[9px]">Account</th>
+                                            <th class="px-4 py-3 text-right font-black uppercase tracking-widest text-[9px]">Debit</th>
+                                            <th class="px-4 py-3 text-right font-black uppercase tracking-widest text-[9px]">Credit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y">
+                                        @foreach($ledgerEntries as $entry)
+                                        <tr>
+                                            <td class="px-4 py-3">
+                                                <div class="font-bold">{{ $entry->account->name }}</div>
+                                                <div class="text-[10px] text-muted">{{ $entry->account->code }}</div>
+                                            </td>
+                                            <td class="px-4 py-3 text-right font-mono {{ $entry->debit > 0 ? 'text-gray-900 font-bold' : 'text-muted' }}">
+                                                {{ $entry->debit > 0 ? number_format($entry->debit, 0) : '-' }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right font-mono {{ $entry->credit > 0 ? 'text-gray-900 font-bold' : 'text-muted' }}">
+                                                {{ $entry->credit > 0 ? number_format($entry->credit, 0) : '-' }}
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                             </div>
-                            <label class="text-[10px] text-green-600 uppercase font-black tracking-widest block mb-2">Total Amount Contributed</label>
-                            <div class="text-4xl font-black text-green-700 tracking-tighter">TZS {{ number_format($contribution->amount) }}</div>
-                            @php
-                                $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
-                                $words = $f->format($contribution->amount);
-                            @endphp
-                            <div class="text-xs text-green-600/70 font-bold italic mt-2 capitalize">"{{ $words }} Tanzanian Shillings Only"</div>
                         </div>
+                        @endif
 
-                        <!-- Details Grid -->
-                        <div class="grid grid-cols-2 gap-8 mb-10">
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-1">Contributed By</label>
-                                    <div class="text-sm font-bold text-gray-900">{{ strtoupper($contribution->member->full_name) }}</div>
-                                    <div class="text-xs text-muted">{{ $contribution->member->registration_number }}</div>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-1">Purpose of Giving</label>
-                                    <div class="text-sm font-bold text-gray-900">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</div>
-                                </div>
-                            </div>
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-1">Payment Method</label>
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                                        <div class="text-sm font-bold text-gray-900">{{ strtoupper(str_replace('_', ' ', $contribution->payment_method)) }}</div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-1">Verification Status</label>
-                                    <span class="badge {{ $contribution->is_verified ? 'green' : 'amber' }} px-3 py-1 text-[10px] font-black uppercase">
-                                        {{ $contribution->is_verified ? 'CONFIRMED' : 'PENDING' }}
-                                    </span>
-                                </div>
+                        @if($contribution->notes)
+                        <div class="mt-8">
+                            <label class="text-[10px] text-muted uppercase font-black tracking-widest block mb-2">Remarks</label>
+                            <div class="p-4 bg-blue-50/30 border border-blue-100/50 rounded-2xl text-xs font-medium text-gray-700 italic">
+                                "{{ $contribution->notes }}"
                             </div>
                         </div>
-
-                        <!-- System Reference -->
-                        <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-                            <div>
-                                <label class="text-[9px] text-muted uppercase font-black tracking-widest block">Transaction Reference</label>
-                                <div class="text-xs font-mono font-bold text-gray-600">{{ $contribution->transaction_reference ?? 'INTERNAL-'.$contribution->id }}</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="text-[9px] text-muted italic">Verified by TMCS SMART</div>
-                            </div>
-                        </div>
+                        @endif
                     </div>
                 </div>
                 <div class="bg-gray-900 text-white p-6 text-center">
-                    <p class="text-[10px] font-bold tracking-widest opacity-60">THANK YOU FOR YOUR GENEROUS CONTRIBUTION</p>
+                    <p class="text-[10px] font-bold tracking-widest opacity-60 uppercase">TMCS SMART FINANCIAL MANAGEMENT SYSTEM</p>
                 </div>
             </div>
         </div>
 
-        <!-- SIDEBAR: QR & ACTIONS -->
+        <!-- Sidebar Column -->
         <div class="lg:col-span-1 space-y-6">
-            <div class="card text-center">
-                <div class="card-header border-b">
-                    <h4 class="card-title text-sm font-black uppercase tracking-widest">Secure Verification</h4>
+            <!-- QR Verification -->
+            <div class="card p-6 text-center">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-6">Digital Seal Verification</h4>
+                @php
+                    $qrContent = "RECEIPT: " . $contribution->receipt_number . "\n";
+                    $qrContent .= "MEMBER: " . ($contribution->member->full_name) . "\n";
+                    $qrContent .= "AMOUNT: TZS " . number_format($contribution->amount) . "\n";
+                    $qrContent .= "VERIFIED: " . ($contribution->is_verified ? 'YES' : 'NO');
+                @endphp
+                <div class="p-4 bg-white rounded-3xl border border-gray-100 shadow-inner inline-block mb-4">
+                    <img src="data:image/svg+xml;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(140)->margin(0)->generate($qrContent)) !!} " class="w-32 h-32">
                 </div>
-                <div class="card-body">
-                    @php
-                        $qrContent = "RECEIPT: " . $contribution->receipt_number . "\n";
-                        $qrContent .= "MEMBER: " . $contribution->member->full_name . "\n";
-                        $qrContent .= "AMOUNT: TZS " . number_format($contribution->amount) . "\n";
-                        $qrContent .= "VERIFIED: " . ($contribution->is_verified ? 'YES' : 'NO');
-                    @endphp
-                    <div class="inline-block p-4 bg-white border-2 border-gray-50 rounded-[2rem] shadow-sm mb-4">
-                        <img src="data:image/svg+xml;base64, {!! base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(150)->margin(0)->generate($qrContent)) !!} " class="w-40 h-40">
+                <p class="text-[10px] text-muted font-bold leading-relaxed px-4">This QR code acts as a digital signature of authenticity for this transaction.</p>
+            </div>
+
+            <!-- Audit Trail -->
+            <div class="card p-6">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-6 flex items-center gap-2">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04M12 21a11.955 11.955 0 01-8.618-3.04m17.236 0A11.955 11.955 0 0112 21c-4.474 0-8.064-2.095-9.618-5.04"/></svg>
+                    Timeline
+                </h4>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Initiated By</div>
+                            <div class="text-sm font-bold text-gray-900">{{ $contribution->recorder->name ?? 'Member Portal' }}</div>
+                            <div class="text-[10px] text-muted italic mt-0.5">{{ $contribution->created_at->format('M d, Y \a\t h:i A') }}</div>
+                        </div>
                     </div>
-                    <p class="text-[10px] text-muted leading-relaxed px-4">
-                        Scan this QR code with any mobile device to verify the authenticity of this receipt.
-                    </p>
+
+                    @if($contribution->is_verified)
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center border border-green-100 flex-shrink-0">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-muted font-black uppercase tracking-widest mb-1">Verified By</div>
+                            <div class="text-sm font-bold text-gray-900">{{ $contribution->verifier->name ?? 'Finance Dept' }}</div>
+                            <div class="text-[10px] text-muted italic mt-0.5">{{ $contribution->verified_at ? $contribution->verified_at->format('M d, Y \a\t h:i A') : 'Processed' }}</div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header border-b">
-                    <h4 class="card-title text-sm font-black uppercase tracking-widest">Actions</h4>
-                </div>
-                <div class="card-body space-y-3">
-                    <a href="{{ route('finance.receipt', ['contribution' => $contribution->id, 'download' => 1]) }}" class="btn btn-primary w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-sm shadow-lg shadow-green-100">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Download PDF
+            <!-- Actions -->
+            <div class="card p-6">
+                <h4 class="text-[10px] font-black uppercase tracking-widest text-muted mb-6">Available Actions</h4>
+                <div class="space-y-3">
+                    <a href="{{ route('finance.receipt', ['contribution' => $contribution->id, 'download' => 1]) }}" target="_blank" class="btn btn-secondary w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-xs">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        DOWNLOAD RECEIPT
                     </a>
-                    <a href="{{ route('member.contributions.index') }}" class="btn btn-secondary w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-sm">
+
+                    <button onclick="window.print()" class="btn btn-secondary w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-xs">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                        PRINT RECORD
+                    </button>
+                    
+                    <a href="{{ route('member.contributions.index') }}" class="btn btn-secondary w-full py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-xs">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                        History
+                        BACK TO LIST
                     </a>
                 </div>
-            </div>
-
-            <!-- HELP CARD -->
-            <div class="p-6 bg-blue-600 rounded-[2rem] text-white shadow-xl relative overflow-hidden">
-                <div class="absolute -right-4 -bottom-4 opacity-20 transform rotate-12">
-                    <svg width="120" height="120" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
-                </div>
-                <h5 class="font-black text-sm mb-2 uppercase tracking-widest">Need Help?</h5>
-                <p class="text-[10px] leading-relaxed opacity-90">
-                    If you notice any discrepancy in your contribution records, please contact the Treasury office immediately with your receipt number.
-                </p>
             </div>
         </div>
     </div>

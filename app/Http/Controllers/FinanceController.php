@@ -396,21 +396,29 @@ class FinanceController extends Controller
             }
         }
 
-        $contribution->load('member');
+        $contribution->load(['member', 'recorder', 'verifier']);
+
+        $ledgerEntries = LedgerEntry::with('account')
+            ->where('reference_type', 'Contribution')
+            ->where('reference_id', $contribution->id)
+            ->get();
 
         // Generate PDF for the receipt
-        $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution'));
-        
-        // Sanitize filename to remove slashes
-        $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
-        
-        // If the request explicitly asks for a preview (not download), stream it
-        if (request()->has('preview')) {
-            return $pdf->stream("Receipt_{$safeReceiptNo}.pdf");
+        if (request()->has('download')) {
+            $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution', 'ledgerEntries'));
+            
+            // Sanitize filename to remove slashes
+            $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
+            
+            return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
         }
 
-        // Default behavior: Download the PDF
-        return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
+        // Return a professional web view of the receipt (reusing finance.show or a dedicated member view)
+        if ($user->member) {
+            return view('member.profile.receipt_view', compact('contribution', 'ledgerEntries'));
+        }
+
+        return view('finance.show', compact('contribution', 'ledgerEntries'));
     }
 
     public function reports()
