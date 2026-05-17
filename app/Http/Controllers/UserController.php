@@ -7,6 +7,7 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMailable;
 
@@ -129,13 +130,8 @@ class UserController extends Controller
             'force_password_change' => true, // Force change on next login
         ]);
 
-        // 3. Send notification email
-        try {
-            Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to send password reset email to {$user->email}: " . $e->getMessage());
-            return back()->with('error', "Password reset to [ {$newPassword} ] but email notification failed. Please provide it manually.");
-        }
+        // 3. Send notification email (Queued)
+        Mail::to($user->email)->queue(new PasswordResetMailable($user, $newPassword));
 
         return back()->with('success', "Password for {$user->name} has been reset successfully and notification sent to their email.");
     }
@@ -153,7 +149,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if ($user->id === auth()->id()) {
+        if ($user->id === Auth::id()) {
             return back()->with('error', 'You cannot delete yourself.');
         }
         

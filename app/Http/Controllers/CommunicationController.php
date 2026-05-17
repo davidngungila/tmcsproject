@@ -9,6 +9,8 @@ use App\Models\ApiConfig;
 use App\Services\MessagingService;
 use App\Models\MessageTemplate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Jobs\ProcessCommunicationJob;
 
 class CommunicationController extends Controller
 {
@@ -89,45 +91,17 @@ class CommunicationController extends Controller
             return back()->with('error', 'No valid email addresses found for the selected recipients.');
         }
 
-        $validated['sent_by'] = auth()->id();
+        $validated['sent_by'] = Auth::id();
         $validated['status'] = 'Pending';
         $validated['sent_at'] = now();
 
         $communication = Communication::create($validated);
 
-        try {
-            if ($validated['type'] === 'SMS') {
-                $smsResponse = $this->messagingService->sendSms($recipients, $validated['message']);
-                if ($smsResponse['status'] === 'success') {
-                    $communication->update(['status' => 'Sent']);
-                } else {
-                    $communication->update(['status' => 'Failed']);
-                    return back()->with('error', 'SMS sending failed: ' . $smsResponse['message']);
-                }
-            } elseif ($validated['type'] === 'WhatsApp') {
-                $waResponse = $this->messagingService->sendWhatsApp($recipients, $validated['message']);
-                if ($waResponse['status'] === 'success') {
-                    $communication->update(['status' => 'Sent']);
-                } else {
-                    $communication->update(['status' => 'Failed']);
-                }
-            } elseif ($validated['type'] === 'Email') {
-                $subject = $validated['subject'];
-                $content = $validated['message'];
-                
-                \Illuminate\Support\Facades\Mail::raw($content, function ($message) use ($emailRecipients, $subject) {
-                    $message->to($emailRecipients)
-                            ->subject($subject);
-                });
-                
-                $communication->update(['status' => 'Sent']);
-            }
-        } catch (\Exception $e) {
-            $communication->update(['status' => 'Failed']);
-            return back()->with('error', 'Communication failed: ' . $e->getMessage());
-        }
+        // Dispatch background job for processing
+        $finalRecipients = $validated['type'] === 'Email' ? $emailRecipients : $recipients;
+        ProcessCommunicationJob::dispatch($communication, $finalRecipients);
 
-        return redirect()->route('communications.index')->with('success', 'Message processed successfully');
+        return redirect()->route('communications.index')->with('success', 'Message queued for sending');
     }
 
     public function announcements()

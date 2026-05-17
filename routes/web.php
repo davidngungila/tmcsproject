@@ -24,6 +24,7 @@ use App\Http\Controllers\ApiConfigController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ReconciliationController;
 use App\Http\Controllers\FinancialReportController;
+use App\Http\Controllers\FinancialStatementController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 
 /*
@@ -120,10 +121,15 @@ Route::middleware('auth')->group(function () {
     // Finance
     Route::get('/finance', [FinanceController::class, 'index'])->name('finance.index');
     Route::get('/finance/reports', [FinancialReportController::class, 'index'])->name('finance.reports');
+    Route::get('/finance/reports/income-statement', [FinancialStatementController::class, 'incomeStatement'])->name('finance.reports.income_statement');
+    Route::get('/finance/reports/balance-sheet', [FinancialStatementController::class, 'balanceSheet'])->name('finance.reports.balance_sheet');
     Route::get('/finance/settings', [FinanceController::class, 'settings'])->name('finance.settings');
-    Route::get('/finance/receipt/{contribution}', [FinanceController::class, 'receipt'])->name('finance.receipt');
+    Route::get('/finance/{contribution}/receipt', [FinanceController::class, 'receipt'])->name('finance.receipt');
+    Route::post('/finance/{finance}/verify', [FinanceController::class, 'verify'])->name('finance.verify');
     Route::resource('finance/types', ContributionTypeController::class)->names('finance.types');
     Route::resource('finance', FinanceController::class);
+    Route::post('/expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve');
+    Route::post('/expenses/{expense}/reject', [ExpenseController::class, 'reject'])->name('expenses.reject');
     Route::resource('expenses', ExpenseController::class);
     Route::resource('reconciliation', ReconciliationController::class);
 

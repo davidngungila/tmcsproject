@@ -6,6 +6,7 @@ use App\Models\Election;
 use App\Models\ElectionCandidate;
 use App\Models\ElectionVote;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ElectionController extends Controller
 {
@@ -38,7 +39,7 @@ class ElectionController extends Controller
             'start_date' => $validated['start_date'],
             'end_date' => $validated['end_date'],
             'description' => $validated['description'],
-            'created_by' => auth()->id(),
+            'created_by' => Auth::id(),
             'status' => 'Scheduled',
         ]);
 

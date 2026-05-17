@@ -4,8 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Group;
 use App\Models\Member;
-use App\Models\Event; // Import the Event model
+use App\Models\Event;
+use App\Models\GroupScheduledMessage;
+use App\Models\MessageTemplate;
+use App\Models\Communication;
+use App\Models\GroupAttendance;
+use App\Models\GroupMeeting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class GroupController extends Controller
 {
@@ -50,7 +57,7 @@ class GroupController extends Controller
 
         $validated['is_active'] = true;
         $validated['formation_date'] = now();
-        $validated['created_by'] = auth()->id();
+        $validated['created_by'] = Auth::id();
 
         Group::create($validated);
 
@@ -78,7 +85,7 @@ class GroupController extends Controller
         $totalCollected = $group->meetings()->sum('total_collected');
         
         $totalPossibleAttendances = $group->meetings->count() * $group->members->count();
-        $actualAttendances = \App\Models\GroupAttendance::whereIn('group_meeting_id', $group->meetings->pluck('id'))
+        $actualAttendances = GroupAttendance::whereIn('group_meeting_id', $group->meetings->pluck('id'))
             ->where('status', 'present')
             ->count();
             
@@ -116,7 +123,7 @@ class GroupController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
-        $validated['updated_by'] = auth()->id();
+        $validated['updated_by'] = Auth::id();
         $group->update($validated);
 
         return redirect()->route('groups.index')->with('success', 'Group updated successfully');
@@ -135,11 +142,11 @@ class GroupController extends Controller
             ->paginate(10);
             
         $totalCommunities = Group::where('type', 'Community')->count();
-        $totalCommunityMembers = \App\Models\Member::whereHas('groups', function($query) {
+        $totalCommunityMembers = Member::whereHas('groups', function($query) {
             $query->where('type', 'Community');
         })->count();
         
-        $communityCollections = \App\Models\GroupMeeting::whereHas('group', function($query) {
+        $communityCollections = GroupMeeting::whereHas('group', function($query) {
             $query->where('type', 'Community');
         })->sum('total_collected');
         
@@ -225,7 +232,7 @@ class GroupController extends Controller
             $data['title'] = "Administrative & Membership Report";
             
             // Fix SQL error by using direct DB query on pivot table
-            $growthData = \DB::table('member_groups')
+            $growthData = DB::table('member_groups')
                 ->selectRaw('MONTH(join_date) as month, COUNT(*) as count')
                 ->where('group_id', $group->id)
                 ->whereYear('join_date', date('Y'))
@@ -264,10 +271,10 @@ class GroupController extends Controller
             $data['recentMeetings'] = $group->meetings()->latest()->limit(10)->get();
         } elseif ($type === 'communication') {
             $data['title'] = "Communication & Engagement Report";
-            $data['scheduledCount'] = \App\Models\GroupScheduledMessage::where('group_id', $group->id)->count();
-            $data['templateCount'] = \App\Models\MessageTemplate::where('group_id', $group->id)->count();
+            $data['scheduledCount'] = GroupScheduledMessage::where('group_id', $group->id)->count();
+            $data['templateCount'] = MessageTemplate::where('group_id', $group->id)->count();
             
-            $messageData = \App\Models\Communication::where('group_id', $group->id)
+            $messageData = Communication::where('group_id', $group->id)
                 ->selectRaw('MONTH(created_at) as month, COUNT(*) as count')
                 ->whereYear('created_at', date('Y'))
                 ->groupBy('month')
@@ -280,7 +287,7 @@ class GroupController extends Controller
                 $data['chartData'][$month] = $count;
             }
 
-            $data['recentMessages'] = \App\Models\Communication::where('group_id', $group->id)
+            $data['recentMessages'] = Communication::where('group_id', $group->id)
                 ->latest()
                 ->limit(10)
                 ->get();

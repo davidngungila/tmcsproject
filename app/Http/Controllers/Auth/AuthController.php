@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Models\Member;
 use App\Models\Group;
 use App\Models\MemberCategory;
+use App\Models\Role;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMailable;
 
@@ -51,13 +52,8 @@ class AuthController extends Controller
             'force_password_change' => true, // Force change on next login
         ]);
 
-        // 3. Send notification email
-        try {
-            Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Failed to send forgot password email to {$user->email}: " . $e->getMessage());
-            return back()->with('error', 'Failed to send reset email. Please contact the administrator.');
-        }
+        // 3. Send notification email (Queued)
+        Mail::to($user->email)->queue(new PasswordResetMailable($user, $newPassword));
 
         return redirect()->route('login')->with('success', 'A new password has been sent to your email address.');
     }
@@ -100,7 +96,7 @@ class AuthController extends Controller
         ]);
 
         // 2. Assign 'member' role
-        $memberRole = \App\Models\Role::where('name', 'member')->first();
+        $memberRole = Role::where('name', 'member')->first();
         if ($memberRole) {
             $user->roles()->attach($memberRole->id);
         }

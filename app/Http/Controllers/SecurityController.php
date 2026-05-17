@@ -7,6 +7,7 @@ use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Auth;
 
 class SecurityController extends Controller
 {
@@ -51,7 +52,7 @@ class SecurityController extends Controller
     {
         // This is tricky without database sessions, but we can clear the sessions table if it exists
         // Or set a 'force_logout_at' field on users table and check in middleware
-        User::where('id', '!=', auth()->id())->update(['remember_token' => null]);
+        User::where('id', '!=', Auth::id())->update(['remember_token' => null]);
         
         return back()->with('success', 'All other users have been forced to logout.');
     }

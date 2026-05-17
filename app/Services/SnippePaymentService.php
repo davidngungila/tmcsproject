@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Contribution;
 use App\Models\Member;
 use Illuminate\Support\Str;
+use App\Jobs\SendSmsJob;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ContributionReceiptMailable;
 
 class SnippePaymentService
 {
@@ -291,19 +294,17 @@ class SnippePaymentService
     protected function sendSuccessNotifications(Contribution $contribution)
     {
         try {
-            $messagingService = app(MessagingService::class);
             $member = $contribution->member;
             $amount = number_format($contribution->amount, 0);
             $type = ucfirst(str_replace('_', ' ', $contribution->contribution_type));
 
             if ($member->phone) {
                 $smsMessage = "Dear {$member->full_name}, your payment of TZS {$amount} for {$type} has been CONFIRMED. Receipt: {$contribution->receipt_number}. Thank you!";
-                $messagingService->sendSms($member->phone, $smsMessage);
+                SendSmsJob::dispatch($member->phone, $smsMessage);
             }
 
             if ($member->email) {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finance.receipt_pdf', compact('contribution'))->output();
-                \Illuminate\Support\Facades\Mail::to($member->email)->send(new \App\Mail\ContributionReceiptMailable($contribution, $pdf));
+                Mail::to($member->email)->queue(new ContributionReceiptMailable($contribution));
             }
         } catch (\Exception $e) {
             Log::error("Failed to send success notifications: " . $e->getMessage());

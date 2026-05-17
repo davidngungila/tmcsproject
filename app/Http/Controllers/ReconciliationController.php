@@ -7,6 +7,7 @@ use App\Models\Contribution;
 use App\Models\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class ReconciliationController extends Controller
@@ -58,7 +59,7 @@ class ReconciliationController extends Controller
 
         $validated['reference_id'] = 'REC-' . date('Ymd') . '-' . str_pad(Reconciliation::count() + 1, 4, '0', STR_PAD_LEFT);
         $validated['difference'] = $validated['closing_balance'] - ($validated['opening_balance'] + $validated['total_income'] - $validated['total_expenses']);
-        $validated['reconciled_by'] = auth()->id();
+        $validated['reconciled_by'] = Auth::id();
         $validated['status'] = 'Completed';
 
         Reconciliation::create($validated);

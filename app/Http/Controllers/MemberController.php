@@ -6,15 +6,18 @@ use App\Models\Member;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\MemberCategory;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 use App\Services\MessagingService;
 use App\Mail\WelcomeMemberMailable;
 use Illuminate\Support\Facades\Mail;
+use App\Jobs\SendSmsJob;
 
 class MemberController extends Controller
 {
@@ -72,7 +75,7 @@ class MemberController extends Controller
         
         $validated['qr_code'] = 'QR-' . strtoupper(Str::random(10));
         $validated['is_active'] = true;
-        $validated['created_by'] = auth()->id();
+        $validated['created_by'] = Auth::id();
 
         $member = Member::create($validated);
 
@@ -91,7 +94,7 @@ class MemberController extends Controller
             ]);
 
             // Assign 'member' role if it exists
-            $memberRole = \App\Models\Role::where('name', 'member')->first();
+            $memberRole = Role::where('name', 'member')->first();
             if ($memberRole) {
                 $user->roles()->attach($memberRole->id);
             }
@@ -115,24 +118,16 @@ class MemberController extends Controller
      */
     protected function sendWelcomeNotifications(Member $member, $password = null)
     {
-        // 1. Send SMS
+        // 1. Send SMS (Queued)
         if ($member->phone) {
-            try {
-                $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
-                $this->messagingService->sendSms($member->phone, $smsMessage);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to send welcome SMS: " . $e->getMessage());
-            }
+            $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
+            SendSmsJob::dispatch($member->phone, $smsMessage);
         }
 
-        // 2. Send Welcome Email
+        // 2. Send Welcome Email (Queued)
         if ($member->email) {
-            try {
-                // If no password provided (e.g. member already had a user), we don't send credentials
-                Mail::to($member->email)->send(new WelcomeMemberMailable($member, $password ?? '******'));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to send welcome email: " . $e->getMessage());
-            }
+            // If no password provided (e.g. member already had a user), we don't send credentials
+            Mail::to($member->email)->queue(new WelcomeMemberMailable($member, $password ?? '******'));
         }
     }
 
@@ -218,22 +213,14 @@ class MemberController extends Controller
         // 3. Activate Group Memberships
         $member->groups()->updateExistingPivot($member->groups->pluck('id'), ['is_active' => true]);
 
-        // 4. Send Notifications
+        // 4. Send Notifications (Queued)
         if ($member->phone) {
-            try {
-                $smsMessage = "Congratulations {$member->full_name}! Your TMCS account has been approved. Your ID is {$member->registration_number}. You can now login to your portal.";
-                $this->messagingService->sendSms($member->phone, $smsMessage);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to send approval SMS: " . $e->getMessage());
-            }
+            $smsMessage = "Congratulations {$member->full_name}! Your TMCS account has been approved. Your ID is {$member->registration_number}. You can now login to your portal.";
+            SendSmsJob::dispatch($member->phone, $smsMessage);
         }
 
         if ($member->email) {
-            try {
-                Mail::to($member->email)->send(new WelcomeMemberMailable($member, '******'));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to send welcome email on approval: " . $e->getMessage());
-            }
+            Mail::to($member->email)->queue(new WelcomeMemberMailable($member, '******'));
         }
 
         return back()->with('success', 'Member approved successfully! Registration number assigned: ' . $member->registration_number);
@@ -248,7 +235,8 @@ class MemberController extends Controller
     public function idCard(Member $member)
     {
         // Authorization check: User can only see their own ID card, unless they are admin/leader
-        $user = auth()->user();
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
         $isOwner = $user->member && $user->member->id === $member->id;
         $isAdmin = $user->roles()->whereIn('name', ['admin', 'leader', 'finance'])->exists();
 
@@ -391,7 +379,7 @@ class MemberController extends Controller
                 $data['member_type'] = $category->name;
                 $data['qr_code'] = 'QR-' . strtoupper(Str::random(10));
                 $data['is_active'] = true;
-                $data['created_by'] = auth()->id();
+                $data['created_by'] = Auth::id();
 
                 $member = Member::create($data);
 
@@ -408,7 +396,7 @@ class MemberController extends Controller
                         'phone' => $member->phone,
                     ]);
 
-                    $memberRole = \App\Models\Role::where('name', 'member')->first();
+                    $memberRole = Role::where('name', 'member')->first();
                     if ($memberRole) {
                         $user->roles()->attach($memberRole->id);
                     }

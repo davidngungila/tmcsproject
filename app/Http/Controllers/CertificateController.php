@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Certificate;
 use App\Models\Member;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CertificateController extends Controller
 {
@@ -31,7 +32,7 @@ class CertificateController extends Controller
             'expiry_date' => 'nullable|date',
         ]);
 
-        $validated['issued_by'] = auth()->id();
+        $validated['issued_by'] = Auth::id();
         $validated['status'] = 'Active';
         $validated['certificate_type'] = (string) $validated['certificate_type']; // Explicitly cast to string
 

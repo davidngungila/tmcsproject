@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ShopProduct;
 use App\Models\ShopSale;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ShopController extends Controller
 {
@@ -44,7 +45,7 @@ class ShopController extends Controller
             'quantity' => $validated['quantity'],
             'total_price' => $totalPrice,
             'payment_method' => $validated['payment_method'],
-            'sold_by' => auth()->id(),
+            'sold_by' => Auth::id(),
             'sale_date' => now(),
         ]);
 

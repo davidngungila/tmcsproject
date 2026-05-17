@@ -4,16 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Contribution;
 use App\Models\Member;
+use App\Models\Account;
+use App\Models\LedgerEntry;
 use App\Services\SnippePaymentService;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Services\MessagingService;
 use App\Mail\ContributionReceiptMailable;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Jobs\SendSmsJob;
 
+use App\Models\Expense;
 use App\Models\ContributionType;
-use Illuminate\Support\Facades\DB;
 
 class FinanceController extends Controller
 {
@@ -82,17 +87,30 @@ class FinanceController extends Controller
                 ];
             });
 
-        // Data for Trend Line Chart
+        // Data for Trend Line Chart (Last 30 days)
         $trendQuery = Contribution::selectRaw('DATE(contribution_date) as date, SUM(amount) as total')
             ->where('contribution_date', '>=', now()->subDays(30))
             ->groupBy('date')
             ->orderBy('date')
             ->get();
 
+        $expenseTrendQuery = Expense::selectRaw('DATE(expense_date) as date, SUM(amount) as total')
+            ->where('expense_date', '>=', now()->subDays(30))
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get();
+
         $trendData = [
             'labels' => $trendQuery->pluck('date')->map(fn($d) => date('M d', strtotime($d)))->toArray(),
-            'values' => $trendQuery->pluck('total')->toArray()
+            'revenue' => $trendQuery->pluck('total')->toArray(),
+            'expenses' => []
         ];
+
+        // Map daily expenses to the same labels as revenue
+        $expenseMap = $expenseTrendQuery->pluck('total', 'date')->toArray();
+        foreach ($trendQuery->pluck('date') as $date) {
+            $trendData['expenses'][] = $expenseMap[$date] ?? 0;
+        }
 
         // Monthly Summary for Comparison
         $monthlySummary = Contribution::selectRaw('MONTH(contribution_date) as month, SUM(amount) as total')
@@ -104,14 +122,27 @@ class FinanceController extends Controller
 
         $chartData = array_fill(1, 12, 0);
         foreach ($monthlySummary as $month => $total) {
-            $chartData[$month] = (float)$total;
+            $chartData[(int)$month] = (float)$total;
+        }
+
+        // Expense Summary for Comparison
+        $expenseSummary = Expense::selectRaw('MONTH(expense_date) as month, SUM(amount) as total')
+            ->whereYear('expense_date', date('Y'))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        $expenseChart = array_fill(1, 12, 0);
+        foreach ($expenseSummary as $month => $total) {
+            $expenseChart[(int)$month] = (float)$total;
         }
 
         $contributionTypes = ContributionType::where('is_active', true)->get();
         
         return view('finance.index', compact(
             'contributions', 'totalContributions', 'thisMonthContributions', 
-            'pendingReceipts', 'contributionsCount', 'chartData', 'typeDistribution', 
+            'pendingReceipts', 'contributionsCount', 'chartData', 'expenseChart', 'typeDistribution', 
             'trendData', 'contributionTypes', 'period'
         ));
     }
@@ -145,42 +176,140 @@ class FinanceController extends Controller
             'payment_method' => $validated['payment_method'],
             'notes' => $request->notes,
             'receipt_number' => $receiptNumber,
-            'recorded_by' => auth()->id(),
+            'recorded_by' => Auth::id(),
             'is_verified' => $validated['payment_method'] === 'cash',
+            'verified_at' => $validated['payment_method'] === 'cash' ? now() : null,
+            'verified_by' => $validated['payment_method'] === 'cash' ? Auth::id() : null,
         ];
 
-        // Handle digital payments via Snipe
-        if (in_array($validated['payment_method'], ['mobile_money', 'card', 'dynamic-qr'])) {
-            $contribution = Contribution::create($contributionData);
-            
-            if ($validated['payment_method'] === 'mobile_money') {
-                $response = $this->snipeService->createMobileMoneyPayment($contribution);
+        DB::beginTransaction();
+        try {
+            // Handle digital payments via Snipe
+            if (in_array($validated['payment_method'], ['mobile_money', 'card', 'dynamic-qr'])) {
+                $contribution = Contribution::create($contributionData);
                 
-                if (isset($response['error'])) {
-                    return back()->with('error', 'Payment failed: ' . $response['error']);
+                if ($validated['payment_method'] === 'mobile_money') {
+                    $response = $this->snipeService->createMobileMoneyPayment($contribution);
+                    
+                    if (isset($response['error'])) {
+                        DB::rollBack();
+                        return back()->with('error', 'Payment failed: ' . $response['error']);
+                    }
+
+                    DB::commit();
+                    $this->sendContributionNotifications($contribution);
+                    return redirect()->route('finance.index')->with('success', 'Payment initiated! Please check the member\'s phone for the USSD prompt.');
                 }
 
-                $this->sendContributionNotifications($contribution);
-                return redirect()->route('finance.index')->with('success', 'Payment initiated! Please check the member\'s phone for the USSD prompt.');
+                $checkoutResponse = $this->snipeService->createCheckout($contribution);
+
+                if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
+                    DB::commit();
+                    $this->sendContributionNotifications($contribution);
+                    return redirect($checkoutResponse['checkout_url']);
+                }
+
+                DB::rollBack();
+                return back()->with('error', 'Failed to initiate payment session. Please check your configuration.');
             }
 
-            $checkoutResponse = $this->snipeService->createCheckout($contribution);
+            $contribution = Contribution::create($contributionData);
 
-            if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
-                // Send notifications (maybe wait for confirmation, but we send 'initiated' for now)
-                $this->sendContributionNotifications($contribution);
-                return redirect($checkoutResponse['checkout_url']);
+            // If verified (Cash), create accounting entries
+            if ($contribution->is_verified) {
+                $this->createAccountingEntries($contribution);
             }
 
-            return back()->with('error', 'Failed to initiate payment session. Please check your configuration.');
+            DB::commit();
+            $this->sendContributionNotifications($contribution);
+            return redirect()->route('finance.index')->with('success', 'Contribution recorded successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Contribution Store Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while recording the contribution: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Verify a contribution and create accounting entries
+     */
+    public function verify(Contribution $finance)
+    {
+        $contribution = $finance;
+
+        if ($contribution->is_verified) {
+            return back()->with('warning', 'This contribution is already verified.');
         }
 
-        $contribution = Contribution::create($contributionData);
+        DB::beginTransaction();
+        try {
+            $contribution->update([
+                'is_verified' => true,
+                'verified_at' => now(),
+                'verified_by' => Auth::id(),
+            ]);
 
-        // Send notifications
-        $this->sendContributionNotifications($contribution);
+            $this->createAccountingEntries($contribution);
 
-        return redirect()->route('finance.index')->with('success', 'Contribution recorded successfully');
+            DB::commit();
+            return back()->with('success', 'Contribution verified successfully and accounting entries recorded.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Contribution Verification Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to verify contribution: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create double-entry accounting records for a contribution
+     */
+    protected function createAccountingEntries(Contribution $contribution)
+    {
+        // 1. Determine Debit Account (Asset: Cash or Bank)
+        $debitAccountCode = $contribution->payment_method === 'cash' ? '1000' : '1100';
+        $debitAccount = Account::where('code', $debitAccountCode)->first();
+
+        // 2. Determine Credit Account (Revenue based on contribution type)
+        $creditAccountCode = match ($contribution->contribution_type) {
+            'Tithe' => '4000',
+            'Offering' => '4100',
+            'Special' => '4200',
+            'Harvest' => '4300',
+            default => '4900',
+        };
+        $creditAccount = Account::where('code', $creditAccountCode)->first();
+
+        if (!$debitAccount || !$creditAccount) {
+            throw new \Exception("Accounting accounts not found (Debit: $debitAccountCode, Credit: $creditAccountCode). Please run seeder.");
+        }
+
+        // 3. Create Debit Entry
+        LedgerEntry::create([
+            'account_id' => $debitAccount->id,
+            'transaction_date' => $contribution->contribution_date,
+            'description' => "Contribution Receipt: {$contribution->receipt_number} - {$contribution->member->full_name}",
+            'debit' => $contribution->amount,
+            'credit' => 0,
+            'reference_type' => 'Contribution',
+            'reference_id' => $contribution->id,
+            'recorded_by' => Auth::id(),
+        ]);
+
+        // 4. Create Credit Entry
+        LedgerEntry::create([
+            'account_id' => $creditAccount->id,
+            'transaction_date' => $contribution->contribution_date,
+            'description' => "Contribution Receipt: {$contribution->receipt_number} - {$contribution->member->full_name}",
+            'debit' => 0,
+            'credit' => $contribution->amount,
+            'reference_type' => 'Contribution',
+            'reference_id' => $contribution->id,
+            'recorded_by' => Auth::id(),
+        ]);
+
+        // 5. Update Account Balances
+        $debitAccount->increment('balance', $contribution->amount);
+        $creditAccount->increment('balance', $contribution->amount);
     }
 
     /**
@@ -192,32 +321,30 @@ class FinanceController extends Controller
         $amount = number_format($contribution->amount, 0);
         $type = ucfirst(str_replace('_', ' ', $contribution->contribution_type));
         
-        // 1. Send SMS
+        // 1. Send SMS (Queued)
         if ($member->phone) {
-            try {
-                $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
-                $this->messagingService->sendSms($member->phone, $smsMessage);
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to send contribution SMS: " . $e->getMessage());
-            }
+            $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
+            SendSmsJob::dispatch($member->phone, $smsMessage);
         }
 
-        // 2. Send Email with PDF attachment
+        // 2. Send Email with PDF attachment (Queued)
         if ($member->email) {
-            try {
-                $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution'))->output();
-                Mail::to($member->email)->send(new ContributionReceiptMailable($contribution, $pdf));
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Failed to send contribution email: " . $e->getMessage());
-            }
+            // The mailable is Queued, and it will generate the PDF internally in its attachments() method
+            Mail::to($member->email)->queue(new ContributionReceiptMailable($contribution));
         }
     }
 
     public function show(Contribution $finance)
     {
         $contribution = $finance;
-        $contribution->load(['member', 'recorder']);
-        return view('finance.show', compact('contribution'));
+        $contribution->load(['member', 'recorder', 'verifier']);
+        
+        $ledgerEntries = LedgerEntry::with('account')
+            ->where('reference_type', 'Contribution')
+            ->where('reference_id', $contribution->id)
+            ->get();
+
+        return view('finance.show', compact('contribution', 'ledgerEntries'));
     }
 
     public function edit(Contribution $finance)
@@ -254,35 +381,36 @@ class FinanceController extends Controller
 
     public function receipt(Contribution $contribution)
     {
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+
         // Check if the user is a member and ensure they can only access their own receipts
-        if (auth()->user()->member) {
-            if (auth()->user()->member->id !== $contribution->member_id) {
+        if ($user->member) {
+            if ($user->member->id !== $contribution->member_id) {
                 abort(403, 'Unauthorized access to this receipt.');
             }
         } else {
             // For non-member users (Admins/Finance), check for global permission
-            if (!auth()->user()->hasPermission('finance.view')) {
+            if (!$user->hasPermission('finance.view')) {
                 abort(403, 'Unauthorized access to financial records.');
             }
         }
 
         $contribution->load('member');
 
-        // Check if the request wants a PDF download or a web view
-        if (request()->has('download')) {
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('finance.receipt_pdf', compact('contribution'));
-            
-            // Sanitize filename to remove slashes
-            $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
-            return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
+        // Generate PDF for the receipt
+        $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution'));
+        
+        // Sanitize filename to remove slashes
+        $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
+        
+        // If the request explicitly asks for a preview (not download), stream it
+        if (request()->has('preview')) {
+            return $pdf->stream("Receipt_{$safeReceiptNo}.pdf");
         }
 
-        // Return a professional web view of the receipt (reusing finance.show or a dedicated member view)
-        if (auth()->user()->member) {
-            return view('member.profile.receipt_view', compact('contribution'));
-        }
-
-        return view('finance.show', compact('contribution'));
+        // Default behavior: Download the PDF
+        return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
     }
 
     public function reports()

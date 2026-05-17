@@ -6,30 +6,24 @@
 
 @section('content')
 <div class="animate-in space-y-6">
-    <!-- FILTERS -->
-    <div class="card border-none shadow-sm overflow-hidden">
-        <div class="bg-gradient-to-r from-green-600 to-green-700 p-6">
-            <form action="{{ route('finance.reports') }}" method="GET" class="flex flex-wrap items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex-center text-white">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-xl font-black text-white">Financial Insights</h2>
-                        <p class="text-xs text-green-100 font-bold uppercase tracking-widest">Yearly Performance Analysis</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <select name="year" class="bg-white/10 border-white/20 text-white font-black text-sm rounded-xl py-2 px-4 focus:ring-0 cursor-pointer" onchange="this.form.submit()">
-                        @for($i = date('Y'); $i >= date('Y')-5; $i--)
-                            <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }} class="text-gray-800">{{ $i }} Financial Year</option>
+    <!-- Header -->
+    <div class="card overflow-hidden">
+        <div class="p-8 text-center border-b border-gray-50 bg-gray-50/30">
+            <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Financial Performance Reports</h2>
+            <p class="text-[10px] text-muted font-black mt-1 uppercase tracking-widest">ST. JOSEPH THE WORKER CHAPLAINCY</p>
+            
+            <div class="mt-6 flex items-center justify-center gap-3">
+                <form action="{{ route('finance.reports') }}" method="GET" class="flex items-center gap-2">
+                    <select name="year" class="form-control text-xs py-1.5 min-w-[150px]" onchange="this.form.submit()">
+                        @for($i = date('Y'); $i >= 2023; $i--)
+                            <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>Financial Year {{ $i }}</option>
                         @endfor
                     </select>
-                    <button type="button" class="bg-white text-green-700 font-black text-[10px] uppercase tracking-widest px-6 py-2.5 rounded-xl shadow-lg hover:scale-105 transition-all">
-                        Export PDF
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -103,6 +97,47 @@
             </div>
         </div>
         @endforeach
+    </div>
+
+    <!-- ACCOUNTING STATEMENTS -->
+    <div class="card p-6 border-none shadow-sm">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-10 h-10 rounded-xl bg-slate-800 flex-center text-white">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 2v-6m-8-3h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
+            </div>
+            <div>
+                <h3 class="text-lg font-black text-gray-800">Accounting Statements</h3>
+                <p class="text-xs text-muted font-bold uppercase tracking-widest">Double-Entry Financial Reports</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a href="{{ route('finance.reports.income_statement', ['year' => $year]) }}" class="group block p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-300 hover:bg-white transition-all shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-1">
+                        <h4 class="font-black text-slate-800 group-hover:text-blue-600 transition-colors">Income Statement</h4>
+                        <p class="text-[10px] text-muted font-bold uppercase tracking-wider">Profit & Loss (P&L)</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-white flex-center shadow-sm group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                    </div>
+                </div>
+                <p class="mt-4 text-xs text-slate-500 leading-relaxed">View the revenue generated and expenses incurred during the {{ $year }} fiscal year to determine net surplus or deficit.</p>
+            </a>
+
+            <a href="{{ route('finance.reports.balance_sheet') }}" class="group block p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-300 hover:bg-white transition-all shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="space-y-1">
+                        <h4 class="font-black text-slate-800 group-hover:text-green-600 transition-colors">Balance Sheet</h4>
+                        <p class="text-[10px] text-muted font-bold uppercase tracking-wider">Statement of Financial Position</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-white flex-center shadow-sm group-hover:bg-green-50 group-hover:text-green-600 transition-all">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6l3 18h12l3-18H3zM9 6V3a1 1 0 011-1h4a1 1 0 011 1v3"/></svg>
+                    </div>
+                </div>
+                <p class="mt-4 text-xs text-slate-500 leading-relaxed">Summarize the church's assets, liabilities, and equity at a specific point in time. Balanced using double-entry logic.</p>
+            </a>
+        </div>
     </div>
 
     <!-- MAIN CHARTS -->
@@ -180,12 +215,12 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-green-50 text-green-600 flex-center font-black text-[10px]">
-                                        {{ substr($item->member->full_name, 0, 2) }}
+                                        {{ substr($item->member->full_name ?? 'NA', 0, 2) }}
                                     </div>
-                                    <div class="text-xs font-black text-gray-800">{{ $item->member->full_name }}</div>
+                                    <div class="text-xs font-black text-gray-800">{{ $item->member->full_name ?? 'Unknown Member' }}</div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{{ $item->member->registration_number }}</td>
+                            <td class="px-6 py-4 text-xs font-bold text-gray-500 uppercase">{{ $item->member->registration_number ?? 'N/A' }}</td>
                             <td class="px-6 py-4"><span class="badge green uppercase text-[9px] font-black">HIGH</span></td>
                             <td class="px-6 py-4 text-right text-xs font-black text-green-600">TZS {{ number_format($item->total, 0) }}</td>
                         </tr>
@@ -315,7 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
         new Chart(incomePieCtx, {
             type: 'doughnut',
             data: {
-                labels: {!! json_encode($incomeByCategory->pluck('category')->map(fn($c) => ucfirst(str_replace('_', ' ', $c)))) !!},
+                labels: @json($incomeByCategory->pluck('category')->map(fn($c) => ucfirst(str_replace('_', ' ', $c ?? '')))),
                 datasets: [{
                     data: @json($incomeByCategory->pluck('total')),
                     backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],

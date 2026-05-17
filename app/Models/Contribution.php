@@ -19,12 +19,15 @@ class Contribution extends Model
         'receipt_qr_code',
         'is_verified',
         'recorded_by',
+        'verified_by',
+        'verified_at',
     ];
 
     protected $casts = [
         'contribution_date' => 'date',
         'amount' => 'decimal:2',
         'is_verified' => 'boolean',
+        'verified_at' => 'datetime',
     ];
 
     /**
@@ -41,5 +44,13 @@ class Contribution extends Model
     public function recorder(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    /**
+     * Get the user who verified the contribution.
+     */
+    public function verifier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
     }
 }

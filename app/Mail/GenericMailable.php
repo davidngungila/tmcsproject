@@ -2,27 +2,28 @@
 
 namespace App\Mail;
 
-use App\Models\Contribution;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Barryvdh\DomPDF\Facade\Pdf;
 
-class ContributionReceiptMailable extends Mailable
+class GenericMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $contribution;
+    public $subject;
+    public $content;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Contribution $contribution)
+    public function __construct($subject, $content)
     {
-        $this->contribution = $contribution;
+        $this->subject = $subject;
+        $this->content = $content;
     }
 
     /**
@@ -31,7 +32,7 @@ class ContributionReceiptMailable extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Official Receipt: ' . $this->contribution->receipt_number,
+            subject: $this->subject,
         );
     }
 
@@ -41,20 +42,17 @@ class ContributionReceiptMailable extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.contribution_receipt',
+            view: 'emails.generic',
         );
     }
 
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {
-        return [
-            Attachment::fromData(fn () => Pdf::loadView('finance.receipt_pdf', ['contribution' => $this->contribution])->output(), "Receipt_{$this->contribution->receipt_number}.pdf")
-                ->withMime('application/pdf'),
-        ];
+        return [];
     }
 }

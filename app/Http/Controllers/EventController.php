@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\EventAttendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EventController extends Controller
 {
@@ -14,7 +16,7 @@ class EventController extends Controller
         $totalEvents = Event::count();
         $upcomingEvents = Event::where('event_date', '>', now())->count();
         $pastEvents = Event::where('event_date', '<', now())->orWhere('status', 'completed')->count();
-        $totalAttendees = \App\Models\EventAttendance::where('status', 'attended')->count();
+        $totalAttendees = EventAttendance::where('status', 'attended')->count();
 
         // Format events for FullCalendar
         $calendarEvents = $allEvents->map(function($event) {
@@ -64,7 +66,7 @@ class EventController extends Controller
             'event_date' => $startDateTime->format('Y-m-d'),
             'event_time' => $startDateTime->format('H:i:s'),
             'status' => 'upcoming',
-            'created_by' => auth()->id(),
+            'created_by' => Auth::id(),
         ];
 
         Event::create($eventData);

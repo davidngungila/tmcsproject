@@ -31,8 +31,8 @@ class FinancialReportController extends Controller
         $expenseChart = array_fill(1, 12, 0);
         $profitChart = array_fill(1, 12, 0);
         
-        foreach ($incomeData as $m => $total) $incomeChart[$m] = (float)$total;
-        foreach ($expenseData as $m => $total) $expenseChart[$m] = (float)$total;
+        foreach ($incomeData as $m => $total) $incomeChart[(int)$m] = (float)$total;
+        foreach ($expenseData as $m => $total) $expenseChart[(int)$m] = (float)$total;
         for ($i=1; $i<=12; $i++) $profitChart[$i] = $incomeChart[$i] - $expenseChart[$i];
         
         $totalIncome = array_sum($incomeChart);

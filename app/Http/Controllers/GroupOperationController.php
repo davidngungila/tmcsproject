@@ -14,6 +14,8 @@ use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Jobs\SendSmsJob;
+use Illuminate\Support\Facades\Auth;
 
 class GroupOperationController extends Controller
 {
@@ -26,12 +28,15 @@ class GroupOperationController extends Controller
 
     private function authorizeLeader(Group $group)
     {
+        $user = Auth::user();
+        /** @var \App\Models\User $user */
+
         // Admins have access to everything
-        if (auth()->user()->hasRole('admin')) {
+        if ($user->hasRole('admin')) {
             return;
         }
 
-        $memberId = auth()->user()->member->id ?? null;
+        $memberId = $user->member->id ?? null;
         if (!$memberId) abort(403, 'Unauthorized. No member profile found.');
 
         if ($group->chairperson_id != $memberId && 
@@ -314,12 +319,9 @@ class GroupOperationController extends Controller
             return back()->with('error', 'No members with phone numbers found.');
         }
 
-        $result = $this->messagingService->sendSms($phones, $request->message);
+        // Send SMS in background
+        SendSmsJob::dispatch($phones, $request->message);
 
-        if ($result['status'] == 'success') {
-            return back()->with('success', 'Messages sent successfully to ' . count($phones) . ' members.');
-        }
-
-        return back()->with('error', 'Failed to send messages: ' . $result['message']);
+        return back()->with('success', 'Messages queued for sending to ' . count($phones) . ' members.');
     }
 }
