@@ -403,22 +403,22 @@ class FinanceController extends Controller
             ->where('reference_id', $contribution->id)
             ->get();
 
+        // Sanitize filename to remove slashes
+        $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
+
         // Generate PDF for the receipt
-        if (request()->has('download')) {
-            $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution', 'ledgerEntries'));
-            
-            // Sanitize filename to remove slashes
-            $safeReceiptNo = str_replace(['/', '\\'], '-', $contribution->receipt_number);
-            
-            return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
+        $pdf = Pdf::loadView('finance.receipt_pdf', compact('contribution', 'ledgerEntries', 'safeReceiptNo'));
+        
+        // If the request explicitly asks for a web view (not download), handle it
+        if (request()->has('view')) {
+            if ($user->member) {
+                return view('member.profile.receipt_view', compact('contribution', 'ledgerEntries'));
+            }
+            return view('finance.show', compact('contribution', 'ledgerEntries'));
         }
 
-        // Return a professional web view of the receipt (reusing finance.show or a dedicated member view)
-        if ($user->member) {
-            return view('member.profile.receipt_view', compact('contribution', 'ledgerEntries'));
-        }
-
-        return view('finance.show', compact('contribution', 'ledgerEntries'));
+        // Default behavior: Download the PDF
+        return $pdf->download("Receipt_{$safeReceiptNo}.pdf");
     }
 
     public function reports()

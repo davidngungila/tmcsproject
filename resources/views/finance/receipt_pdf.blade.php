@@ -174,11 +174,11 @@
             <table class="details-table">
                 <tr>
                     <td class="label">Received From:</td>
-                    <td class="value" style="font-size: 14px;">{{ strtoupper($contribution->member->full_name) }}</td>
+                    <td class="value" style="font-size: 14px;">{{ strtoupper($contribution->member->full_name ?? 'Anonymous') }}</td>
                     <td rowspan="4" class="qr-code-box">
                         @php
                             $qrContent = "RECEIPT: " . $contribution->receipt_number . "\n";
-                            $qrContent .= "MEMBER: " . $contribution->member->full_name . "\n";
+                            $qrContent .= "MEMBER: " . ($contribution->member->full_name ?? 'N/A') . "\n";
                             $qrContent .= "AMOUNT: TZS " . number_format($contribution->amount) . "\n";
                             $qrContent .= "VERIFIED: " . ($contribution->is_verified ? 'YES' : 'NO');
                         @endphp
@@ -187,7 +187,7 @@
                 </tr>
                 <tr>
                     <td class="label">Member ID:</td>
-                    <td class="value">{{ $contribution->member->registration_number }}</td>
+                    <td class="value">{{ $contribution->member->registration_number ?? 'N/A' }}</td>
                 </tr>
                 <tr>
                     <td class="label">Purpose:</td>
