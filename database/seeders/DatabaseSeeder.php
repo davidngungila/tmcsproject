@@ -21,6 +21,8 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
             ContributionTypeSeeder::class,
+            MemberCategorySeeder::class,
+            ProgramSeeder::class,
         ]);
     }
 }

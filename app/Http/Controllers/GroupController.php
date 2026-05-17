@@ -10,6 +10,7 @@ use App\Models\MessageTemplate;
 use App\Models\Communication;
 use App\Models\GroupAttendance;
 use App\Models\GroupMeeting;
+use App\Models\Program;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +40,9 @@ class GroupController extends Controller
     public function create()
     {
         $members = Member::all();
-        return view('groups.create', compact('members'));
+        $categories = \App\Models\MemberCategory::where('is_active', true)->get();
+        $programs = Program::where('is_active', true)->get();
+        return view('groups.create', compact('members', 'categories', 'programs'));
     }
 
     public function store(Request $request)
@@ -107,7 +110,9 @@ class GroupController extends Controller
     public function edit(Group $group)
     {
         $members = Member::all();
-        return view('groups.edit', compact('group', 'members'));
+        $categories = \App\Models\MemberCategory::where('is_active', true)->get();
+        $programs = Program::where('is_active', true)->get();
+        return view('groups.edit', compact('group', 'members', 'categories', 'programs'));
     }
 
     public function update(Request $request, Group $group)

@@ -156,10 +156,23 @@
               <select name="category_id" id="category_id" class="form-control focus:ring-2 focus:ring-primary/20" required onchange="toggleRegNumber()">
                 <option value="">Select Category</option>
                 @foreach($categories as $category)
-                  <option value="{{ $category->id }}" {{ old('category_id', $member->category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                  <option value="{{ $category->id }}" data-name="{{ $category->name }}" {{ old('category_id', $member->category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                 @endforeach
               </select>
               @error('category_id') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
+            </div>
+
+            <div class="form-group" id="program_group">
+              <label class="form-label text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Academic Programme</label>
+              <select name="program_id" id="program_id" class="form-control focus:ring-2 focus:ring-primary/20 select2">
+                <option value="">Select Programme</option>
+                @foreach($programs as $program)
+                  <option value="{{ $program->id }}" {{ old('program_id', $member->program_id) == $program->id ? 'selected' : '' }}>
+                    [{{ $program->code }}] {{ $program->name }}
+                  </option>
+                @endforeach
+              </select>
+              @error('program_id') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
             </div>
 
             <div class="form-group" id="reg_number_group" style="display: none;">
@@ -249,15 +262,21 @@ function toggleRegNumber() {
   const categorySelect = document.getElementById('category_id');
   const regNumberGroup = document.getElementById('reg_number_group');
   const regNumberInput = document.getElementById('registration_number');
+  const programGroup = document.getElementById('program_group');
   
-  // IDs 1 and 2 are Undergraduate and Postgraduate (Students)
-  const studentCategories = ['1', '2'];
+  const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+  const categoryName = selectedOption ? selectedOption.getAttribute('data-name') : '';
   
-  if (studentCategories.includes(categorySelect.value)) {
+  // Show Reg Number and Program for Undergraduate and Postgraduate
+  const isStudent = ['Undergraduate', 'Postgraduate'].includes(categoryName);
+  
+  if (isStudent) {
     regNumberGroup.style.display = 'block';
+    programGroup.style.display = 'block';
     regNumberInput.setAttribute('required', 'required');
   } else {
     regNumberGroup.style.display = 'none';
+    programGroup.style.display = 'none';
     regNumberInput.removeAttribute('required');
   }
 }

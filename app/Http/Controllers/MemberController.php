@@ -6,6 +6,7 @@ use App\Models\Member;
 use App\Models\Group;
 use App\Models\User;
 use App\Models\MemberCategory;
+use App\Models\Program;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,18 +20,22 @@ use App\Mail\WelcomeMemberMailable;
 use Illuminate\Support\Facades\Mail;
 use App\Jobs\SendSmsJob;
 
+use App\Services\GroupService;
+
 class MemberController extends Controller
 {
     protected $messagingService;
+    protected $groupService;
 
-    public function __construct(MessagingService $messagingService)
+    public function __construct(MessagingService $messagingService, GroupService $groupService)
     {
         $this->messagingService = $messagingService;
+        $this->groupService = $groupService;
     }
 
     public function index()
     {
-        $members = Member::with(['groups', 'category'])->paginate(10);
+        $members = Member::with(['groups', 'category', 'program'])->paginate(10);
         return view('members.index', compact('members'));
     }
 
@@ -38,7 +43,8 @@ class MemberController extends Controller
     {
         $groups = Group::all();
         $categories = MemberCategory::where('is_active', true)->get();
-        return view('members.create', compact('groups', 'categories'));
+        $programs = Program::where('is_active', true)->get();
+        return view('members.create', compact('groups', 'categories', 'programs'));
     }
 
     public function store(Request $request)
@@ -48,6 +54,7 @@ class MemberController extends Controller
             'email' => 'nullable|email|unique:members,email|unique:users,email',
             'phone' => 'nullable|string|max:20',
             'category_id' => 'required|exists:member_categories,id',
+            'program_id' => 'nullable|exists:programs,id',
             'registration_number' => 'nullable|string|unique:members,registration_number',
             'date_of_birth' => 'required|date',
             'address' => 'required|string',
@@ -78,6 +85,9 @@ class MemberController extends Controller
         $validated['created_by'] = Auth::id();
 
         $member = Member::create($validated);
+
+        // Automatically assign to communities based on criteria
+        $this->groupService->autoAssignMemberToCommunities($member);
 
         // Auto-create User account for Member if email exists
         if ($member->email) {
@@ -133,7 +143,7 @@ class MemberController extends Controller
 
     public function show(Member $member)
     {
-        $member->load(['financials', 'groups', 'contributions', 'category']);
+        $member->load(['financials', 'groups', 'contributions', 'category', 'program']);
         return view('members.show', compact('member'));
     }
 
@@ -141,8 +151,9 @@ class MemberController extends Controller
     {
         $groups = Group::all();
         $categories = MemberCategory::where('is_active', true)->get();
+        $programs = Program::where('is_active', true)->get();
         $memberGroups = $member->groups->pluck('id')->toArray();
-        return view('members.edit', compact('member', 'groups', 'memberGroups', 'categories'));
+        return view('members.edit', compact('member', 'groups', 'memberGroups', 'categories', 'programs'));
     }
 
     public function update(Request $request, Member $member)
@@ -152,6 +163,7 @@ class MemberController extends Controller
             'email' => 'nullable|email|unique:members,email,' . $member->id,
             'phone' => 'nullable|string|max:20',
             'category_id' => 'required|exists:member_categories,id',
+            'program_id' => 'nullable|exists:programs,id',
             'registration_number' => 'nullable|string|unique:members,registration_number,' . $member->id,
             'date_of_birth' => 'required|date',
             'address' => 'required|string',
@@ -179,6 +191,9 @@ class MemberController extends Controller
         $validated['member_type'] = $category->name;
 
         $member->update($validated);
+
+        // Automatically assign to communities based on updated criteria
+        $this->groupService->autoAssignMemberToCommunities($member);
 
         if ($request->has('groups')) {
             $syncData = [];

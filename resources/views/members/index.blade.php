@@ -129,6 +129,9 @@
               <span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 text-[10px] font-black uppercase tracking-wider">
                 {{ $member->category ? $member->category->name : $member->member_type }}
               </span>
+              @if($member->program)
+              <div class="text-[9px] text-muted mt-1 font-bold">[{{ $member->program->code }}]</div>
+              @endif
             </td>
             <td class="px-6 py-4">
               <div class="text-xs font-medium">{{ $member->phone ?? 'No Phone' }}</div>

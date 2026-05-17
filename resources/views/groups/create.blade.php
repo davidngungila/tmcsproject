@@ -95,7 +95,25 @@
         <div id="criteria-section" class="{{ old('type') == 'Community' ? '' : 'hidden' }} border-t pt-4 mt-4">
           <h4 class="text-sm font-bold mb-4 uppercase text-muted">Community Assignment Criteria</h4>
           <p class="text-xs text-muted mb-4 italic">Members matching these criteria will be automatically assigned to this community.</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="form-group">
+              <label class="form-label">Member Category</label>
+              <select name="criteria[category_id]" id="criteria_category_id" class="form-control">
+                <option value="">Any Category</option>
+                @foreach($categories as $category)
+                <option value="{{ $category->id }}" data-name="{{ $category->name }}" {{ old('criteria.category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="form-group" id="criteria_program_group">
+              <label class="form-label">Academic Programme</label>
+              <select name="criteria[program_id]" class="form-control">
+                <option value="">Any Programme</option>
+                @foreach($programs as $program)
+                <option value="{{ $program->id }}" {{ old('criteria.program_id') == $program->id ? 'selected' : '' }}>[{{ $program->code }}] {{ $program->name }}</option>
+                @endforeach
+              </select>
+            </div>
             <div class="form-group">
               <label class="form-label">Parish</label>
               <input type="text" name="criteria[parish]" class="form-control" value="{{ old('criteria.parish') }}" placeholder="e.g. St. Jude">
@@ -133,14 +151,34 @@
   document.addEventListener('DOMContentLoaded', function() {
     const typeSelect = document.querySelector('select[name="type"]');
     const criteriaSection = document.getElementById('criteria-section');
+    const criteriaCategorySelect = document.getElementById('criteria_category_id');
+    const criteriaProgramGroup = document.getElementById('criteria_program_group');
 
-    typeSelect.addEventListener('change', function() {
-      if (this.value === 'Community') {
+    function toggleCriteriaSection() {
+      if (typeSelect.value === 'Community') {
         criteriaSection.classList.remove('hidden');
       } else {
         criteriaSection.classList.add('hidden');
       }
-    });
+    }
+
+    function toggleCriteriaProgram() {
+      const selectedOption = criteriaCategorySelect.options[criteriaCategorySelect.selectedIndex];
+      const categoryName = selectedOption ? selectedOption.getAttribute('data-name') : '';
+      
+      if (['Undergraduate', 'Postgraduate'].includes(categoryName)) {
+        criteriaProgramGroup.style.display = 'block';
+      } else {
+        criteriaProgramGroup.style.display = 'none';
+      }
+    }
+
+    typeSelect.addEventListener('change', toggleCriteriaSection);
+    criteriaCategorySelect.addEventListener('change', toggleCriteriaProgram);
+
+    // Initial state
+    toggleCriteriaSection();
+    toggleCriteriaProgram();
   });
 </script>
 @endpush

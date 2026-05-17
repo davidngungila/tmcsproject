@@ -17,6 +17,7 @@ class Member extends Model
         'phone',
         'member_type',
         'category_id',
+        'program_id',
         'date_of_birth',
         'address',
         'baptismal_name',
@@ -52,6 +53,14 @@ class Member extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(MemberCategory::class, 'category_id');
+    }
+
+    /**
+     * Get the program of the member.
+     */
+    public function program(): BelongsTo
+    {
+        return $this->belongsTo(Program::class, 'program_id');
     }
 
     /**

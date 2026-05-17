@@ -48,6 +48,16 @@ class GroupService
                 if (!str_contains(strtolower($member->address ?? ''), strtolower($value))) {
                     return false;
                 }
+            } elseif ($field === 'category_id') {
+                // Support for Member Category ID matching
+                if ($member->category_id != $value) {
+                    return false;
+                }
+            } elseif ($field === 'program_id') {
+                // Support for Program ID matching
+                if ($member->program_id != $value) {
+                    return false;
+                }
             } else {
                 // Exact match for other fields (region, diocese, parish, etc.)
                 // Use data_get to handle potential nested or attribute access
