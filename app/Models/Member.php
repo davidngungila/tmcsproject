@@ -73,9 +73,14 @@ class Member extends Model
     /**
      * Get the contributions for the member.
      */
-    public function contributions(): HasMany
+    public function contributions()
     {
         return $this->hasMany(Contribution::class);
+    }
+
+    public function savedPaymentMethods()
+    {
+        return $this->hasMany(SavedPaymentMethod::class);
     }
 
     /**

@@ -48,7 +48,7 @@
               <label class="form-label text-xs font-bold mb-4 block">Select Payment Channel *</label>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label class="relative cursor-pointer group">
-                  <input type="radio" name="payment_method" value="mobile_money" class="peer hidden" checked>
+                  <input type="radio" name="payment_method" value="mobile_money" class="peer hidden" checked onchange="togglePhoneField(true)">
                   <div class="p-4 border-2 border-light rounded-2xl peer-checked:border-green-500 peer-checked:bg-green-50 transition-all flex items-center gap-4">
                     <div class="w-10 h-10 rounded-lg bg-white flex-center text-green-600 shadow-sm">
                       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
@@ -64,7 +64,7 @@
                 </label>
 
                 <label class="relative cursor-pointer group">
-                  <input type="radio" name="payment_method" value="card" class="peer hidden">
+                  <input type="radio" name="payment_method" value="card" class="peer hidden" onchange="togglePhoneField(false)">
                   <div class="p-4 border-2 border-light rounded-2xl peer-checked:border-blue-500 peer-checked:bg-blue-50 transition-all flex items-center gap-4">
                     <div class="w-10 h-10 rounded-lg bg-white flex-center text-blue-600 shadow-sm">
                       <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
@@ -79,6 +79,25 @@
                   </div>
                 </label>
               </div>
+            </div>
+
+            <!-- DYNAMIC PHONE FIELD -->
+            <div id="mobileMoneyFields" class="animate-in slide-in-from-top-4 duration-300">
+                <div class="form-group mb-6">
+                    <label class="form-label text-xs font-bold">Phone Number for USSD Prompt *</label>
+                    <div class="relative">
+                        <input type="text" name="phone_number" id="phoneNumber" class="form-control pl-12" value="{{ $member->phone }}" placeholder="e.g. 07XXXXXXXX">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted border-r pr-2">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 011.94.315l-.228 1.14a1 1 0 01-.779.79l-1.888.317a1 1 0 00-.76.94v2a1 1 0 00.76.94l1.888.317a1 1 0 01.779.79l.228 1.14a1 1 0 01-1.94.315H5a2 2 0 01-2-2V5z"/></svg>
+                        </div>
+                    </div>
+                    <p class="text-[9px] text-muted mt-2">You can use your registered number or enter a different one.</p>
+                </div>
+
+                <div class="flex items-center gap-2 mb-8">
+                    <input type="checkbox" name="save_method" id="saveMethod" value="1" class="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    <label for="saveMethod" class="text-xs font-bold text-gray-700">Save this number for future use</label>
+                </div>
             </div>
 
             <div class="flex items-center gap-3 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 mb-8">
@@ -132,14 +151,38 @@
         </div>
       </div>
 
-      <!-- SAVED METHODS (PLACEHOLDER) -->
-      <div class="card opacity-60 grayscale cursor-not-allowed">
-        <div class="card-header border-b">
+      <!-- SAVED METHODS -->
+      <div class="card">
+        <div class="card-header border-b flex justify-between items-center">
           <div class="card-title text-sm">Saved Methods</div>
+          <span class="px-2 py-0.5 bg-green-100 text-green-600 text-[8px] font-black uppercase rounded-full">New</span>
         </div>
-        <div class="card-body p-8 text-center">
-          <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="mx-auto mb-2 opacity-30"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-          <p class="text-[10px]">Saved payment methods coming soon.</p>
+        <div class="card-body p-0">
+          <div class="divide-y divide-gray-50">
+            @forelse($savedMethods as $method)
+              <button type="button" onclick="useSavedMethod('{{ $method->identifier }}')" class="w-full p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors text-left group">
+                <div class="w-10 h-10 rounded-xl bg-gray-100 flex-center text-gray-500 group-hover:bg-green-100 group-hover:text-green-600 transition-colors">
+                  @if($method->type === 'mobile_money')
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  @else
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                  @endif
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-gray-900">{{ $method->label ?? $method->provider }}</div>
+                  <div class="text-[10px] text-muted mono">{{ $method->identifier }}</div>
+                </div>
+                <div class="ml-auto opacity-0 group-hover:opacity-100 text-green-500 transition-opacity">
+                  <span class="text-[9px] font-bold">Use this</span>
+                </div>
+              </button>
+            @empty
+              <div class="p-8 text-center">
+                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" class="mx-auto mb-2 opacity-20"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <p class="text-[10px] text-muted">No saved methods yet.</p>
+              </div>
+            @endforelse
+          </div>
         </div>
       </div>
     </div>
@@ -201,6 +244,28 @@
 
 @push('scripts')
 <script>
+function togglePhoneField(show) {
+    const fields = document.getElementById('mobileMoneyFields');
+    if (show) {
+        fields.classList.remove('hidden');
+    } else {
+        fields.classList.add('hidden');
+    }
+}
+
+function useSavedMethod(phone) {
+    const phoneInput = document.getElementById('phoneNumber');
+    const mobileRadio = document.querySelector('input[name="payment_method"][value="mobile_money"]');
+    
+    mobileRadio.checked = true;
+    togglePhoneField(true);
+    phoneInput.value = phone;
+    
+    // Pulse animation to show it was updated
+    phoneInput.classList.add('ring-2', 'ring-green-500');
+    setTimeout(() => phoneInput.classList.remove('ring-2', 'ring-green-500'), 1000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const splash = document.getElementById('paymentSplash');
     const form = document.getElementById('paymentForm');

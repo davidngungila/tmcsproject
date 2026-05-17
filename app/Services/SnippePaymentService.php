@@ -49,7 +49,7 @@ class SnippePaymentService
                 'allowed_methods' => ['mobile_money', 'card'],
                 'customer' => [
                     'name' => $member->full_name,
-                    'phone' => $this->formatPhoneForSnippe($member->phone),
+                    'phone' => $this->formatPhoneForSnippe($contribution->payment_phone ?? $member->phone),
                     'email' => $member->email ?? 'customer@example.com',
                 ],
                 'description' => "Contribution #{$contribution->receipt_number} - {$contribution->contribution_type}",
@@ -101,7 +101,7 @@ class SnippePaymentService
     {
         try {
             $member = $contribution->member;
-            $phone = $this->formatPhoneForSnippe($member->phone);
+            $phone = $this->formatPhoneForSnippe($contribution->payment_phone ?? $member->phone);
             
             if ($phone === '') {
                 return ['error' => 'Please provide a valid Tanzania mobile number for M-Pesa / mobile money.'];
@@ -169,7 +169,7 @@ class SnippePaymentService
     {
         try {
             $member = $contribution->member;
-            $phone = $this->formatPhoneForSnippe($member->phone);
+            $phone = $this->formatPhoneForSnippe($contribution->payment_phone ?? $member->phone);
             
             if ($phone === '') {
                 return ['error' => 'Please provide a valid phone number for card checkout.'];

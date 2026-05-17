@@ -13,6 +13,7 @@ class Contribution extends Model
         'amount',
         'contribution_type',
         'payment_method',
+        'payment_phone',
         'contribution_date',
         'transaction_reference',
         'notes',

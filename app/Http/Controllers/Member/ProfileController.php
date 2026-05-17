@@ -31,7 +31,9 @@ class ProfileController extends Controller
             return redirect()->route('dashboard')->with('error', 'Member profile not found.');
         }
 
-        return view('member.profile.pay', compact('member'));
+        $savedMethods = $member->savedPaymentMethods;
+
+        return view('member.profile.pay', compact('member', 'savedMethods'));
     }
 
     public function processPayment(Request $request)
@@ -43,10 +45,14 @@ class ProfileController extends Controller
             'amount' => 'required|numeric|min:500',
             'contribution_type' => 'required|string',
             'payment_method' => 'required|string|in:mobile_money,card',
+            'phone_number' => 'nullable|string|min:10',
+            'save_method' => 'nullable|boolean',
         ]);
 
         $receiptNumber = 'RCP-ONLINE-' . date('Ymd') . '-' . strtoupper(Str::random(5));
         $type = $validated['payment_method'] === 'mobile_money' ? 'mobile' : 'card';
+
+        $paymentPhone = $validated['phone_number'] ?? $member->phone;
 
         $contribution = Contribution::create([
             'member_id' => $member->id,
@@ -54,11 +60,20 @@ class ProfileController extends Controller
             'amount' => $validated['amount'],
             'contribution_date' => now(),
             'payment_method' => $validated['payment_method'],
+            'payment_phone' => $paymentPhone,
             'notes' => 'Online payment initiated via Member Portal.',
             'receipt_number' => $receiptNumber,
             'is_verified' => false,
-            'recorded_by' => 1, // System admin or appropriate user
+            'recorded_by' => $user->id,
         ]);
+
+        // Save payment method if requested
+        if ($request->has('save_method') && $request->save_method && $paymentPhone) {
+            $member->savedPaymentMethods()->updateOrCreate(
+                ['identifier' => $paymentPhone, 'type' => $validated['payment_method']],
+                ['label' => $request->get('method_label', 'Mobile Money'), 'provider' => $this->detectProvider($paymentPhone)]
+            );
+        }
 
         if ($validated['payment_method'] === 'mobile_money') {
             $response = $this->snipeService->createMobileMoneyPayment($contribution);
@@ -108,6 +123,26 @@ class ProfileController extends Controller
             'is_verified' => (bool) $contribution->is_verified,
             'status' => $contribution->is_verified ? 'Success' : 'Pending'
         ]);
+    }
+
+    protected function detectProvider($phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        if (str_starts_with($phone, '255')) {
+            $prefix = substr($phone, 3, 2);
+        } elseif (str_starts_with($phone, '0')) {
+            $prefix = substr($phone, 1, 2);
+        } else {
+            $prefix = substr($phone, 0, 2);
+        }
+
+        return match ($prefix) {
+            '74', '75', '76' => 'Vodacom (M-Pesa)',
+            '65', '67', '71' => 'Tigo (TigoPesa)',
+            '68', '69', '78' => 'Airtel (AirtelMoney)',
+            '61', '62' => 'Halotel (Halopesa)',
+            default => 'Mobile Money'
+        };
     }
 
     public function index()
