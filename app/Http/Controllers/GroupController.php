@@ -37,6 +37,34 @@ class GroupController extends Controller
         return view('groups.index', compact('groups', 'totalGroups', 'totalMembers', 'activeGroups', 'upcomingEvents'));
     }
 
+    public function generateFromPrograms()
+    {
+        $programs = Program::where('is_active', true)->get();
+        $count = 0;
+
+        foreach ($programs as $program) {
+            $groupName = "SCC " . $program->code;
+            
+            // Check if group already exists
+            if (!Group::where('name', $groupName)->exists()) {
+                Group::create([
+                    'name' => $groupName,
+                    'description' => 'Community for ' . $program->name,
+                    'type' => 'Community',
+                    'is_active' => true,
+                    'formation_date' => now(),
+                    'created_by' => Auth::id(),
+                    'criteria' => [
+                        'program_id' => $program->id
+                    ]
+                ]);
+                $count++;
+            }
+        }
+
+        return redirect()->route('groups.index')->with('success', "Successfully generated $count communities based on academic programs.");
+    }
+
     public function create()
     {
         $members = Member::all();

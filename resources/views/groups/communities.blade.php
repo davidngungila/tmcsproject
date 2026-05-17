@@ -11,8 +11,16 @@
       <h2 class="text-lg font-bold">Communities</h2>
       <p class="text-sm text-muted">Manage small community groups and assignments</p>
     </div>
-    <a href="{{ route('groups.create') }}?type=Community" class="btn btn-primary">Add New Community</a>
-  </div>
+    <div class="flex gap-3">
+      <form action="{{ route('groups.generate-from-programs') }}" method="POST" onsubmit="return confirm('This will create Small Christian Communities for all active academic programmes. Continue?')">
+        @csrf
+        <button type="submit" class="btn btn-secondary flex items-center gap-2">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          Generate SCCs
+        </button>
+      </form>
+      <a href="{{ route('groups.create') }}?type=Community" class="btn btn-primary">Add New Community</a>
+    </div>
 
   <!-- COMMUNITY STATISTICS -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">

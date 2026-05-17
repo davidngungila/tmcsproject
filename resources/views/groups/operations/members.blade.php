@@ -185,38 +185,37 @@
             </table>
         </div>
     </div>
-</div></div>
 
-<!-- ADD MEMBER MODAL -->
-<div id="addMemberModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex-center hidden">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
-        <div class="p-8 border-b border-gray-100 flex items-center justify-between">
-            <div>
-                <h3 class="text-lg font-black text-gray-800">Add New Member</h3>
-                <p class="text-xs text-muted font-bold uppercase tracking-widest mt-1">Select a member to join this community</p>
+    <!-- ADD MEMBER MODAL -->
+    <div id="addMemberModal" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 flex-center hidden">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div class="p-8 border-b border-gray-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-black text-gray-800">Add New Member</h3>
+                    <p class="text-xs text-muted font-bold uppercase tracking-widest mt-1">Select a member to join this community</p>
+                </div>
+                <button onclick="closeAddMemberModal()" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 flex-center hover:bg-red-50 hover:text-red-500 transition-all">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
             </div>
-            <button onclick="closeAddMemberModal()" class="w-8 h-8 rounded-full bg-gray-50 text-gray-400 flex-center hover:bg-red-50 hover:text-red-500 transition-all">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <form action="{{ route('groups.operations.members.add', $group->id) }}" method="POST" class="p-8 space-y-6">
+                @csrf
+                <div class="form-group">
+                    <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Select Member</label>
+                    <select name="member_id" class="form-control w-full p-4 rounded-2xl border-gray-100 bg-gray-50/50 font-bold text-sm focus:ring-2 focus:ring-green-500 transition-all select2" required>
+                        <option value="">Choose a member...</option>
+                        @foreach($allMembers as $m)
+                            <option value="{{ $m->id }}">{{ $m->full_name }} ({{ $m->registration_number }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-full py-4 rounded-2xl shadow-lg shadow-green-200 font-black uppercase tracking-widest">
+                    Add to Community
+                </button>
+            </form>
         </div>
-        <form action="{{ route('groups.operations.members.add', $group->id) }}" method="POST" class="p-8 space-y-6">
-            @csrf
-            <div class="form-group">
-                <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Select Member</label>
-                <select name="member_id" class="form-control w-full p-4 rounded-2xl border-gray-100 bg-gray-50/50 font-bold text-sm focus:ring-2 focus:ring-green-500 transition-all select2" required>
-                    <option value="">Choose a member...</option>
-                    @foreach($allMembers as $m)
-                        <option value="{{ $m->id }}">{{ $m->full_name }} ({{ $m->registration_number }})</option>
-                    @endforeach
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary w-full py-4 rounded-2xl shadow-lg shadow-green-200 font-black uppercase tracking-widest">
-                Add to Community
-            </button>
-        </form>
     </div>
 </div>
-
 @endsection
 
 @push('scripts')
@@ -282,4 +281,3 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection

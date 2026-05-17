@@ -141,6 +141,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{group}/assign-leadership', [GroupController::class, 'assignLeadership'])->name('groups.assign-leadership');
     Route::get('/groups/{group}/reports', [GroupController::class, 'reports'])->name('groups.reports.index');
     Route::get('/groups/{group}/reports/{type}', [GroupController::class, 'viewReport'])->name('groups.reports.view');
+    Route::post('/groups/generate-from-programs', [GroupController::class, 'generateFromPrograms'])->name('groups.generate-from-programs');
     Route::resource('groups', GroupController::class);
 
     // Group Operations (for Leaders)

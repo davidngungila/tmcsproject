@@ -11,6 +11,16 @@
             <h2 class="text-lg font-bold text-gray-800">Community Activities</h2>
             <p class="text-sm text-muted mt-1">Real-time log of all group operations and events</p>
         </div>
+        <div class="flex gap-3">
+            <a href="{{ route('groups.index') }}" class="btn btn-secondary flex items-center gap-2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                Manage Groups
+            </a>
+            <a href="{{ route('groups.create') }}" class="btn btn-primary flex items-center gap-2">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                New Group
+            </a>
+        </div>
     </div>
 
     @php
