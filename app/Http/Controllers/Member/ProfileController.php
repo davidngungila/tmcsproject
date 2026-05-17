@@ -171,6 +171,10 @@ class ProfileController extends Controller
     public function communities()
     {
         $member = Auth::user()->member;
+
+        if (!$member) {
+            return redirect()->route('dashboard')->with('error', 'Member profile not found.');
+        }
         
         // Groups the member is in
         $communities = $member->groups()->where('type', 'Community')->get();
@@ -189,6 +193,10 @@ class ProfileController extends Controller
     public function groups()
     {
         $member = Auth::user()->member;
+
+        if (!$member) {
+            return redirect()->route('dashboard')->with('error', 'Member profile not found.');
+        }
         
         // Groups the member is in
         $groups = $member->groups()->where('type', '!=', 'Community')->get();
@@ -207,6 +215,11 @@ class ProfileController extends Controller
     public function contributions()
     {
         $member = Auth::user()->member;
+        
+        if (!$member) {
+            return redirect()->route('dashboard')->with('error', 'Member profile not found.');
+        }
+
         $contributions = $member->contributions()->latest()->paginate(15);
         return view('member.profile.contributions', compact('member', 'contributions'));
     }
@@ -214,6 +227,11 @@ class ProfileController extends Controller
     public function events()
     {
         $member = Auth::user()->member;
+
+        if (!$member) {
+            return redirect()->route('dashboard')->with('error', 'Member profile not found.');
+        }
+
         $attendance = $member->eventAttendance()->with('event')->latest()->paginate(15);
         return view('member.profile.events', compact('member', 'attendance'));
     }
