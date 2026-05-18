@@ -236,15 +236,16 @@
         </a>
       </div>
 
-      <div class="card p-6 bg-white shadow-sm border border-muted/10 hover:border-primary/30 transition-all opacity-60">
+      <div class="card p-6 bg-white shadow-sm border border-muted/10 hover:border-primary/30 transition-all">
         <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-4">
           <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
         </div>
         <h4 class="font-bold text-lg mb-2">Finance Settings</h4>
         <p class="text-sm text-muted mb-4">Configure bank accounts, payment methods, and notification preferences.</p>
-        <span class="text-muted font-bold text-sm flex items-center gap-2">
-          Coming Soon
-        </span>
+        <a href="{{ route('finance.settings') }}" class="text-primary font-bold text-sm flex items-center gap-2">
+          Update Settings
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+        </a>
       </div>
     </div>
   </div>

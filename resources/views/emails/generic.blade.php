@@ -14,6 +14,8 @@
 <body>
     <div class="container">
         <div class="header">
+            <div style="font-size: 14px; font-weight: 800; margin-bottom: 5px; letter-spacing: 1px;">ST. JOSEPH THE WORKER CHAPLAINCY</div>
+            <div style="font-size: 10px; font-weight: 700; margin-bottom: 20px; opacity: 0.8; text-transform: uppercase;">CATHOLIC COMMUNITY OF MOSHI CO-OPERATIVE UNIVERSITY</div>
             <h1 style="margin:0; font-size: 24px;">TMCS SMART SYSTEM</h1>
             <p style="margin:10px 0 0; opacity: 0.8; font-size: 14px;">Official Notification</p>
         </div>
