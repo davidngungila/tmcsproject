@@ -22,6 +22,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\ElectionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ApiConfigController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ReconciliationController;
 use App\Http\Controllers\FinancialReportController;
@@ -130,6 +131,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/finance/{contribution}/receipt', [FinanceController::class, 'receipt'])->name('finance.receipt');
     Route::post('/finance/{finance}/verify', [FinanceController::class, 'verify'])->name('finance.verify');
     Route::resource('finance/types', ContributionTypeController::class)->names('finance.types');
+    Route::resource('finance/accounts', AccountController::class)->names('accounts');
     Route::resource('finance', FinanceController::class);
     Route::post('/expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve');
     Route::post('/expenses/{expense}/reject', [ExpenseController::class, 'reject'])->name('expenses.reject');

@@ -438,8 +438,18 @@ class FinanceController extends Controller
         $settings = [
             'notify_on_contribution' => SystemSetting::get('finance.notify_on_contribution', true),
             'notify_on_expense' => SystemSetting::get('finance.notify_on_expense', true),
+            'whatsapp_enabled' => SystemSetting::get('finance.whatsapp_enabled', false),
+            'cash_enabled' => SystemSetting::get('finance.cash_enabled', true),
             'default_currency' => SystemSetting::get('finance.default_currency', 'TZS'),
             'receipt_footer_text' => SystemSetting::get('finance.receipt_footer_text', 'Thank you for your contribution. God bless you!'),
+            'auto_journal_post' => SystemSetting::get('finance.auto_journal_post', true),
+            'journal_approval_required' => SystemSetting::get('finance.journal_approval_required', false),
+            'allow_edit_posted' => SystemSetting::get('finance.allow_edit_posted', false),
+            'journal_ref_format' => SystemSetting::get('finance.journal_ref_format', 'JV-{YEAR}{MONTH}-{AUTO}'),
+            'fy_start_month' => SystemSetting::get('finance.fy_start_month', 1),
+            'monthly_closing' => SystemSetting::get('finance.monthly_closing', 0),
+            'enable_audit_logs' => SystemSetting::get('finance.enable_audit_logs', true),
+            'allow_backdated' => SystemSetting::get('finance.allow_backdated', false),
         ];
 
         return view('finance.settings', compact('bankAccounts', 'paymentConfigs', 'contributionTypes', 'settings'));
@@ -449,18 +459,32 @@ class FinanceController extends Controller
     {
         $validated = $request->validate([
             'settings' => 'required|array',
-            'settings.notify_on_contribution' => 'boolean',
-            'settings.notify_on_expense' => 'boolean',
-            'settings.default_currency' => 'string|max:10',
-            'settings.receipt_footer_text' => 'string|max:255',
         ]);
 
         foreach ($validated['settings'] as $key => $value) {
+            // Determine type based on key or value
+            $type = 'string';
+            if (in_array($key, [
+                'notify_on_contribution', 
+                'notify_on_expense', 
+                'whatsapp_enabled', 
+                'cash_enabled',
+                'auto_journal_post',
+                'journal_approval_required',
+                'allow_edit_posted',
+                'enable_audit_logs',
+                'allow_backdated'
+            ])) {
+                $type = 'boolean';
+            } elseif (in_array($key, ['fy_start_month', 'monthly_closing'])) {
+                $type = 'integer';
+            }
+
             SystemSetting::updateOrCreate(
                 ['key' => "finance.$key"],
                 [
-                    'value' => is_bool($value) ? ($value ? '1' : '0') : $value,
-                    'type' => is_bool($value) ? 'boolean' : 'string',
+                    'value' => $value,
+                    'type' => $type,
                     'group' => 'finance',
                     'display_name' => ucfirst(str_replace('_', ' ', $key))
                 ]
