@@ -72,7 +72,11 @@ class ApiConfigController extends Controller
                 $endpoint = str_replace('/test/', '/', $endpoint);
 
                 $response = Http::withoutVerifying()
-                    ->withToken($apiConfig->api_key)
+                    ->withHeaders([
+                        'Authorization' => 'Token ' . $apiConfig->api_key,
+                        'Accept' => 'application/json',
+                        'Content-Type' => 'application/json',
+                    ])
                     ->post($endpoint, [
                         'from' => $apiConfig->sender_id ?? 'TMCS MoCU',
                         'to' => $normalizedPhone,

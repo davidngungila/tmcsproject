@@ -101,7 +101,7 @@
               <p class="text-sm text-gray-400">Use the following endpoint for sending single SMS messages via Messaging Service:</p>
               <div class="bg-black/50 p-3 rounded font-mono text-[11px] overflow-x-auto">
                 <span class="text-purple-400">POST</span> {{ $apiConfig->api_endpoint }}<br>
-                <span class="text-blue-400">Authorization:</span> Bearer YOUR_TOKEN<br>
+                <span class="text-blue-400">Authorization:</span> Token YOUR_TOKEN<br>
                 <span class="text-blue-400">Content-Type:</span> application/json
               </div>
               <div class="grid grid-cols-2 gap-4">

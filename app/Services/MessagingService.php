@@ -73,7 +73,11 @@ class MessagingService
             }
 
             $response = Http::withoutVerifying()
-                ->withToken($this->config->api_key)
+                ->withHeaders([
+                    'Authorization' => 'Token ' . trim($this->config->api_key),
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                ])
                 ->post($endpoint, $payload);
 
             if ($response->successful()) {
@@ -125,8 +129,8 @@ class MessagingService
             $endpoint = 'https://messaging-service.co.tz/api/v2/balance';
             
             $response = Http::withoutVerifying()
-                ->withToken($this->config->api_key)
                 ->withHeaders([
+                    'Authorization' => 'Token ' . $this->config->api_key,
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
@@ -171,8 +175,8 @@ class MessagingService
             $endpoint = 'https://messaging-service.co.tz/api/v2/logs';
             
             $response = Http::withoutVerifying()
-                ->withToken($this->config->api_key)
                 ->withHeaders([
+                    'Authorization' => 'Token ' . $this->config->api_key,
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
