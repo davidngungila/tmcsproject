@@ -24,14 +24,10 @@ class AccountController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'bank_name' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:255',
-            'branch_code' => 'nullable|string|max:255',
             'code' => 'required|string|max:20|unique:accounts,code',
             'type' => 'required|string',
             'balance' => 'required|numeric',
             'is_active' => 'boolean',
-            'is_default_income' => 'boolean',
         ]);
 
         try {
@@ -58,14 +54,10 @@ class AccountController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'bank_name' => 'nullable|string|max:255',
-            'account_number' => 'nullable|string|max:255',
-            'branch_code' => 'nullable|string|max:255',
             'code' => 'required|string|max:20|unique:accounts,code,' . $account->id,
             'type' => 'required|string',
             'balance' => 'required|numeric',
             'is_active' => 'boolean',
-            'is_default_income' => 'boolean',
         ]);
 
         try {

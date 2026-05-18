@@ -6,17 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Account extends Model
 {
-    protected $fillable = [
-        'code', 
-        'name', 
-        'bank_name', 
-        'account_number', 
-        'branch_code', 
-        'type', 
-        'balance', 
-        'is_active',
-        'is_default_income'
-    ];
+    protected $fillable = ['code', 'name', 'type', 'balance', 'is_active'];
 
     public function ledgerEntries()
     {

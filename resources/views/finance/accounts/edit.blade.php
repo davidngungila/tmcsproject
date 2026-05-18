@@ -23,35 +23,17 @@
                 @method('PUT')
                 <input type="hidden" name="type" value="{{ $account->type }}">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="form-group">
-                        <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Account Name *</label>
-                        <input type="text" name="name" class="form-control" value="{{ old('name', $account->name) }}" placeholder="e.g. Church Main Account" required>
-                        @error('name') <p class="text-red-500 text-[10px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Account Code *</label>
-                        <input type="text" name="code" class="form-control" value="{{ old('code', $account->code) }}" placeholder="e.g. 1100" required>
-                        @error('code') <p class="text-red-500 text-[10px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
-                    </div>
+                <div class="form-group">
+                    <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Account Name *</label>
+                    <input type="text" name="name" class="form-control" value="{{ old('name', $account->name) }}" placeholder="e.g. CRDB Bank" required>
+                    @error('name') <p class="text-red-500 text-[10px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="form-group">
-                        <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Bank Name</label>
-                        <input type="text" name="bank_name" class="form-control" value="{{ old('bank_name', $account->bank_name) }}" placeholder="e.g. CRDB Bank">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Account Number</label>
-                        <input type="text" name="account_number" class="form-control" value="{{ old('account_number', $account->account_number) }}" placeholder="e.g. 015XXXXXXXX">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Branch Code</label>
-                        <input type="text" name="branch_code" class="form-control" value="{{ old('branch_code', $account->branch_code) }}" placeholder="e.g. 011">
-                    </div>
+                <div class="form-group">
+                    <label class="form-label text-xs font-black uppercase tracking-widest text-gray-400 mb-2 block">Account Code *</label>
+                    <input type="text" name="code" class="form-control" value="{{ old('code', $account->code) }}" placeholder="e.g. 1100" required>
+                    <p class="text-[10px] text-muted font-bold mt-1 uppercase tracking-widest">Unique identifier for this account</p>
+                    @error('code') <p class="text-red-500 text-[10px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="form-group">
@@ -60,17 +42,11 @@
                     @error('balance') <p class="text-red-500 text-[10px] font-bold mt-1 uppercase">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="space-y-3">
+                <div class="form-group">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" name="is_active" value="1" class="rounded border-gray-300 text-primary focus:ring-primary" {{ old('is_active', $account->is_active) ? 'checked' : '' }}>
                         <span class="text-xs font-black uppercase tracking-widest text-gray-400">Account is Active</span>
-                    </label>
-
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="hidden" name="is_default_income" value="0">
-                        <input type="checkbox" name="is_default_income" value="1" class="rounded border-gray-300 text-primary focus:ring-primary" {{ old('is_default_income', $account->is_default_income) ? 'checked' : '' }}>
-                        <span class="text-xs font-black uppercase tracking-widest text-gray-400">Default Income Account</span>
                     </label>
                 </div>
 

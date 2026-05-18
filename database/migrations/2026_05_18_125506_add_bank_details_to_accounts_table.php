@@ -12,10 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->string('bank_name')->nullable()->after('name');
-            $table->string('account_number')->nullable()->after('bank_name');
-            $table->string('branch_code')->nullable()->after('account_number');
-            $table->boolean('is_default_income')->default(false)->after('is_active');
+            //
         });
     }
 
@@ -25,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('accounts', function (Blueprint $table) {
-            $table->dropColumn(['bank_name', 'account_number', 'branch_code', 'is_default_income']);
+            //
         });
     }
 };
