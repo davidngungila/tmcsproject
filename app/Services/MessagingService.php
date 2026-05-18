@@ -44,6 +44,9 @@ class MessagingService
         $apiKey = trim($this->config->api_key);
 
         try {
+            // Log the attempt
+            Log::info("Attempting to send SMS to: " . implode(', ', $formattedRecipients));
+
             // For v2 text/single, 'to' can be a string or array
             $payload = [
                 'from' => $this->config->sender_id ?? 'TMCS MoCU',
@@ -60,6 +63,7 @@ class MessagingService
                 ->post($endpoint, $payload);
 
             if ($response->successful()) {
+                Log::info("SMS Sent Successfully to: " . implode(', ', $formattedRecipients));
                 return [
                     'status' => 'success',
                     'data' => $response->json(),

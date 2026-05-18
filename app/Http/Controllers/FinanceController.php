@@ -323,6 +323,7 @@ class FinanceController extends Controller
         
         // 1. Send SMS (Queued)
         if ($member->phone) {
+            Log::info("Dispatching Contribution SMS for member: {$member->full_name} ({$member->phone})");
             $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
             SendSmsJob::dispatch($member->phone, $smsMessage);
         }

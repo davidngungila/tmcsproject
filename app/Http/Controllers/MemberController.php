@@ -130,6 +130,7 @@ class MemberController extends Controller
     {
         // 1. Send SMS (Queued)
         if ($member->phone) {
+            Log::info("Dispatching Welcome SMS for member: {$member->full_name} ({$member->phone})");
             $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
             SendSmsJob::dispatch($member->phone, $smsMessage);
         }
