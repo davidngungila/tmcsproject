@@ -19,6 +19,8 @@ use App\Jobs\SendSmsJob;
 
 use App\Models\Expense;
 use App\Models\ContributionType;
+use App\Models\ApiConfig;
+use App\Models\SystemSetting;
 
 class FinanceController extends Controller
 {
@@ -429,6 +431,42 @@ class FinanceController extends Controller
 
     public function settings()
     {
-        return view('finance.settings');
+        $bankAccounts = Account::where('type', 'Asset')->get();
+        $paymentConfigs = ApiConfig::where('provider_type', 'Payment')->get();
+        $contributionTypes = ContributionType::all();
+        
+        $settings = [
+            'notify_on_contribution' => SystemSetting::get('finance.notify_on_contribution', true),
+            'notify_on_expense' => SystemSetting::get('finance.notify_on_expense', true),
+            'default_currency' => SystemSetting::get('finance.default_currency', 'TZS'),
+            'receipt_footer_text' => SystemSetting::get('finance.receipt_footer_text', 'Thank you for your contribution. God bless you!'),
+        ];
+
+        return view('finance.settings', compact('bankAccounts', 'paymentConfigs', 'contributionTypes', 'settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'settings' => 'required|array',
+            'settings.notify_on_contribution' => 'boolean',
+            'settings.notify_on_expense' => 'boolean',
+            'settings.default_currency' => 'string|max:10',
+            'settings.receipt_footer_text' => 'string|max:255',
+        ]);
+
+        foreach ($validated['settings'] as $key => $value) {
+            SystemSetting::updateOrCreate(
+                ['key' => "finance.$key"],
+                [
+                    'value' => is_bool($value) ? ($value ? '1' : '0') : $value,
+                    'type' => is_bool($value) ? 'boolean' : 'string',
+                    'group' => 'finance',
+                    'display_name' => ucfirst(str_replace('_', ' ', $key))
+                ]
+            );
+        }
+
+        return back()->with('success', 'Finance settings updated successfully');
     }
 }

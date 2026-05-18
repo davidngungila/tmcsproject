@@ -126,6 +126,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/finance/reports/income-statement', [FinancialStatementController::class, 'incomeStatement'])->name('finance.reports.income_statement');
     Route::get('/finance/reports/balance-sheet', [FinancialStatementController::class, 'balanceSheet'])->name('finance.reports.balance_sheet');
     Route::get('/finance/settings', [FinanceController::class, 'settings'])->name('finance.settings');
+    Route::post('/finance/settings', [FinanceController::class, 'updateSettings'])->name('finance.settings.update');
     Route::get('/finance/{contribution}/receipt', [FinanceController::class, 'receipt'])->name('finance.receipt');
     Route::post('/finance/{finance}/verify', [FinanceController::class, 'verify'])->name('finance.verify');
     Route::resource('finance/types', ContributionTypeController::class)->names('finance.types');

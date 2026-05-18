@@ -919,7 +919,7 @@
             <a href="{{ route('expenses.index') }}" class="dropdown-item {{ request()->is('expenses*') ? 'active' : '' }}">Expenses</a>
             <a href="{{ route('reconciliation.index') }}" class="dropdown-item {{ request()->is('reconciliation*') ? 'active' : '' }}">Reconciliation</a>
             <a href="{{ route('finance.reports') }}" class="dropdown-item {{ request()->is('finance/reports') ? 'active' : '' }}">Financial Reports</a>
-            <a href="{{ route('finance.settings') }}" class="dropdown-item {{ request()->is('finance/settings') ? 'active' : '' }}">Payment Settings</a>
+            <a href="{{ route('finance.settings') }}" class="dropdown-item {{ request()->is('finance/settings') ? 'active' : '' }}">Finance Settings</a>
           </div>
         </div>
         @endif
