@@ -88,37 +88,67 @@ class MemberApiController extends Controller
             return response()->json(['message' => 'Member record not found.'], 404);
         }
 
+        // Financial Summary
         $totalContributions = Contribution::where('member_id', $member->id)
             ->where('is_verified', true)
             ->sum('amount');
+        
+        $pendingContributions = Contribution::where('member_id', $member->id)
+            ->where('is_verified', false)
+            ->sum('amount');
 
+        $latestFinancial = $member->financials()->orderBy('created_at', 'desc')->first();
+
+        // Activity Summary
         $upcomingEvents = Event::where('status', 'upcoming')
             ->orderBy('event_date', 'asc')
-            ->limit(3)
+            ->limit(5)
             ->get();
 
-        $recentAnnouncements = Communication::where('type', 'announcement')
+        $recentAnnouncements = Communication::where(function($q) use ($member) {
+                $q->where('type', 'announcement')
+                  ->orWhere('member_id', $member->id);
+            })
             ->where('status', 'sent')
             ->orderBy('sent_at', 'desc')
-            ->limit(3)
+            ->limit(5)
             ->get();
 
+        $activeElectionsCount = Election::where('status', 'ongoing')->count();
         $groupCount = $member->groups()->count();
         $attendanceCount = $member->eventAttendance()->count();
 
         return response()->json([
             'stats' => [
                 'total_contributions' => $totalContributions,
+                'pending_contributions' => $pendingContributions,
                 'group_count' => $groupCount,
                 'attendance_count' => $attendanceCount,
-                'upcoming_events_count' => Event::where('status', 'upcoming')->count(),
+                'upcoming_events_count' => $upcomingEvents->count(),
+                'active_elections_count' => $activeElectionsCount,
+                'financial_summary' => $latestFinancial ? [
+                    'savings' => $latestFinancial->savings,
+                    'loans' => $latestFinancial->loans,
+                    'collections' => $latestFinancial->collections,
+                    'month' => $latestFinancial->month,
+                ] : null,
             ],
             'upcoming_events' => $upcomingEvents,
             'recent_announcements' => $recentAnnouncements,
             'member_details' => [
+                'full_name' => $member->full_name,
                 'reg_no' => $member->registration_number,
                 'qr_code' => $member->qr_code,
-                'photo' => $member->photo,
+                'photo' => $member->photo ? asset('storage/' . $member->photo) : null,
+                'member_type' => $member->member_type,
+            ],
+            'quick_actions' => [
+                ['label' => 'Make Payment', 'icon' => 'payment', 'route' => '/payments/new'],
+                ['label' => 'ID Card', 'icon' => 'badge', 'route' => '/profile/id-card'],
+                ['label' => 'Events', 'icon' => 'event', 'route' => '/events'],
+                ['label' => 'Voting', 'icon' => 'how_to_vote', 'route' => '/elections'],
+                ['label' => 'My Groups', 'icon' => 'groups', 'route' => '/groups'],
+                ['label' => 'Certificates', 'icon' => 'verified', 'route' => '/certificates'],
             ]
         ]);
     }
@@ -416,11 +446,74 @@ class MemberApiController extends Controller
      */
     public function announcements(Request $request)
     {
-        $communications = Communication::where('type', 'announcement')
+        $member = $request->user()->member;
+        $communications = Communication::where(function($q) use ($member) {
+                $q->where('type', 'announcement')
+                  ->orWhere('member_id', $member->id);
+            })
             ->where('status', 'sent')
             ->orderBy('sent_at', 'desc')
             ->get();
         return response()->json(['announcements' => $communications]);
+    }
+
+    /**
+     * Change user password.
+     */
+    public function changePassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json(['message' => 'Current password does not match our records.'], 422);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully.']);
+    }
+
+    /**
+     * Get details for a specific contribution/receipt.
+     */
+    public function getReceipt(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        $contribution = Contribution::with('type')
+            ->where('member_id', $member->id)
+            ->where('id', $id)
+            ->first();
+
+        if (!$contribution) {
+            return response()->json(['message' => 'Contribution record not found.'], 404);
+        }
+
+        return response()->json([
+            'receipt' => [
+                'id' => $contribution->id,
+                'receipt_number' => $contribution->receipt_number,
+                'amount' => $contribution->amount,
+                'type' => $contribution->contribution_type,
+                'date' => $contribution->contribution_date->format('Y-m-d'),
+                'method' => $contribution->payment_method,
+                'reference' => $contribution->transaction_reference,
+                'status' => $contribution->is_verified ? 'Verified' : 'Pending',
+                'qr_code' => $contribution->receipt_qr_code,
+                'notes' => $contribution->notes,
+                'member_name' => $member->full_name,
+                'reg_no' => $member->registration_number,
+            ]
+        ]);
     }
 
     /**
