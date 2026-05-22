@@ -11,11 +11,15 @@ use App\Models\Group;
 use App\Models\Communication;
 use App\Models\EventAttendance;
 use App\Models\ContributionType;
+use App\Models\Election;
+use App\Models\ElectionCandidate;
+use App\Models\ElectionVote;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class MemberApiController extends Controller
 {
@@ -57,16 +61,23 @@ class MemberApiController extends Controller
     }
 
     /**
-     * Get member profile.
+     * Get member profile with all details.
      */
     public function profile(Request $request)
     {
-        $user = $request->user()->load(['member.category', 'member.program']);
+        $user = $request->user()->load([
+            'member.category', 
+            'member.program',
+            'member.groups',
+            'member.contributions.type',
+            'member.eventAttendance.event',
+            'member.certificates'
+        ]);
         return response()->json(['user' => $user]);
     }
 
     /**
-     * Get member dashboard stats.
+     * Get member dashboard stats and recent data.
      */
     public function dashboard(Request $request)
     {
@@ -93,15 +104,22 @@ class MemberApiController extends Controller
             ->get();
 
         $groupCount = $member->groups()->count();
+        $attendanceCount = $member->eventAttendance()->count();
 
         return response()->json([
             'stats' => [
                 'total_contributions' => $totalContributions,
                 'group_count' => $groupCount,
+                'attendance_count' => $attendanceCount,
                 'upcoming_events_count' => Event::where('status', 'upcoming')->count(),
             ],
             'upcoming_events' => $upcomingEvents,
             'recent_announcements' => $recentAnnouncements,
+            'member_details' => [
+                'reg_no' => $member->registration_number,
+                'qr_code' => $member->qr_code,
+                'photo' => $member->photo,
+            ]
         ]);
     }
 
@@ -121,6 +139,8 @@ class MemberApiController extends Controller
             'full_name' => 'sometimes|string|max:255',
             'phone' => 'sometimes|string|max:20',
             'address' => 'sometimes|string|max:500',
+            'parish' => 'sometimes|string|max:255',
+            'diocese' => 'sometimes|string|max:255',
             'profile_image' => 'sometimes|image|max:2048',
         ]);
 
@@ -142,6 +162,14 @@ class MemberApiController extends Controller
             $member->address = $request->address;
         }
 
+        if ($request->has('parish')) {
+            $member->parish = $request->parish;
+        }
+
+        if ($request->has('diocese')) {
+            $member->diocese = $request->diocese;
+        }
+
         if ($request->hasFile('profile_image')) {
             $path = $request->file('profile_image')->store('profiles', 'public');
             $user->profile_image = $path;
@@ -158,7 +186,7 @@ class MemberApiController extends Controller
     }
 
     /**
-     * Get member contributions.
+     * Get member contributions history.
      */
     public function contributions(Request $request)
     {
@@ -207,9 +235,6 @@ class MemberApiController extends Controller
 
         $type = ContributionType::find($request->contribution_type_id);
 
-        // Here you would typically call a payment gateway service (e.g., M-Pesa STK Push)
-        // For now, we'll create a pending contribution record.
-
         $contribution = Contribution::create([
             'member_id' => $member->id,
             'contribution_type' => $type->name,
@@ -218,13 +243,13 @@ class MemberApiController extends Controller
             'payment_phone' => $request->phone_number,
             'contribution_date' => now(),
             'is_verified' => false,
-            'transaction_reference' => 'APP-' . strtoupper(uniqid()),
+            'transaction_reference' => 'APP-' . strtoupper(Str::random(10)),
             'receipt_number' => 'REC-' . time(),
             'recorded_by' => $request->user()->id,
         ]);
 
         return response()->json([
-            'message' => 'Payment initiated successfully.',
+            'message' => 'Payment initiated successfully. Please complete the transaction on your phone.',
             'contribution' => $contribution
         ]);
     }
@@ -241,7 +266,7 @@ class MemberApiController extends Controller
     }
 
     /**
-     * Record event attendance.
+     * Record event attendance (Self check-in via QR or Location).
      */
     public function markAttendance(Request $request)
     {
@@ -256,6 +281,11 @@ class MemberApiController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $event = Event::find($request->event_id);
+        if ($event->status === 'completed' || $event->status === 'cancelled') {
+            return response()->json(['message' => 'This event is no longer active for attendance.'], 422);
         }
 
         $existing = EventAttendance::where('event_id', $request->event_id)
@@ -274,11 +304,11 @@ class MemberApiController extends Controller
             'checked_in_by' => $request->user()->id,
         ]);
 
-        return response()->json(['message' => 'Attendance recorded successfully.']);
+        return response()->json(['message' => 'Attendance recorded successfully. Welcome!']);
     }
 
     /**
-     * Get member groups.
+     * Get member groups/communities.
      */
     public function groups(Request $request)
     {
@@ -287,8 +317,98 @@ class MemberApiController extends Controller
             return response()->json(['message' => 'Member record not found.'], 404);
         }
 
-        $groups = $member->groups()->get();
+        $groups = $member->groups()->with('leaders')->get();
         return response()->json(['groups' => $groups]);
+    }
+
+    /**
+     * Get elections and candidates.
+     */
+    public function elections(Request $request)
+    {
+        $elections = Election::whereIn('status', ['ongoing', 'upcoming'])
+            ->with(['candidates.member'])
+            ->get();
+
+        $member = $request->user()->member;
+        $votedElectionIds = ElectionVote::where('voter_id', $member->id)
+            ->pluck('election_id')
+            ->toArray();
+
+        $elections->each(function($election) use ($votedElectionIds) {
+            $election->has_voted = in_array($election->id, $votedElectionIds);
+        });
+
+        return response()->json(['elections' => $elections]);
+    }
+
+    /**
+     * Cast a vote.
+     */
+    public function castVote(Request $request)
+    {
+        $member = $request->user()->member;
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'election_id' => 'required|exists:elections,id',
+            'candidate_id' => 'required|exists:election_candidates,id',
+            'position' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $election = Election::find($request->election_id);
+        if ($election->status !== 'ongoing') {
+            return response()->json(['message' => 'Voting is not currently open for this election.'], 422);
+        }
+
+        $existingVote = ElectionVote::where('election_id', $request->election_id)
+            ->where('voter_id', $member->id)
+            ->where('position', $request->position)
+            ->first();
+
+        if ($existingVote) {
+            return response()->json(['message' => 'You have already voted for this position.'], 422);
+        }
+
+        ElectionVote::create([
+            'election_id' => $request->election_id,
+            'voter_id' => $member->id,
+            'candidate_id' => $request->candidate_id,
+            'position' => $request->position,
+            'voted_at' => now(),
+        ]);
+
+        return response()->json(['message' => 'Vote cast successfully.']);
+    }
+
+    /**
+     * Get digital ID card data.
+     */
+    public function idCard(Request $request)
+    {
+        $member = $request->user()->member->load(['category', 'program']);
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        return response()->json([
+            'id_card' => [
+                'full_name' => $member->full_name,
+                'reg_no' => $member->registration_number,
+                'member_type' => $member->member_type,
+                'category' => $member->category->name ?? 'N/A',
+                'program' => $member->program->name ?? 'N/A',
+                'photo_url' => $member->photo ? asset('storage/' . $member->photo) : null,
+                'qr_code' => $member->qr_code,
+                'expiry_date' => now()->addYear()->format('Y-m-d'), // Example logic
+            ]
+        ]);
     }
 
     /**

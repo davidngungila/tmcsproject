@@ -8,11 +8,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | API Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
 */
 
 // Public routes
@@ -20,12 +15,11 @@ Route::post('/login', [MemberApiController::class, 'login']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Dashboard
+    // Dashboard & Profile
     Route::get('/dashboard', [MemberApiController::class, 'dashboard']);
-
-    // Profile
     Route::get('/profile', [MemberApiController::class, 'profile']);
     Route::post('/profile/update', [MemberApiController::class, 'updateProfile']);
+    Route::get('/id-card', [MemberApiController::class, 'idCard']);
     
     // Contributions
     Route::get('/contributions', [MemberApiController::class, 'contributions']);
@@ -36,8 +30,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events', [MemberApiController::class, 'events']);
     Route::post('/events/attendance', [MemberApiController::class, 'markAttendance']);
     
-    // Groups
+    // Groups/Communities
     Route::get('/groups', [MemberApiController::class, 'groups']);
+    
+    // Elections & Voting
+    Route::get('/elections', [MemberApiController::class, 'elections']);
+    Route::post('/elections/vote', [MemberApiController::class, 'castVote']);
     
     // Announcements
     Route::get('/announcements', [MemberApiController::class, 'announcements']);
