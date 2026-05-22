@@ -48,6 +48,14 @@ class Contribution extends Model
     }
 
     /**
+     * Get the contribution type details.
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(ContributionType::class, 'contribution_type', 'name');
+    }
+
+    /**
      * Get the user who verified the contribution.
      */
     public function verifier(): BelongsTo
