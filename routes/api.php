@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [MemberApiController::class, 'profile']);
     Route::post('/profile/update', [MemberApiController::class, 'updateProfile']);
     Route::get('/id-card', [MemberApiController::class, 'idCard']);
+    Route::get('/profile/saved-methods', [MemberApiController::class, 'savedMethods']);
     
     // Contributions
     Route::get('/contributions', [MemberApiController::class, 'contributions']);
@@ -34,6 +35,12 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Groups/Communities
     Route::get('/groups', [MemberApiController::class, 'groups']);
+    Route::post('/groups/{id}/join', [MemberApiController::class, 'joinGroup']);
+    Route::post('/groups/{id}/leave', [MemberApiController::class, 'leaveGroup']);
+    Route::get('/groups/{id}/stats', [MemberApiController::class, 'groupStats']);
+    Route::get('/groups/{id}/members', [MemberApiController::class, 'groupMembers']);
+    Route::get('/groups/{id}/meetings', [MemberApiController::class, 'groupMeetings']);
+    Route::post('/groups/{id}/messages', [MemberApiController::class, 'sendGroupMessage']);
     
     // Elections & Voting
     Route::get('/elections', [MemberApiController::class, 'elections']);

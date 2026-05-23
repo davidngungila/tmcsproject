@@ -14,6 +14,7 @@ use App\Models\ContributionType;
 use App\Models\Election;
 use App\Models\ElectionCandidate;
 use App\Models\ElectionVote;
+use App\Models\SavedPaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -336,7 +337,9 @@ class MemberApiController extends Controller
             'contribution_type_id' => 'required|exists:contribution_types,id',
             'amount' => 'required|numeric|min:500',
             'payment_method' => 'required|in:mobile_money,card,m-pesa,bank,cash',
-            'phone_number' => 'required_if:payment_method,mobile_money,m-pesa',
+            'phone_number' => 'nullable|string',
+            'saved_method_id' => 'nullable|exists:saved_payment_methods,id',
+            'save_method' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -345,9 +348,33 @@ class MemberApiController extends Controller
 
         $type = ContributionType::find($request->contribution_type_id);
         
-        // Normalize payment method for Snipe Service if needed
         $method = $request->payment_method;
         if ($method === 'm-pesa') $method = 'mobile_money';
+
+        $phone = $request->phone_number;
+        
+        // If saved method is provided, use its identifier
+        if ($request->saved_method_id) {
+            $savedMethod = SavedPaymentMethod::where('member_id', $member->id)
+                ->where('id', $request->saved_method_id)
+                ->first();
+            if ($savedMethod) {
+                $phone = $savedMethod->identifier;
+                $method = $savedMethod->type;
+            }
+        }
+
+        if (!$phone && $method === 'mobile_money') {
+            $phone = $member->phone;
+        }
+
+        // Save new method if requested
+        if ($request->save_method && $phone && $method === 'mobile_money') {
+            SavedPaymentMethod::updateOrCreate(
+                ['member_id' => $member->id, 'identifier' => $phone],
+                ['type' => 'mobile_money', 'provider' => 'Mobile Money', 'label' => 'Saved Number']
+            );
+        }
 
         $receiptNumber = 'RCP-APP-' . date('Ymd') . '-' . strtoupper(Str::random(5));
 
@@ -356,7 +383,7 @@ class MemberApiController extends Controller
             'contribution_type' => $type->name,
             'amount' => $request->amount,
             'payment_method' => $method,
-            'payment_phone' => $request->phone_number ?? $member->phone,
+            'payment_phone' => $phone,
             'contribution_date' => now()->toDateString(),
             'is_verified' => false,
             'transaction_reference' => 'APP-' . strtoupper(Str::random(10)),
@@ -465,8 +492,214 @@ class MemberApiController extends Controller
             return response()->json(['message' => 'Member record not found.'], 404);
         }
 
-        $groups = $member->groups()->with('leaders')->get();
-        return response()->json(['groups' => $groups]);
+        // 1. Groups I Lead
+        $ledGroups = Group::where('is_active', true)
+            ->where(function($q) use ($member) {
+                $q->where('chairperson_id', $member->id)
+                  ->orWhere('secretary_id', $member->id)
+                  ->orWhere('accountant_id', $member->id);
+            })
+            ->withCount('members')
+            ->get();
+
+        // 2. My Memberships (Joined)
+        $joinedGroups = $member->groups()->withPivot(['join_date', 'is_active'])->get();
+        $joinedGroupIds = $joinedGroups->pluck('id')->toArray();
+
+        // 3. Available Groups (Not Joined)
+        $availableGroups = Group::where('is_active', true)
+            ->whereNotIn('id', $joinedGroupIds)
+            ->get();
+
+        return response()->json([
+            'led_groups' => $ledGroups,
+            'joined_groups' => $joinedGroups,
+            'available_groups' => $availableGroups
+        ]);
+    }
+
+    /**
+     * Get saved payment methods.
+     */
+    public function savedMethods(Request $request)
+    {
+        $member = $request->user()->member;
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        $methods = SavedPaymentMethod::where('member_id', $member->id)->get();
+        return response()->json(['saved_methods' => $methods]);
+    }
+
+    /**
+     * Join a group.
+     */
+    public function joinGroup(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        $group = Group::findOrFail($id);
+        
+        // Check if already a member
+        if ($member->groups()->where('group_id', $id)->exists()) {
+            return response()->json(['message' => 'You are already a member of this group.'], 422);
+        }
+
+        $member->groups()->attach($id, [
+            'join_date' => now(),
+            'is_active' => true
+        ]);
+
+        return response()->json(['message' => 'Successfully joined ' . $group->name]);
+    }
+
+    /**
+     * Leave a group.
+     */
+    public function leaveGroup(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        $group = Group::findOrFail($id);
+
+        // Check if is a leader
+        if ($group->chairperson_id == $member->id || $group->secretary_id == $member->id || $group->accountant_id == $member->id) {
+            return response()->json(['message' => 'Leaders cannot leave a group without resigning from their position.'], 422);
+        }
+
+        $member->groups()->detach($id);
+
+        return response()->json(['message' => 'Successfully left ' . $group->name]);
+    }
+
+    /**
+     * Get stats for a group (for leaders).
+     */
+    public function groupStats(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        $group = Group::withCount('members')->findOrFail($id);
+
+        // Check leadership access
+        if ($group->chairperson_id != $member->id && $group->secretary_id != $member->id && $group->accountant_id != $member->id) {
+            return response()->json(['message' => 'Access denied. You are not a leader of this group.'], 403);
+        }
+
+        $totalCollected = \App\Models\GroupMeeting::where('group_id', $id)->sum('total_collected');
+        $meetingCount = \App\Models\GroupMeeting::where('group_id', $id)->count();
+        $recentMeetings = \App\Models\GroupMeeting::where('group_id', $id)
+            ->orderBy('meeting_date', 'desc')
+            ->limit(5)
+            ->get();
+
+        return response()->json([
+            'group' => $group,
+            'stats' => [
+                'member_count' => $group->members_count,
+                'total_collected' => (float)$totalCollected,
+                'meeting_count' => $meetingCount,
+            ],
+            'recent_meetings' => $recentMeetings
+        ]);
+    }
+
+    /**
+     * Get members of a group (for leaders).
+     */
+    public function groupMembers(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        $group = Group::findOrFail($id);
+
+        if ($group->chairperson_id != $member->id && $group->secretary_id != $member->id && $group->accountant_id != $member->id) {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $members = $group->members()->withPivot(['join_date', 'is_active'])->get();
+        return response()->json(['members' => $members]);
+    }
+
+    /**
+     * Get meetings/giving history for a group (for leaders).
+     */
+    public function groupMeetings(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        $group = Group::findOrFail($id);
+
+        if ($group->chairperson_id != $member->id && $group->secretary_id != $member->id && $group->accountant_id != $member->id) {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $meetings = \App\Models\GroupMeeting::where('group_id', $id)
+            ->with(['attendances.member'])
+            ->orderBy('meeting_date', 'desc')
+            ->get();
+
+        return response()->json(['meetings' => $meetings]);
+    }
+
+    /**
+     * Send a message to all group members (for leaders).
+     */
+    public function sendGroupMessage(Request $request, $id)
+    {
+        $member = $request->user()->member;
+        $group = Group::findOrFail($id);
+
+        if ($group->chairperson_id != $member->id && $group->secretary_id != $member->id && $group->accountant_id != $member->id) {
+            return response()->json(['message' => 'Access denied.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'message' => 'required|string|max:500',
+            'type' => 'required|in:sms,announcement',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $members = $group->members()->where('members.is_active', true)->get();
+        $message = $request->message;
+
+        if ($request->type === 'sms') {
+            $phones = $members->pluck('phone')->filter()->toArray();
+            if (empty($phones)) {
+                return response()->json(['message' => 'No active members with phone numbers found.'], 422);
+            }
+
+            $messagingService = app(\App\Services\MessagingService::class);
+            $result = $messagingService->sendSms($phones, $message);
+
+            if ($result['status'] === 'error') {
+                return response()->json(['message' => 'Failed to send SMS: ' . $result['message']], 500);
+            }
+        }
+
+        // Record the communication
+        Communication::create([
+            'group_id' => $group->id,
+            'type' => $request->type === 'sms' ? 'sms' : 'announcement',
+            'subject' => 'Group Message: ' . $group->name,
+            'content' => $message,
+            'status' => 'sent',
+            'sent_at' => now(),
+            'recorded_by' => $request->user()->id,
+        ]);
+
+        return response()->json(['message' => 'Message sent successfully to ' . $members->count() . ' members.']);
     }
 
     /**
