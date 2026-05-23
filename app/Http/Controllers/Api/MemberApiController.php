@@ -409,15 +409,30 @@ class MemberApiController extends Controller
                     'status' => 'pending_ussd'
                 ]);
             } else {
-                $checkoutResponse = $snipeService->createCheckout($contribution);
-                if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
+                // For card, try createCardPayment first for direct URL
+                $cardResponse = $snipeService->createCardPayment($contribution);
+                
+                if ($cardResponse && isset($cardResponse['payment_url'])) {
                     return response()->json([
-                        'message' => 'Checkout URL generated.',
-                        'checkout_url' => $checkoutResponse['checkout_url'],
+                        'message' => 'Card payment URL generated.',
+                        'checkout_url' => $cardResponse['payment_url'],
                         'contribution' => $contribution->load('type'),
                         'status' => 'pending_checkout'
                     ]);
                 }
+
+                // Fallback to checkout session
+                $checkoutResponse = $snipeService->createCheckout($contribution);
+                if ($checkoutResponse && (isset($checkoutResponse['checkout_url']) || isset($checkoutResponse['payment_link_url']))) {
+                    return response()->json([
+                        'message' => 'Checkout URL generated.',
+                        'checkout_url' => $checkoutResponse['checkout_url'] ?? $checkoutResponse['payment_link_url'],
+                        'contribution' => $contribution->load('type'),
+                        'status' => 'pending_checkout'
+                    ]);
+                }
+
+                return response()->json(['message' => 'Failed to initiate card payment. Please try again later.'], 500);
             }
         }
 
