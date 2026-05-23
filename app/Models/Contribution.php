@@ -25,7 +25,7 @@ class Contribution extends Model
     ];
 
     protected $casts = [
-        'contribution_date' => 'date',
+        'contribution_date' => 'date:Y-m-d',
         'amount' => 'decimal:2',
         'is_verified' => 'boolean',
         'verified_at' => 'datetime',

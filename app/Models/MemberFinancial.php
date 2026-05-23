@@ -19,9 +19,9 @@ class MemberFinancial extends Model
     ];
 
     protected $casts = [
-        'savings' => 'decimal:2',
-        'loans' => 'decimal:2',
-        'collections' => 'decimal:2'
+        'savings' => 'float',
+        'loans' => 'float',
+        'collections' => 'float'
     ];
 
     public function member(): BelongsTo

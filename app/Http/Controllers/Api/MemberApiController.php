@@ -69,7 +69,9 @@ class MemberApiController extends Controller
             'member.category', 
             'member.program',
             'member.groups',
-            'member.contributions.type',
+            'member.contributions' => function($query) {
+                $query->orderBy('contribution_date', 'desc')->limit(20)->with('type');
+            },
             'member.eventAttendance.event',
             'member.certificates'
         ]);
@@ -88,7 +90,9 @@ class MemberApiController extends Controller
             return response()->json(['message' => 'Member record not found.'], 404);
         }
 
-        // Financial Summary
+        $member->load(['category', 'program']);
+
+        // Financial Summary from Contributions table
         $totalContributions = Contribution::where('member_id', $member->id)
             ->where('is_verified', true)
             ->sum('amount');
@@ -97,6 +101,7 @@ class MemberApiController extends Controller
             ->where('is_verified', false)
             ->sum('amount');
 
+        // Financial Summary from MemberFinancials table (Savings, Loans etc)
         $latestFinancial = $member->financials()->orderBy('created_at', 'desc')->first();
 
         // Activity Summary
@@ -118,21 +123,35 @@ class MemberApiController extends Controller
         $groupCount = $member->groups()->count();
         $attendanceCount = $member->eventAttendance()->count();
 
+        // Recent Contributions
+        $recentContributions = Contribution::with(['type', 'recorder'])
+            ->where('member_id', $member->id)
+            ->orderBy('contribution_date', 'desc')
+            ->limit(5)
+            ->get();
+
         return response()->json([
             'stats' => [
-                'total_contributions' => $totalContributions,
-                'pending_contributions' => $pendingContributions,
+                'total_contributions' => (float)$totalContributions,
+                'pending_contributions' => (float)$pendingContributions,
+                'total_balance' => (float)$totalContributions, // Fallback if app expects balance
                 'group_count' => $groupCount,
                 'attendance_count' => $attendanceCount,
                 'upcoming_events_count' => $upcomingEvents->count(),
                 'active_elections_count' => $activeElectionsCount,
                 'financial_summary' => $latestFinancial ? [
-                    'savings' => $latestFinancial->savings,
-                    'loans' => $latestFinancial->loans,
-                    'collections' => $latestFinancial->collections,
+                    'savings' => (float)$latestFinancial->savings,
+                    'loans' => (float)$latestFinancial->loans,
+                    'collections' => (float)$latestFinancial->collections,
                     'month' => $latestFinancial->month,
-                ] : null,
+                ] : [
+                    'savings' => 0,
+                    'loans' => 0,
+                    'collections' => 0,
+                    'month' => now()->format('F Y'),
+                ],
             ],
+            'recent_contributions' => $recentContributions,
             'upcoming_events' => $upcomingEvents,
             'recent_announcements' => $recentAnnouncements,
             'member_details' => [
@@ -141,6 +160,8 @@ class MemberApiController extends Controller
                 'qr_code' => $member->qr_code,
                 'photo' => $member->photo ? asset('storage/' . $member->photo) : null,
                 'member_type' => $member->member_type,
+                'category' => $member->category->name ?? 'N/A',
+                'program' => $member->program->name ?? 'N/A',
             ],
             'quick_actions' => [
                 ['label' => 'Make Payment', 'icon' => 'payment', 'route' => '/payments/new'],
@@ -225,12 +246,21 @@ class MemberApiController extends Controller
             return response()->json(['message' => 'Member record not found.'], 404);
         }
 
-        $contributions = Contribution::with('type')
+        $contributions = Contribution::with(['type', 'recorder', 'verifier'])
             ->where('member_id', $member->id)
             ->orderBy('contribution_date', 'desc')
             ->get();
 
-        return response()->json(['contributions' => $contributions]);
+        $summary = [
+            'total_verified' => (float) Contribution::where('member_id', $member->id)->where('is_verified', true)->sum('amount'),
+            'total_pending' => (float) Contribution::where('member_id', $member->id)->where('is_verified', false)->sum('amount'),
+            'count' => $contributions->count(),
+        ];
+
+        return response()->json([
+            'contributions' => $contributions,
+            'summary' => $summary
+        ]);
     }
 
     /**
@@ -271,7 +301,7 @@ class MemberApiController extends Controller
             'amount' => $request->amount,
             'payment_method' => $request->payment_method,
             'payment_phone' => $request->phone_number,
-            'contribution_date' => now(),
+            'contribution_date' => now()->toDateString(),
             'is_verified' => false,
             'transaction_reference' => 'APP-' . strtoupper(Str::random(10)),
             'receipt_number' => 'REC-' . time(),
@@ -280,7 +310,7 @@ class MemberApiController extends Controller
 
         return response()->json([
             'message' => 'Payment initiated successfully. Please complete the transaction on your phone.',
-            'contribution' => $contribution
+            'contribution' => $contribution->load('type')
         ]);
     }
 
