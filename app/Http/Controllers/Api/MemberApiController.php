@@ -65,17 +65,66 @@ class MemberApiController extends Controller
      */
     public function profile(Request $request)
     {
-        $user = $request->user()->load([
-            'member.category', 
-            'member.program',
-            'member.groups',
-            'member.contributions' => function($query) {
-                $query->orderBy('contribution_date', 'desc')->limit(20)->with('type');
+        $user = $request->user();
+        $member = $user->member;
+
+        if (!$member) {
+            return response()->json(['message' => 'Member record not found.'], 404);
+        }
+
+        $member->load([
+            'category', 
+            'program',
+            'groups' => function($q) {
+                $q->withPivot(['join_date', 'is_active']);
             },
-            'member.eventAttendance.event',
-            'member.certificates'
+            'contributions' => function($query) {
+                $query->orderBy('contribution_date', 'desc')->limit(50)->with(['type', 'recorder']);
+            },
+            'eventAttendance.event',
+            'certificates',
+            'electionVotes.election',
+            'financials' => function($q) {
+                $q->orderBy('created_at', 'desc')->limit(12);
+            }
         ]);
-        return response()->json(['user' => $user]);
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'profile_image' => $user->profile_image ? asset('storage/' . $user->profile_image) : null,
+                'is_active' => $user->is_active,
+            ],
+            'member' => [
+                'id' => $member->id,
+                'registration_number' => $member->registration_number,
+                'full_name' => $member->full_name,
+                'member_type' => $member->member_type,
+                'gender' => $member->gender,
+                'date_of_birth' => $member->date_of_birth ? $member->date_of_birth->format('Y-m-d') : null,
+                'phone' => $member->phone,
+                'address' => $member->address,
+                'parish' => $member->parish,
+                'diocese' => $member->diocese,
+                'region' => $member->region,
+                'baptismal_name' => $member->baptismal_name,
+                'photo' => $member->photo ? asset('storage/' . $member->photo) : null,
+                'qr_code' => $member->qr_code,
+                'is_active' => $member->is_active,
+                'registration_date' => $member->registration_date ? $member->registration_date->format('Y-m-d') : null,
+                'category' => $member->category,
+                'program' => $member->program,
+                'groups' => $member->groups,
+                'recent_contributions' => $member->contributions,
+                'attendance' => $member->eventAttendance,
+                'certificates' => $member->certificates,
+                'votes' => $member->electionVotes,
+                'financial_history' => $member->financials,
+            ]
+        ]);
     }
 
     /**
@@ -277,16 +326,17 @@ class MemberApiController extends Controller
      */
     public function initiatePayment(Request $request)
     {
-        $member = $request->user()->member;
+        $user = $request->user();
+        $member = $user->member;
         if (!$member) {
             return response()->json(['message' => 'Member record not found.'], 404);
         }
 
         $validator = Validator::make($request->all(), [
             'contribution_type_id' => 'required|exists:contribution_types,id',
-            'amount' => 'required|numeric|min:1',
-            'payment_method' => 'required|in:m-pesa,bank,cash',
-            'phone_number' => 'required_if:payment_method,m-pesa',
+            'amount' => 'required|numeric|min:500',
+            'payment_method' => 'required|in:mobile_money,card,m-pesa,bank,cash',
+            'phone_number' => 'required_if:payment_method,mobile_money,m-pesa',
         ]);
 
         if ($validator->fails()) {
@@ -294,23 +344,61 @@ class MemberApiController extends Controller
         }
 
         $type = ContributionType::find($request->contribution_type_id);
+        
+        // Normalize payment method for Snipe Service if needed
+        $method = $request->payment_method;
+        if ($method === 'm-pesa') $method = 'mobile_money';
+
+        $receiptNumber = 'RCP-APP-' . date('Ymd') . '-' . strtoupper(Str::random(5));
 
         $contribution = Contribution::create([
             'member_id' => $member->id,
             'contribution_type' => $type->name,
             'amount' => $request->amount,
-            'payment_method' => $request->payment_method,
-            'payment_phone' => $request->phone_number,
+            'payment_method' => $method,
+            'payment_phone' => $request->phone_number ?? $member->phone,
             'contribution_date' => now()->toDateString(),
             'is_verified' => false,
             'transaction_reference' => 'APP-' . strtoupper(Str::random(10)),
-            'receipt_number' => 'REC-' . time(),
-            'recorded_by' => $request->user()->id,
+            'receipt_number' => $receiptNumber,
+            'recorded_by' => $user->id,
+            'notes' => 'Payment initiated via Mobile App.',
         ]);
 
+        // Integrate with SnippePaymentService for digital payments
+        if (in_array($method, ['mobile_money', 'card'])) {
+            $snipeService = app(\App\Services\SnippePaymentService::class);
+            
+            if ($method === 'mobile_money') {
+                $response = $snipeService->createMobileMoneyPayment($contribution);
+                
+                if (isset($response['error'])) {
+                    return response()->json(['message' => 'Payment initiation failed: ' . $response['error']], 422);
+                }
+
+                return response()->json([
+                    'message' => 'Payment initiated! Please check your phone for the USSD prompt.',
+                    'contribution' => $contribution->load('type'),
+                    'status' => 'pending_ussd'
+                ]);
+            } else {
+                $checkoutResponse = $snipeService->createCheckout($contribution);
+                if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
+                    return response()->json([
+                        'message' => 'Checkout URL generated.',
+                        'checkout_url' => $checkoutResponse['checkout_url'],
+                        'contribution' => $contribution->load('type'),
+                        'status' => 'pending_checkout'
+                    ]);
+                }
+            }
+        }
+
+        // Fallback for cash/bank or failed service
         return response()->json([
-            'message' => 'Payment initiated successfully. Please complete the transaction on your phone.',
-            'contribution' => $contribution->load('type')
+            'message' => 'Payment recorded. Please complete verification if required.',
+            'contribution' => $contribution->load('type'),
+            'status' => 'recorded'
         ]);
     }
 
@@ -452,10 +540,13 @@ class MemberApiController extends Controller
      */
     public function idCard(Request $request)
     {
-        $member = $request->user()->member->load(['category', 'program']);
+        $member = $request->user()->member->load(['category', 'program', 'groups']);
         if (!$member) {
             return response()->json(['message' => 'Member record not found.'], 404);
         }
+
+        // Validity logic: 1 year from now or based on registration
+        $expiryDate = $member->registration_date ? $member->registration_date->addYear() : now()->addYear();
 
         return response()->json([
             'id_card' => [
@@ -464,9 +555,16 @@ class MemberApiController extends Controller
                 'member_type' => $member->member_type,
                 'category' => $member->category->name ?? 'N/A',
                 'program' => $member->program->name ?? 'N/A',
+                'groups' => $member->groups->pluck('name'),
                 'photo_url' => $member->photo ? asset('storage/' . $member->photo) : null,
                 'qr_code' => $member->qr_code,
-                'expiry_date' => now()->addYear()->format('Y-m-d'), // Example logic
+                'barcode' => $member->registration_number, // Mobile app can generate barcode from this
+                'issue_date' => $member->registration_date ? $member->registration_date->format('Y-m-d') : now()->format('Y-m-d'),
+                'expiry_date' => $expiryDate->format('Y-m-d'),
+                'status' => $member->is_active ? 'Active' : 'Inactive',
+                'institution' => 'TMCS SMART COMMUNITY',
+                'diocese' => $member->diocese,
+                'parish' => $member->parish,
             ]
         ]);
     }

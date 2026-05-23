@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Contributions
     Route::get('/contributions', [MemberApiController::class, 'contributions']);
+    Route::get('/contributions/{id}', [MemberApiController::class, 'getReceipt']);
     Route::get('/contributions/{id}/receipt', [MemberApiController::class, 'getReceipt']);
     Route::get('/contribution-types', [MemberApiController::class, 'contributionTypes']);
     Route::post('/contributions/pay', [MemberApiController::class, 'initiatePayment']);
