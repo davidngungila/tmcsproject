@@ -31,9 +31,14 @@
         padding: 40px;
         scroll-behavior: smooth;
     }
-    #pdf-canvas {
+    #pdf-canvas, #docx-container {
         box-shadow: 0 0 20px rgba(0,0,0,0.5);
         max-width: 100%;
+        background: white;
+    }
+    #docx-container {
+        padding: 20px;
+        min-width: 800px;
     }
     .toolbar-btn {
         width: 36px; height: 36px;
@@ -200,7 +205,11 @@
         </div>
 
         <div class="viewer-main" id="viewerMain">
-            <canvas id="pdf-canvas"></canvas>
+            @if($resource->file_type == 'pdf')
+                <canvas id="pdf-canvas"></canvas>
+            @else
+                <div id="docx-container"></div>
+            @endif
         </div>
     </div>
 
@@ -239,121 +248,170 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- For DOCX Preview -->
+<script src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/docx-preview/dist/docx-preview.js"></script>
+
 <script>
     const url = "{{ Storage::disk('public')->url($resource->file_path) }}";
-    const pdfjsLib = window['pdfjs-dist/build/pdf'];
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const fileType = "{{ $resource->file_type }}";
+    
+    if (fileType === 'pdf') {
+        const pdfjsLib = window['pdfjs-dist/build/pdf'];
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-    let pdfDoc = null,
-        pageNum = {{ $interaction->last_page_read ?? 1 }},
-        pageRendering = false,
-        pageNumPending = null,
-        scale = 1.5,
-        canvas = document.getElementById('pdf-canvas'),
-        ctx = canvas.getContext('2d');
+        let pdfDoc = null,
+            pageNum = {{ $interaction->last_page_read ?? 1 }},
+            pageRendering = false,
+            pageNumPending = null,
+            scale = 1.5,
+            canvas = document.getElementById('pdf-canvas'),
+            ctx = canvas.getContext('2d');
 
-    function renderPage(num) {
-        pageRendering = true;
-        pdfDoc.getPage(num).then(function(page) {
-            const viewport = page.getViewport({ scale: scale });
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
+        function renderPage(num) {
+            pageRendering = true;
+            pdfDoc.getPage(num).then(function(page) {
+                const viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
 
-            const renderContext = {
-                canvasContext: ctx,
-                viewport: viewport
-            };
-            const renderTask = page.render(renderContext);
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                const renderTask = page.render(renderContext);
 
-            renderTask.promise.then(function() {
-                pageRendering = false;
-                if (pageNumPending !== null) {
-                    renderPage(pageNumPending);
-                    pageNumPending = null;
+                renderTask.promise.then(function() {
+                    pageRendering = false;
+                    if (pageNumPending !== null) {
+                        renderPage(pageNumPending);
+                        pageNumPending = null;
+                    }
+                });
+            });
+
+            document.getElementById('pageNumber').value = num;
+            updateProgress(num);
+        }
+
+        function queueRenderPage(num) {
+            if (pageRendering) {
+                pageNumPending = num;
+            } else {
+                renderPage(num);
+            }
+        }
+
+        function updateProgress(num) {
+            const percent = (num / pdfDoc.numPages) * 100;
+            document.getElementById('progress-bar').style.width = percent + '%';
+            
+            fetch("{{ route('resources.progress', $resource->slug) }}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ page: num })
+            });
+        }
+
+        pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
+            pdfDoc = pdfDoc_;
+            document.getElementById('pageCount').textContent = pdfDoc.numPages;
+            renderPage(pageNum);
+
+            pdfDoc.getOutline().then(function(outline) {
+                if (outline && outline.length > 0) {
+                    const tocList = document.getElementById('tocList');
+                    tocList.innerHTML = '';
+                    outline.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'toc-item';
+                        div.textContent = item.title;
+                        tocList.appendChild(div);
+                    });
                 }
             });
+        }).catch(err => {
+            console.error("Error loading PDF:", err);
+            document.getElementById('viewerMain').innerHTML = '<div class="text-white p-10 text-center">Failed to load PDF. Please try downloading it.</div>';
         });
 
-        document.getElementById('pageNumber').value = num;
-        updateProgress(num);
-    }
+        // Toolbar Controls
+        document.getElementById('prevPage').onclick = () => {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+        };
 
-    function queueRenderPage(num) {
-        if (pageRendering) {
-            pageNumPending = num;
-        } else {
-            renderPage(num);
-        }
-    }
+        document.getElementById('nextPage').onclick = () => {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+        };
 
-    function updateProgress(num) {
-        const percent = (num / pdfDoc.numPages) * 100;
-        document.getElementById('progress-bar').style.width = percent + '%';
-        
-        // Save progress to server
-        fetch("{{ route('resources.progress', $resource->slug) }}", {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ page: num })
-        });
-    }
+        document.getElementById('zoomIn').onclick = () => {
+            if (scale >= 3.0) return;
+            scale += 0.25;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+            renderPage(pageNum);
+        };
 
-    // Load PDF
-    pdfjsLib.getDocument(url).promise.then(function(pdfDoc_) {
-        pdfDoc = pdfDoc_;
-        document.getElementById('pageCount').textContent = pdfDoc.numPages;
-        renderPage(pageNum);
+        document.getElementById('zoomOut').onclick = () => {
+            if (scale <= 0.5) return;
+            scale -= 0.25;
+            document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+            renderPage(pageNum);
+        };
 
-        // Try to get TOC
-        pdfDoc.getOutline().then(function(outline) {
-            if (outline && outline.length > 0) {
-                const tocList = document.getElementById('tocList');
-                tocList.innerHTML = '';
-                outline.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'toc-item';
-                    div.textContent = item.title;
-                    div.onclick = () => {
-                        // In a real app, we'd resolve the destination to a page number
-                        // For now, this is a placeholder
-                    };
-                    tocList.appendChild(div);
-                });
+        document.getElementById('pageNumber').onchange = function() {
+            const num = parseInt(this.value);
+            if (num > 0 && num <= pdfDoc.numPages) {
+                pageNum = num;
+                renderPage(pageNum);
             }
-        });
-    });
+        };
+    } else if (fileType === 'docx' || fileType === 'doc') {
+        // Hide PDF specific controls
+        document.querySelector('.page-nav-controls').style.display = 'none';
+        document.getElementById('toggleToc').style.display = 'none';
+        
+        fetch(url)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => {
+                const container = document.getElementById('docx-container');
+                docx.renderAsync(arrayBuffer, container)
+                    .then(x => console.log("docx: finished"))
+                    .catch(err => {
+                        console.error("Error rendering docx:", err);
+                        container.innerHTML = '<div class="p-10 text-center text-red-500">Failed to render document. Please download to view.</div>';
+                    });
+            })
+            .catch(err => {
+                console.error("Error fetching docx:", err);
+                document.getElementById('viewerMain').innerHTML = '<div class="text-white p-10 text-center">Failed to fetch document.</div>';
+            });
 
-    // Toolbar Controls
-    document.getElementById('prevPage').onclick = () => {
-        if (pageNum <= 1) return;
-        pageNum--;
-        queueRenderPage(pageNum);
-    };
+        // Simple zoom for docx
+        let docxScale = 1;
+        document.getElementById('zoomIn').onclick = () => {
+            docxScale += 0.1;
+            document.getElementById('docx-container').style.transform = `scale(${docxScale})`;
+            document.getElementById('docx-container').style.transformOrigin = 'top center';
+            document.getElementById('zoomLevel').textContent = Math.round(docxScale * 100) + '%';
+        };
+        document.getElementById('zoomOut').onclick = () => {
+            if (docxScale <= 0.5) return;
+            docxScale -= 0.1;
+            document.getElementById('docx-container').style.transform = `scale(${docxScale})`;
+            document.getElementById('docx-container').style.transformOrigin = 'top center';
+            document.getElementById('zoomLevel').textContent = Math.round(docxScale * 100) + '%';
+        };
+    }
 
-    document.getElementById('nextPage').onclick = () => {
-        if (pageNum >= pdfDoc.numPages) return;
-        pageNum++;
-        queueRenderPage(pageNum);
-    };
-
-    document.getElementById('zoomIn').onclick = () => {
-        if (scale >= 3.0) return;
-        scale += 0.25;
-        document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
-        renderPage(pageNum);
-    };
-
-    document.getElementById('zoomOut').onclick = () => {
-        if (scale <= 0.5) return;
-        scale -= 0.25;
-        document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
-        renderPage(pageNum);
-    };
-
+    // Shared Controls
     document.getElementById('toggleNightMode').onclick = function() {
         document.getElementById('viewerContainer').classList.toggle('night-mode');
         this.classList.toggle('active');
@@ -361,8 +419,11 @@
 
     document.getElementById('toggleFullscreen').onclick = () => {
         const container = document.getElementById('viewerContainer');
+        if (!container) return;
         if (!document.fullscreenElement) {
-            container.requestFullscreen();
+            container.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+            });
         } else {
             document.exitFullscreen();
         }
@@ -371,14 +432,6 @@
     document.getElementById('toggleToc').onclick = function() {
         document.getElementById('sidebarToc').classList.toggle('show');
         this.classList.toggle('active');
-    };
-
-    document.getElementById('pageNumber').onchange = function() {
-        const num = parseInt(this.value);
-        if (num > 0 && num <= pdfDoc.numPages) {
-            pageNum = num;
-            renderPage(pageNum);
-        }
     };
 </script>
 @endpush
