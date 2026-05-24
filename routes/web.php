@@ -29,6 +29,9 @@ use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\FinancialStatementController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
 
+use App\Http\Controllers\ResourceController;
+use App\Http\Controllers\ResourceManagementController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -66,6 +69,19 @@ Route::post('/webhooks/snipe', [WebhookController::class, 'handleSnipe']);
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
+    // Resource Library
+    Route::get('/resources/library', [ResourceController::class, 'index'])->name('resources.library');
+    Route::get('/resources/{resource:slug}', [ResourceController::class, 'show'])->name('resources.show');
+    Route::get('/resources/{resource:slug}/download', [ResourceController::class, 'download'])->name('resources.download');
+    Route::post('/resources/{resource:slug}/bookmark', [ResourceController::class, 'toggleBookmark'])->name('resources.bookmark');
+    Route::post('/resources/{resource:slug}/progress', [ResourceController::class, 'updateProgress'])->name('resources.progress');
+
+    // Resource Management (Admin)
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::resource('resources', ResourceManagementController::class);
+        Route::resource('resource-categories', App\Http\Controllers\ResourceCategoryController::class);
+    });
+
     // User Management
     Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
