@@ -150,6 +150,7 @@
         
         <div class="h-6 w-px bg-white/10 mx-2"></div>
         
+        @if(strtolower($resource->file_type) == 'pdf')
         <div class="page-nav-controls">
             <div class="toolbar-btn" id="prevPage">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -163,6 +164,7 @@
         </div>
 
         <div class="h-6 w-px bg-white/10 mx-2"></div>
+        @endif
 
         <div class="flex items-center gap-2">
             <div class="toolbar-btn" id="zoomOut">
@@ -254,7 +256,7 @@
 
 <script>
     const url = "{{ Storage::disk('public')->url($resource->file_path) }}";
-    const fileType = "{{ $resource->file_type }}";
+    const fileType = "{{ strtolower($resource->file_type) }}";
     
     if (fileType === 'pdf') {
         const pdfjsLib = window['pdfjs-dist/build/pdf'];
@@ -374,24 +376,50 @@
             }
         };
     } else if (fileType === 'docx' || fileType === 'doc') {
-        // Hide PDF specific controls
-        document.querySelector('.page-nav-controls').style.display = 'none';
-        document.getElementById('toggleToc').style.display = 'none';
+        const viewerMain = document.getElementById('viewerMain');
+        viewerMain.innerHTML = '<div class="text-white p-10 text-center flex flex-col items-center gap-4">' +
+            '<div class="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>' +
+            '<span>Preparing document preview...</span>' +
+            '</div>';
         
         fetch(url)
-            .then(response => response.arrayBuffer())
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.arrayBuffer();
+            })
             .then(arrayBuffer => {
+                viewerMain.innerHTML = '<div id="docx-container"></div>';
                 const container = document.getElementById('docx-container');
-                docx.renderAsync(arrayBuffer, container)
-                    .then(x => console.log("docx: finished"))
-                    .catch(err => {
-                        console.error("Error rendering docx:", err);
-                        container.innerHTML = '<div class="p-10 text-center text-red-500">Failed to render document. Please download to view.</div>';
-                    });
+                
+                docx.renderAsync(arrayBuffer, container, null, {
+                    className: "docx", // class name/prefix for default and user generated classes
+                    inWrapper: true, // enables rendering of wrapper around document content
+                    ignoreWidth: false, // disables rendering of width of page
+                    ignoreHeight: false, // disables rendering of height of page
+                    ignoreFonts: false, // disables fonts rendering
+                    breakPages: true, // enables page breaking on custom elements
+                    ignoreLastRenderedPageBreak: true, // disables page breaking on lastRenderedPageBreak elements
+                    experimental: false, // enables experimental features (tab stops calculation)
+                    trimXmlDeclaration: true, // if true, xml declaration will be removed from xml documents
+                    useBase64URL: false, // if true, images, fonts, etc. will be converted to base64 data URLs
+                    useUnicode: true, // enables unicode symbols for bullets
+                    debug: false, // enables additional logging
+                })
+                .then(x => console.log("docx: finished"))
+                .catch(err => {
+                    console.error("Error rendering docx:", err);
+                    viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
+                        '<p class="text-red-500 mb-4">Failed to render document preview.</p>' +
+                        '<a href="{{ route('resources.download', $resource->slug) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg">Download to View</a>' +
+                        '</div>';
+                });
             })
             .catch(err => {
                 console.error("Error fetching docx:", err);
-                document.getElementById('viewerMain').innerHTML = '<div class="text-white p-10 text-center">Failed to fetch document.</div>';
+                viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
+                    '<p class="text-red-500 mb-4">Could not load the document file.</p>' +
+                    '<p class="text-sm opacity-60">This might be due to server security settings or the file being missing.</p>' +
+                    '</div>';
             });
 
         // Simple zoom for docx
