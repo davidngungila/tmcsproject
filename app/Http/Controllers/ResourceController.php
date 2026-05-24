@@ -53,7 +53,7 @@ class ResourceController extends Controller
     public function download(Resource $resource)
     {
         $resource->increment('download_count');
-        return Storage::download($resource->file_path, $resource->title . '.' . $resource->file_type);
+        return Storage::disk('public')->download($resource->file_path, $resource->title . '.' . $resource->file_type);
     }
 
     public function toggleBookmark(Resource $resource)
