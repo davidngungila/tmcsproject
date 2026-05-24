@@ -35,10 +35,22 @@
         box-shadow: 0 0 20px rgba(0,0,0,0.5);
         max-width: 100%;
         background: white;
+        margin: 0 auto;
     }
     #docx-container {
-        padding: 20px;
-        min-width: 800px;
+        padding: 40px;
+        min-height: 1000px;
+        width: 100%;
+        max-width: 850px;
+    }
+    /* Fix for docx-preview rendering */
+    .docx-wrapper {
+        background: transparent !important;
+        padding: 0 !important;
+    }
+    .docx-wrapper > section.docx {
+        box-shadow: none !important;
+        margin-bottom: 20px !important;
     }
     .toolbar-btn {
         width: 36px; height: 36px;
@@ -379,46 +391,58 @@
         const viewerMain = document.getElementById('viewerMain');
         viewerMain.innerHTML = '<div class="text-white p-10 text-center flex flex-col items-center gap-4">' +
             '<div class="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>' +
-            '<span>Preparing document preview...</span>' +
+            '<span>Opening Word document...</span>' +
             '</div>';
         
-        fetch(url)
+        // Use relative URL to avoid CORS/Mixed Content issues
+        const relativeUrl = "/storage/" + "{{ $resource->file_path }}";
+        
+        if (typeof docx === 'undefined') {
+            viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
+                '<p class="text-red-500 mb-4">Document viewer library failed to load.</p>' +
+                '<a href="{{ route('resources.download', $resource->slug) }}" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Download & View Locally</a>' +
+                '</div>';
+            return;
+        }
+
+        fetch(relativeUrl)
             .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
+                if (!response.ok) throw new Error('File not found or inaccessible');
                 return response.arrayBuffer();
             })
             .then(arrayBuffer => {
                 viewerMain.innerHTML = '<div id="docx-container"></div>';
                 const container = document.getElementById('docx-container');
                 
-                docx.renderAsync(arrayBuffer, container, null, {
-                    className: "docx", // class name/prefix for default and user generated classes
-                    inWrapper: true, // enables rendering of wrapper around document content
-                    ignoreWidth: false, // disables rendering of width of page
-                    ignoreHeight: false, // disables rendering of height of page
-                    ignoreFonts: false, // disables fonts rendering
-                    breakPages: true, // enables page breaking on custom elements
-                    ignoreLastRenderedPageBreak: true, // disables page breaking on lastRenderedPageBreak elements
-                    experimental: false, // enables experimental features (tab stops calculation)
-                    trimXmlDeclaration: true, // if true, xml declaration will be removed from xml documents
-                    useBase64URL: false, // if true, images, fonts, etc. will be converted to base64 data URLs
-                    useUnicode: true, // enables unicode symbols for bullets
-                    debug: false, // enables additional logging
-                })
-                .then(x => console.log("docx: finished"))
-                .catch(err => {
-                    console.error("Error rendering docx:", err);
-                    viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
-                        '<p class="text-red-500 mb-4">Failed to render document preview.</p>' +
-                        '<a href="{{ route('resources.download', $resource->slug) }}" class="px-4 py-2 bg-green-600 text-white rounded-lg">Download to View</a>' +
-                        '</div>';
-                });
+                const options = {
+                    className: "docx",
+                    inWrapper: true,
+                    ignoreWidth: false,
+                    ignoreHeight: false,
+                    debug: true,
+                };
+
+                docx.renderAsync(arrayBuffer, container, null, options)
+                    .then(() => {
+                        console.log("DOCX rendered successfully");
+                        // If container is still empty after rendering
+                        if (container.innerHTML.trim() === "") {
+                            throw new Error("Rendered content is empty");
+                        }
+                    })
+                    .catch(err => {
+                        console.error("DOCX Render Error:", err);
+                        viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
+                            '<p class="mb-4">This document format might not be supported for direct preview.</p>' +
+                            '<a href="{{ route('resources.download', $resource->slug) }}" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Download to View</a>' +
+                            '</div>';
+                    });
             })
             .catch(err => {
-                console.error("Error fetching docx:", err);
+                console.error("Fetch Error:", err);
                 viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
-                    '<p class="text-red-500 mb-4">Could not load the document file.</p>' +
-                    '<p class="text-sm opacity-60">This might be due to server security settings or the file being missing.</p>' +
+                    '<p class="text-red-500 mb-4">Could not load the file: ' + err.message + '</p>' +
+                    '<a href="{{ route('resources.download', $resource->slug) }}" class="px-6 py-2 bg-green-600 text-white rounded-lg font-bold">Download & View</a>' +
                     '</div>';
             });
 
