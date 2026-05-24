@@ -267,7 +267,7 @@
 <script src="https://unpkg.com/docx-preview/dist/docx-preview.js"></script>
 
 <script>
-    const url = "{{ Storage::disk('public')->url($resource->file_path) }}";
+    const url = "{{ asset('storage/' . $resource->file_path) }}";
     const fileType = "{{ strtolower($resource->file_type) }}";
     
     if (fileType === 'pdf') {
@@ -394,9 +394,6 @@
             '<span>Opening Word document...</span>' +
             '</div>';
         
-        // Use relative URL to avoid CORS/Mixed Content issues
-        const relativeUrl = "/storage/" + "{{ $resource->file_path }}";
-        
         if (typeof docx === 'undefined') {
             viewerMain.innerHTML = '<div class="text-white p-10 text-center">' +
                 '<p class="text-red-500 mb-4">Document viewer library failed to load.</p>' +
@@ -405,12 +402,14 @@
             return;
         }
 
-        fetch(relativeUrl)
+        fetch(url)
             .then(response => {
-                if (!response.ok) throw new Error('File not found or inaccessible');
+                if (!response.ok) throw new Error('File not found or inaccessible (' + response.status + ')');
                 return response.arrayBuffer();
             })
             .then(arrayBuffer => {
+                if (arrayBuffer.byteLength === 0) throw new Error('File content is empty');
+                
                 viewerMain.innerHTML = '<div id="docx-container"></div>';
                 const container = document.getElementById('docx-container');
                 
@@ -425,10 +424,6 @@
                 docx.renderAsync(arrayBuffer, container, null, options)
                     .then(() => {
                         console.log("DOCX rendered successfully");
-                        // If container is still empty after rendering
-                        if (container.innerHTML.trim() === "") {
-                            throw new Error("Rendered content is empty");
-                        }
                     })
                     .catch(err => {
                         console.error("DOCX Render Error:", err);
