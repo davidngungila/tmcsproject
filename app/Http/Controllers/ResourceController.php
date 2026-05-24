@@ -52,8 +52,18 @@ class ResourceController extends Controller
 
     public function download(Resource $resource)
     {
+        $fullPath = storage_path('app/public/' . $resource->file_path);
+        
+        if (!file_exists($fullPath)) {
+            return back()->with('error', 'The requested file does not exist on the server.');
+        }
+
         $resource->increment('download_count');
-        return Storage::disk('public')->download($resource->file_path, $resource->title . '.' . $resource->file_type);
+        
+        // Sanitize filename to avoid errors with special characters
+        $fileName = str_replace(['/', '\\', ':', '*', '?', '"', '<', '>', '|'], '_', $resource->title) . '.' . $resource->file_type;
+        
+        return response()->download($fullPath, $fileName);
     }
 
     public function toggleBookmark(Resource $resource)
