@@ -64,9 +64,7 @@ class AuthController extends Controller
      */
     public function showRegistrationForm()
     {
-        $groups = Group::where('is_active', true)->get();
-        $categories = MemberCategory::where('is_active', true)->get();
-        return view('auth.register', compact('groups', 'categories'));
+        return view('auth.register');
     }
 
     /**
@@ -79,21 +77,15 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email|unique:members,email',
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:8|confirmed',
-            'category_id' => 'required|exists:member_categories,id',
-            'gender' => 'required|string|in:Male,Female,Other',
-            'date_of_birth' => 'required|date',
-            'address' => 'required|string',
-            'groups' => 'nullable|array',
-            'groups.*' => 'exists:groups,id',
         ]);
 
-        // 1. Create User (Inactive by default for approval)
+        // 1. Create User (Active immediately)
         $user = User::create([
             'name' => $request->full_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'is_active' => false, // Requires approval
+            'is_active' => true,
         ]);
 
         // 2. Assign 'member' role
@@ -102,46 +94,23 @@ class AuthController extends Controller
             $user->roles()->attach($memberRole->id);
         }
 
-        // 3. Create Member Record
-        $category = MemberCategory::find($request->category_id);
+        // 3. Create Member Record with minimal data
         $member = Member::create([
             'user_id' => $user->id,
             'full_name' => $request->full_name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'category_id' => $request->category_id,
-            'member_type' => $category->name,
-            'gender' => $request->gender,
-            'date_of_birth' => $request->date_of_birth,
-            'address' => $request->address,
             'registration_date' => now(),
-            'is_active' => false, // Requires approval
-            'registration_number' => 'PENDING-' . strtoupper(Str::random(6)),
+            'is_active' => true,
+            'registration_number' => 'TMCS-' . date('Y') . '-' . str_pad(Member::count() + 1, 4, '0', STR_PAD_LEFT),
             'qr_code' => 'QR-' . strtoupper(Str::random(10)),
         ]);
 
-        // 4. Join Groups (if selected)
-        if ($request->has('groups')) {
-            foreach ($request->groups as $groupId) {
-                $member->groups()->attach($groupId, [
-                    'join_date' => now(),
-                    'is_active' => false, // Group membership also pending approval
-                ]);
-            }
-        }
+        // 4. Auto-login the user
+        Auth::login($user);
 
-        // 5. Send credentials via SMS
-        if ($user->phone) {
-            $smsMessage = "Welcome to TMCS! Your account has been created. Email: {$user->email}, Password: {$request->password}. Please wait for administrator approval before logging in.";
-            SendSmsJob::dispatch($user->phone, $smsMessage);
-        }
-
-        // 6. Send credentials via email
-        if ($user->email) {
-            Mail::to($user->email)->queue(new PasswordResetMailable($user, $request->password, 'Your TMCS Account Credentials'));
-        }
-
-        return redirect()->route('login')->with('success', 'Registration successful! Your account is pending administrator approval. Login credentials have been sent to your email and phone.');
+        // 5. Redirect to profile update to complete registration
+        return redirect()->route('member.profile.edit')->with('success', 'Registration successful! Please complete your profile to continue.');
     }
 
     /**
@@ -155,14 +124,6 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
-            // Check if user is active
-            if (!Auth::user()->is_active) {
-                Auth::logout();
-                return back()->withErrors([
-                    'email' => 'Your account is pending approval. Please contact the administrator.',
-                ]);
-            }
-
             $request->session()->regenerate();
             
             return redirect()->intended(route('dashboard'));

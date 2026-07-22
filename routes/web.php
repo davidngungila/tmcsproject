@@ -221,6 +221,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile', [MemberProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile/edit', [MemberProfileController::class, 'edit'])->name('profile.edit');
         Route::post('/profile/update', [MemberProfileController::class, 'update'])->name('profile.update');
+        Route::get('/profile/verify', [MemberProfileController::class, 'showVerificationForm'])->name('profile.verify');
+        Route::post('/profile/verify', [MemberProfileController::class, 'verifyPhone'])->name('profile.verify.submit');
+        Route::post('/profile/resend-otp', [MemberProfileController::class, 'resendOtp'])->name('profile.resend-otp');
         Route::get('/pay', [MemberProfileController::class, 'pay'])->name('profile.pay');
         Route::post('/pay', [MemberProfileController::class, 'processPayment'])->name('profile.process-payment');
         Route::get('/payment-status/{contribution}', [MemberProfileController::class, 'checkStatus'])->name('profile.payment-status');
