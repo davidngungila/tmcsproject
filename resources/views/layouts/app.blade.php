@@ -840,7 +840,7 @@
         </a>
         @endif
 
-        @if(auth()->user()->member && auth()->user()->phone_verified && auth()->user()->member->profile_completed)
+        @if(auth()->user()->member)
         <div class="nav-section-label">Member Portal</div>
         <a href="{{ route('member.profile.index') }}" class="nav-item {{ request()->is('member/profile*') ? 'active' : '' }}">
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -870,12 +870,6 @@
         <a href="{{ route('member.profile.pay') }}" class="nav-item {{ request()->is('member/profile/pay*') ? 'active' : '' }}">
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
           <span class="nav-label">Payment Online</span>
-        </a>
-        @elseif(auth()->user()->member && !auth()->user()->phone_verified)
-        <div class="nav-section-label">Complete Registration</div>
-        <a href="{{ route('member.profile.edit') }}" class="nav-item {{ request()->is('member/profile/edit') ? 'active' : '' }}">
-          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          <span class="nav-label">Complete Profile</span>
         </a>
         @endif
 

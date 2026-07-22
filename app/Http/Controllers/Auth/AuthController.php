@@ -79,13 +79,13 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
-        // 1. Create User (Active immediately)
+        // 1. Create User (Active by default - no approval needed)
         $user = User::create([
             'name' => $request->full_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'is_active' => true,
+            'is_active' => true, // Auto-activate
         ]);
 
         // 2. Assign 'member' role
@@ -94,23 +94,24 @@ class AuthController extends Controller
             $user->roles()->attach($memberRole->id);
         }
 
-        // 3. Create Member Record with minimal data
+        // 3. Create Member Record with minimal info (to be completed later)
         $member = Member::create([
             'user_id' => $user->id,
             'full_name' => $request->full_name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'member_type' => 'Regular',
             'registration_date' => now(),
-            'is_active' => true,
-            'registration_number' => 'TMCS-' . date('Y') . '-' . str_pad(Member::count() + 1, 4, '0', STR_PAD_LEFT),
+            'is_active' => true, // Auto-activate
+            'registration_number' => 'TMCS-' . str_pad(Member::count() + 1, 4, '0', STR_PAD_LEFT),
             'qr_code' => 'QR-' . strtoupper(Str::random(10)),
+            'profile_completed' => false, // Flag for profile completion
         ]);
 
         // 4. Auto-login the user
         Auth::login($user);
 
-        // 5. Redirect to profile update to complete registration
-        return redirect()->route('member.profile.edit')->with('success', 'Registration successful! Please complete your profile to continue.');
+        return redirect()->route('member.profile.edit')->with('success', 'Registration successful! Please complete your profile to access all features.');
     }
 
     /**
@@ -124,6 +125,14 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            // Check if user is active
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Your account is pending approval. Please contact the administrator.',
+                ]);
+            }
+
             $request->session()->regenerate();
             
             return redirect()->intended(route('dashboard'));

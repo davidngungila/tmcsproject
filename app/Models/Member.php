@@ -28,7 +28,6 @@ class Member extends Model
         'photo',
         'qr_code',
         'is_active',
-        'profile_completed',
         'registration_date',
         'created_by',
         'updated_by',
@@ -40,7 +39,6 @@ class Member extends Model
         'date_of_birth' => 'date',
         'registration_date' => 'date',
         'is_active' => 'boolean',
-        'profile_completed' => 'boolean',
     ];
 
     /**

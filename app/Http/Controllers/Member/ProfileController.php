@@ -253,9 +253,6 @@ class ProfileController extends Controller
             'region' => 'nullable|string',
             'diocese' => 'nullable|string',
             'parish' => 'nullable|string',
-            'gender' => 'nullable|string|in:Male,Female,Other',
-            'date_of_birth' => 'nullable|date',
-            'category_id' => 'nullable|exists:member_categories,id',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -269,101 +266,13 @@ class ProfileController extends Controller
 
         $member->update($validated);
 
+        // Mark profile as completed
+        $member->update(['profile_completed' => true]);
+
         // Automatically assign to communities based on new info
         app(GroupService::class)->autoAssignMemberToCommunities($member);
 
-        // Check if profile is complete and send OTP if phone is provided
-        if ($member->phone && !$user->phone_verified) {
-            // Generate OTP
-            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $user->update([
-                'phone_otp' => $otp,
-                'phone_otp_expires_at' => now()->addMinutes(10),
-            ]);
-
-            // Send OTP via SMS
-            if ($member->phone) {
-                $smsMessage = "Your TMCS verification code is: {$otp}. This code expires in 10 minutes.";
-                \App\Jobs\SendSmsJob::dispatch($member->phone, $smsMessage);
-            }
-
-            return redirect()->route('member.profile.verify')->with('success', 'Profile updated! Please verify your phone number to complete registration.');
-        }
-
         return redirect()->route('member.profile.index')->with('success', 'Profile updated successfully and communities reassigned.');
-    }
-
-    public function showVerificationForm()
-    {
-        $user = Auth::user();
-        
-        if ($user->phone_verified) {
-            return redirect()->route('member.profile.index')->with('info', 'Your phone is already verified.');
-        }
-
-        return view('member.profile.verify', compact('user'));
-    }
-
-    public function verifyPhone(Request $request)
-    {
-        $request->validate([
-            'otp' => 'required|string|size:6',
-        ]);
-
-        $user = Auth::user();
-
-        if (!$user->phone_otp || !$user->phone_otp_expires_at) {
-            return back()->with('error', 'No verification code was sent. Please update your profile first.');
-        }
-
-        if ($user->phone_otp_expires_at < now()) {
-            return back()->with('error', 'Verification code has expired. Please request a new one.');
-        }
-
-        if ($user->phone_otp !== $request->otp) {
-            return back()->with('error', 'Invalid verification code.');
-        }
-
-        // Mark phone as verified
-        $user->update([
-            'phone_verified' => true,
-            'phone_otp' => null,
-            'phone_otp_expires_at' => null,
-        ]);
-
-        // Mark member profile as completed
-        if ($user->member) {
-            $user->member->update(['profile_completed' => true]);
-        }
-
-        return redirect()->route('member.profile.index')->with('success', 'Phone verified successfully! Your account is now fully active.');
-    }
-
-    public function resendOtp()
-    {
-        $user = Auth::user();
-        $member = $user->member;
-
-        if (!$member || !$member->phone) {
-            return back()->with('error', 'Please update your profile with a phone number first.');
-        }
-
-        if ($user->phone_verified) {
-            return back()->with('info', 'Your phone is already verified.');
-        }
-
-        // Generate new OTP
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-        $user->update([
-            'phone_otp' => $otp,
-            'phone_otp_expires_at' => now()->addMinutes(10),
-        ]);
-
-        // Send OTP via SMS
-        $smsMessage = "Your TMCS verification code is: {$otp}. This code expires in 10 minutes.";
-        \App\Jobs\SendSmsJob::dispatch($member->phone, $smsMessage);
-
-        return back()->with('success', 'A new verification code has been sent to your phone.');
     }
 
     public function joinGroup(Request $request, Group $group)

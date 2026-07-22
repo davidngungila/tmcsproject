@@ -89,7 +89,7 @@
                 <i class="grain fa-solid fa-leaf text-emerald-400/40 text-sm" style="left:47%; bottom:-6%; --drift:10px; animation-duration:10.5s; animation-delay:3s;"></i>
                 <i class="grain fa-solid fa-star text-gold-300/60 text-base" style="left:63%; bottom:-10%; --drift:-20px; animation-duration:13s; animation-delay:.7s;"></i>
                 <i class="grain fa-solid fa-dove text-emerald-400/30 text-xs" style="left:78%; bottom:-4%; --drift:16px; animation-duration:11s; animation-delay:4.2s;"></i>
-                <i class="grain fa-solid fa-star text-gold-300/40 text-sm" style="left:89%; bottom:-9%; --drift:10px; animation-duration:9.5s; animation-delay:2.1s;"></i>
+                <i class="grain fa-solid fa-star text-gold-300/40 text-sm" style="left:89%; bottom:-9%; --drift:-10px; animation-duration:9.5s; animation-delay:2.1s;"></i>
             </div>
 
             <!-- brand mark -->
@@ -112,7 +112,7 @@
                     Create your account<br> in seconds.
                 </h1>
                 <p class="rise-in mt-5 text-[15px] leading-relaxed text-mist-100/80" style="animation-delay:.4s">
-                    Register to access member features, manage your profile, and stay connected with your church community.
+                    Register with just your basic details. Complete your profile later to access all features.
                 </p>
 
                 <!-- feature rows -->
@@ -127,13 +127,13 @@
                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
                             <i class="fa-solid fa-sliders text-sm"></i>
                         </div>
-                        <p class="text-sm text-mist-100/90">Complete your profile later</p>
+                        <p class="text-sm text-mist-100/90">Complete profile at your convenience</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
                             <i class="fa-solid fa-shield-halved text-sm"></i>
                         </div>
-                        <p class="text-sm text-mist-100/90">Secure, instant access</p>
+                        <p class="text-sm text-mist-100/90">Secure, session-based account access</p>
                     </div>
                 </div>
             </div>
@@ -173,8 +173,8 @@
 
                 <div class="rise-in" style="animation-delay:.1s">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Create account</p>
-                    <h2 class="font-display mt-2 text-3xl font-semibold text-pine-900">Join TmcsSmart</h2>
-                    <p class="mt-2 text-sm text-ink-600">Enter your details to get started.</p>
+                    <h2 class="font-display mt-2 text-3xl font-semibold text-pine-900">Register to get started</h2>
+                    <p class="mt-2 text-sm text-ink-600">Enter your details to create your account.</p>
                 </div>
 
                 @if(session('success'))
@@ -240,7 +240,7 @@
                         @enderror
                     </div>
 
-                    <!-- Phone Number -->
+                    <!-- Phone -->
                     <div class="mb-5">
                         <label class="mb-2 block text-sm font-semibold text-pine-900">Phone number</label>
                         <div class="group relative">

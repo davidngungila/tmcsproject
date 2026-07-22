@@ -15,6 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/webhooks/snipe',
         ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\CheckProfileCompletion::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
