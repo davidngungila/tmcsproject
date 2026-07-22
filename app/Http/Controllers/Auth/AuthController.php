@@ -15,6 +15,7 @@ use App\Models\MemberCategory;
 use App\Models\Role;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMailable;
+use App\Jobs\SendSmsJob;
 
 class AuthController extends Controller
 {
@@ -129,7 +130,18 @@ class AuthController extends Controller
             }
         }
 
-        return redirect()->route('login')->with('success', 'Registration successful! Your account is pending administrator approval.');
+        // 5. Send credentials via SMS
+        if ($user->phone) {
+            $smsMessage = "Welcome to TMCS! Your account has been created. Email: {$user->email}, Password: {$request->password}. Please wait for administrator approval before logging in.";
+            SendSmsJob::dispatch($user->phone, $smsMessage);
+        }
+
+        // 6. Send credentials via email
+        if ($user->email) {
+            Mail::to($user->email)->queue(new PasswordResetMailable($user, $request->password, 'Your TMCS Account Credentials'));
+        }
+
+        return redirect()->route('login')->with('success', 'Registration successful! Your account is pending administrator approval. Login credentials have been sent to your email and phone.');
     }
 
     /**

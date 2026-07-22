@@ -20,11 +20,12 @@ class EventController extends Controller
 
         // Format events for FullCalendar
         $calendarEvents = $allEvents->map(function($event) {
+            $color = $this->getEventStatusColor($event->status);
             return [
                 'id' => $event->id,
                 'title' => $event->event_name,
                 'start' => $event->event_date->format('Y-m-d') . 'T' . $event->event_time->format('H:i:s'),
-                'className' => 'bg-' . getEventStatusColor($event->status) . '-500',
+                'className' => 'bg-' . $color . '-500',
                 'description' => $event->description,
                 'venue' => $event->venue,
                 'url' => route('events.show', $event->id)
@@ -83,5 +84,16 @@ class EventController extends Controller
     public function attendance()
     {
         return view('events.attendance');
+    }
+
+    private function getEventStatusColor($status)
+    {
+        $colors = [
+            'upcoming' => 'blue',
+            'ongoing' => 'green',
+            'completed' => 'amber',
+            'cancelled' => 'red'
+        ];
+        return $colors[$status] ?? 'blue';
     }
 }

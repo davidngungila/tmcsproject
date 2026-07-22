@@ -1,39 +1,25 @@
 @extends('layouts.app')
 
-@section('title', 'Finance Analytics - TmcsSmart')
-@section('page-title', 'Financial Insights')
+@section('title', 'Finance Management - TmcsSmart')
+@section('page-title', 'Financial Management')
 @section('breadcrumb', 'TmcsSmart / Finance')
 
 @section('content')
 <div class="animate-in space-y-6">
-  <!-- Main Receipt-Style Header -->
-  <div class="card overflow-hidden">
-    <div class="p-8 text-center border-b border-gray-50 bg-gray-50/30">
-        <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-            <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-        <h2 class="text-2xl font-black text-gray-900 tracking-tight">Financial Management Dashboard</h2>
-        <p class="text-[10px] text-muted font-black mt-1 uppercase tracking-widest">ST. JOSEPH THE WORKER CHAPLAINCY</p>
-    </div>
+  <!-- Action Bar -->
+  <div class="flex items-center justify-end">
+    <a href="{{ route('finance.create') }}" class="btn btn-primary btn-sm flex items-center gap-2">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+      New Record
+    </a>
   </div>
 
-  <!-- TAB NAVIGATION -->
-  <div class="flex items-center justify-between border-b border-muted/10 pb-1">
-    <div class="flex gap-1">
-      <button onclick="switchTab('overview')" id="btn-overview" class="tab-btn active px-4 py-2 text-sm font-bold border-b-2 border-primary text-primary transition-all">Analytics Dashboard</button>
-      <button onclick="switchTab('transactions')" id="btn-transactions" class="tab-btn px-4 py-2 text-sm font-bold text-muted border-b-2 border-transparent hover:text-primary transition-all">Transactions</button>
-      <button onclick="switchTab('management')" id="btn-management" class="tab-btn px-4 py-2 text-sm font-bold text-muted border-b-2 border-transparent hover:text-primary transition-all">Management</button>
-    </div>
-    <div class="flex gap-2">
-      <a href="{{ route('finance.create') }}" class="btn btn-primary btn-sm flex items-center gap-2">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
-        New Record
-      </a>
-    </div>
-  </div>
-
-  <!-- TAB: OVERVIEW -->
-  <div id="tab-overview-content" class="tab-pane space-y-6">
+  <!-- OVERVIEW SECTION -->
+  <div class="space-y-6">
+    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Analytics Overview
+    </h3>
     <!-- TOP STATS -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="card p-5 border-l-4 border-green-500 bg-white shadow-sm">
@@ -124,15 +110,16 @@
     </div>
   </div>
 
-  <!-- TAB: TRANSACTIONS -->
-  <div id="tab-transactions-content" class="tab-pane hidden space-y-4">
+  <!-- TRANSACTIONS SECTION -->
+  <div class="space-y-4">
+    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+      Detailed Transactions
+    </h3>
     <div class="card bg-white shadow-sm overflow-hidden">
-      <div class="p-6 border-b flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h3 class="font-bold text-lg">Detailed Transactions</h3>
-          <p class="text-xs text-muted">Filter and manage individual contribution records</p>
-        </div>
-        <form action="{{ route('finance.index') }}" method="GET" class="flex flex-wrap gap-2">
+      <div class="p-6 border-b flex items-center justify-between gap-4 flex-wrap">
+        <h3 class="text-sm font-bold text-gray-800">Filter and manage individual contribution records</h3>
+        <form action="{{ route('finance.index') }}" method="GET" class="flex items-center gap-2">
           <input type="hidden" name="period" value="{{ $period }}">
           <input type="text" name="search" value="{{ request('search') }}" placeholder="Receipt or Member..." class="form-control text-xs w-40">
           <select name="type" class="form-control text-xs w-32">
@@ -209,8 +196,12 @@
     </div>
   </div>
 
-  <!-- TAB: MANAGEMENT -->
-  <div id="tab-management-content" class="tab-pane hidden">
+  <!-- MANAGEMENT SECTION -->
+  <div class="space-y-4">
+    <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+      <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      Management Tools
+    </h3>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div class="card p-6 bg-white shadow-sm border border-muted/10 hover:border-primary/30 transition-all">
         <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4">
@@ -254,37 +245,7 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function switchTab(tabId) {
-  // Hide all panes
-  document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.add('hidden'));
-  // Show target pane
-  document.getElementById(`tab-${tabId}-content`).classList.remove('hidden');
-  
-  // Update buttons
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('active', 'border-primary', 'text-primary');
-    btn.classList.add('border-transparent', 'text-muted');
-  });
-  
-  const activeBtn = document.getElementById(`btn-${tabId}`);
-  activeBtn.classList.remove('border-transparent', 'text-muted');
-  activeBtn.classList.add('active', 'border-primary', 'text-primary');
-
-  // Store preference
-  localStorage.setItem('finance_active_tab', tabId);
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-  // Restore tab preference
-  const savedTab = localStorage.getItem('finance_active_tab');
-  if (savedTab && document.getElementById(`btn-${savedTab}`)) {
-    switchTab(savedTab);
-  } else if (window.location.search.includes('search') || window.location.search.includes('page') || window.location.search.includes('type')) {
-    switchTab('transactions');
-  } else {
-    switchTab('overview');
-  }
-
   // Trend Chart
   const trendCtx = document.getElementById('trendChart').getContext('2d');
   new Chart(trendCtx, {

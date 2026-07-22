@@ -115,19 +115,37 @@
                 <td class="px-6 py-4 text-xs font-bold text-muted">{{ strtoupper(str_replace('_', ' ', $contribution->contribution_type)) }}</td>
                 <td class="px-6 py-4 text-sm font-black text-right text-amber-600">{{ number_format($contribution->amount) }}</td>
                 <td class="px-6 py-4 text-center">
-                  <span class="badge amber px-2 py-0.5 text-[9px] font-black uppercase">Pending</span>
+                  @if($contribution->feedtan_status === 'FAILED')
+                    <span class="badge red px-2 py-0.5 text-[9px] font-black uppercase">Failed</span>
+                  @elseif($contribution->feedtan_status === 'PROCESSING')
+                    <span class="badge blue px-2 py-0.5 text-[9px] font-black uppercase">Processing</span>
+                  @else
+                    <span class="badge amber px-2 py-0.5 text-[9px] font-black uppercase">Pending</span>
+                  @endif
                 </td>
                 <td class="px-6 py-4 text-center">
                   <div class="flex items-center justify-center gap-2">
                     <a href="{{ route('member.contributions.show', $contribution->id) }}" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="View Details">
                       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                     </a>
+                    @if(!$contribution->is_verified && in_array($contribution->feedtan_status, ['FAILED', 'PROCESSING']))
+                      <button onclick="retryPayment({{ $contribution->id }})" class="p-2 {{ $contribution->feedtan_status === 'FAILED' ? 'bg-green-50 text-green-600 hover:bg-green-100' : 'bg-blue-50 text-blue-600 hover:bg-blue-100' }} rounded-lg transition-colors" title="Retry Payment">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                      </button>
+                    @endif
                   </div>
                 </td>
               </tr>
+              @if($contribution->feedtan_status === 'FAILED' && $contribution->feedtan_error_reason)
+              <tr class="bg-red-50/30">
+                <td colspan="6" class="px-6 py-2 text-[10px] text-red-600 font-medium">
+                  <span class="font-black">Error:</span> {{ $contribution->feedtan_error_reason }}
+                </td>
+              </tr>
+              @endif
             @empty
               <tr>
-                <td colspan="5" class="px-6 py-8 text-center text-xs text-muted italic">No unverified contributions found</td>
+                <td colspan="6" class="px-6 py-8 text-center text-xs text-muted italic">No unverified contributions found</td>
               </tr>
             @endforelse
           </tbody>
@@ -163,6 +181,70 @@ function switchTab(tab) {
         pendingContent.classList.remove('hidden');
         verifiedContent.classList.add('hidden');
     }
+}
+
+function retryPayment(contributionId) {
+    Swal.fire({
+        title: 'Retry Payment',
+        text: 'Do you want to retry this payment?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, Retry',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Retrying...',
+                text: 'Please wait while we retry the payment.',
+                icon: 'info',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            fetch(`/member/payment-retry/${contributionId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: 'Payment Retried',
+                        text: 'Payment request submitted. Processing in background...',
+                        icon: 'success',
+                        confirmButtonColor: '#059669',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.error || 'Failed to retry payment',
+                        icon: 'error',
+                        confirmButtonColor: '#059669'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to retry payment. Please try again.',
+                    icon: 'error',
+                    confirmButtonColor: '#059669'
+                });
+            });
+        }
+    });
 }
 </script>
 @endpush

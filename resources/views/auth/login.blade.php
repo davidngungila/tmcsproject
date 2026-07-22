@@ -1,164 +1,280 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" class="h-full">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Login - TmcsSmart</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root {
-      --green-950: #021c13;
-      --green-900: #042f1e;
-      --green-800: #064e3b;
-      --green-700: #065f46;
-      --green-600: #047857;
-      --green-500: #059669;
-      --green-400: #10b981;
-      --green-300: #34d399;
-      --green-100: #d1fae5;
-      --green-50:  #ecfdf5;
-      --bg-base: #f0f9f4;
-      --bg-card: #ffffff;
-      --text-primary: #0a1a12;
-      --text-secondary: #3d6b54;
-      --border: #c6e8d7;
-    }
-    [data-theme="dark"] {
-      --bg-base: #031a10;
-      --bg-card: #052819;
-      --text-primary: #e2f5eb;
-      --text-secondary: #7ecfa0;
-      --border: #0e4a2e;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg-base);
-      color: var(--text-primary);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    h1,h2,h3,h4,h5 { font-family: 'Sora', sans-serif; }
-    .login-container {
-      width: 100%;
-      max-width: 420px;
-      padding: 1.5rem;
-    }
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-      padding: 2.5rem 2rem;
-    }
-    @media (max-width: 480px) {
-      .login-container {
-        padding: 1rem;
-      }
-      .card {
-        padding: 2rem 1.5rem;
-      }
-    }
-    .brand-logo {
-      width: 60px; height: 60px;
-      background: linear-gradient(135deg, var(--green-500), var(--green-300));
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Sora', sans-serif;
-      font-weight: 800; font-size: 24px; color: #fff;
-      margin: 0 auto 1.5rem;
-    }
-    .form-control {
-      width: 100%;
-      background: var(--bg-base);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: var(--text-primary);
-      margin-bottom: 1rem;
-    }
-    .form-control:focus {
-      outline: none;
-      border-color: var(--green-500);
-      box-shadow: 0 0 0 3px rgba(5,150,105,0.12);
-    }
-    .btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--green-600), var(--green-700));
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .btn:hover {
-      background: linear-gradient(135deg, var(--green-500), var(--green-600));
-      transform: translateY(-1px);
-    }
-    .error {
-      color: #ef4444;
-      font-size: 12px;
-      margin-top: -0.5rem;
-      margin-bottom: 1rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - TmcsSmart</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <!-- Google Fonts: Sora (display) + DM Sans (body/UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pine:    { 950:'#021c13', 900:'#042f1e', 800:'#064e3b', 700:'#065f46' },
+                        emerald: { 600:'#047857', 500:'#059669', 400:'#10b981' },
+                        gold:    { 400:'#e0b25c', 300:'#ecc988', 100:'#faf1de' },
+                        ink:     { 900:'#0a1a12', 600:'#3d6b54', 400:'#7ecfa0' },
+                        mist:    { 50:'#f5faf7', 100:'#ecfdf5' },
+                    },
+                    fontFamily: {
+                        display: ['Sora', 'ui-sans-serif', 'sans-serif'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'DM Sans', sans-serif; }
+        .font-display { font-family: 'Sora', sans-serif; }
+
+        @keyframes riseIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .rise-in { opacity: 0; animation: riseIn 0.7s cubic-bezier(.22,.61,.36,1) forwards; }
+
+        @keyframes grainFloat {
+            0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+            10%  { opacity: .55; }
+            85%  { opacity: .4; }
+            100% { transform: translateY(-140px) translateX(var(--drift,10px)) rotate(45deg); opacity: 0; }
+        }
+        .grain { position: absolute; animation: grainFloat linear infinite; }
+
+        @keyframes glowSpin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        .glow-spin { animation: glowSpin 22s linear infinite; }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: .5; }
+            50% { opacity: 1; }
+        }
+        .shimmer { animation: shimmer 3.2s ease-in-out infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .rise-in, .grain, .glow-spin, .shimmer { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
+
+        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px #f5faf7 inset; -webkit-text-fill-color: #0a1a12; }
+    </style>
 </head>
-<body>
-  <div class="login-container">
-    <div class="card">
-      <div class="brand-logo">TM</div>
-      
-      <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 800; font-size: 1.5rem;">Welcome Back</h2>
-      <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem; font-size: 0.875rem; line-height: 1.5;">Sign in to TmcsSmart Church Management System</p>
-      
-      @if(session('success'))
-        <div style="background: #ecfdf5; color: #065f46; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 13px; border: 1px solid #d1fae5;">
-          {{ session('success') }}
-        </div>
-      @endif
+<body class="h-full bg-white text-ink-900">
+    <div class="h-full lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
 
-      <form method="POST" action="{{ route('login.post') }}">
-        @csrf
-        
-        <div style="margin-bottom: 1.25rem;">
-          <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">Email Address</label>
-          <input type="email" name="email" class="form-control" placeholder="Enter your email" required autofocus style="margin-bottom: 0;">
-          @error('email')
-            <div class="error" style="margin-top: 0.5rem; margin-bottom: 0;">{{ $message }}</div>
-          @enderror
-        </div>
-        
-        <div style="margin-bottom: 0.5rem;">
-          <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.5rem;">Password</label>
-          <input type="password" name="password" class="form-control" placeholder="Enter password" required style="margin-bottom: 0;">
-          @error('password')
-            <div class="error" style="margin-top: 0.5rem; margin-bottom: 0;">{{ $message }}</div>
-          @enderror
-        </div>
+        <!-- LEFT: Brand panel -->
+        <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-pine-950 via-pine-900 to-pine-800 px-14 py-12 text-white">
 
-        <div style="text-align: right; margin-bottom: 1.5rem;">
-          <a href="{{ route('password.request') }}" style="color: var(--text-secondary); font-size: 12px; text-decoration: none; font-weight: 500; transition: color 0.2s;" onmouseover="this.style.color='var(--green-600)'" onmouseout="this.style.color='var(--text-secondary)'">Forgot Password?</a>
-        </div>
-        
-        <button type="submit" class="btn" style="padding: 14px; font-size: 15px;">Sign In</button>
-      </form>
+            <!-- ambient glow -->
+            <div class="pointer-events-none absolute -top-32 -left-24 h-[26rem] w-[26rem] rounded-full bg-emerald-500/20 blur-3xl glow-spin"></div>
+            <div class="pointer-events-none absolute bottom-[-8rem] right-[-6rem] h-[22rem] w-[22rem] rounded-full bg-gold-400/10 blur-3xl"></div>
 
-      <div style="text-align: center; margin-top: 2rem; font-size: 13px;">
-        <p style="color: var(--text-secondary);">Don't have an account? <a href="{{ route('register') }}" style="color: var(--green-600); font-weight: 700; text-decoration: none;">Register here</a></p>
-      </div>
+            <!-- drifting particles -->
+            <div class="pointer-events-none absolute inset-0 overflow-hidden">
+                <i class="grain fa-solid fa-dove text-gold-300/60 text-sm" style="left:12%; bottom:-5%; --drift:18px; animation-duration:9s; animation-delay:0s;"></i>
+                <i class="grain fa-solid fa-star text-gold-300/50 text-xs" style="left:28%; bottom:-8%; --drift:-14px; animation-duration:12s; animation-delay:1.4s;"></i>
+                <i class="grain fa-solid fa-leaf text-emerald-400/40 text-sm" style="left:47%; bottom:-6%; --drift:10px; animation-duration:10.5s; animation-delay:3s;"></i>
+                <i class="grain fa-solid fa-star text-gold-300/60 text-base" style="left:63%; bottom:-10%; --drift:-20px; animation-duration:13s; animation-delay:.7s;"></i>
+                <i class="grain fa-solid fa-dove text-emerald-400/30 text-xs" style="left:78%; bottom:-4%; --drift:16px; animation-duration:11s; animation-delay:4.2s;"></i>
+                <i class="grain fa-solid fa-star text-gold-300/40 text-sm" style="left:89%; bottom:-9%; --drift:-10px; animation-duration:9.5s; animation-delay:2.1s;"></i>
+            </div>
+
+            <!-- brand mark -->
+            <div class="relative z-10 rise-in" style="animation-delay:.05s">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15 backdrop-blur-sm font-display font-extrabold text-lg text-gold-300">
+                        TM
+                    </div>
+                    <div class="leading-tight">
+                        <p class="text-[15px] font-bold tracking-wide">TmcsSmart</p>
+                        <p class="text-[11px] uppercase tracking-[0.18em] text-emerald-300/80">Church Management System</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- headline block -->
+            <div class="relative z-10 max-w-md">
+                <p class="rise-in text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/90" style="animation-delay:.15s">Trusted by congregations everywhere</p>
+                <h1 class="rise-in font-display mt-4 text-[2.6rem] leading-[1.1] font-semibold text-white" style="animation-delay:.25s">
+                    Shepherd your church<br> with clarity.
+                </h1>
+                <p class="rise-in mt-5 text-[15px] leading-relaxed text-mist-100/80" style="animation-delay:.4s">
+                    Sign in to manage members, plan services, and track giving —
+                    all from one account built for church administration.
+                </p>
+
+                <!-- feature rows -->
+                <div class="rise-in mt-9 space-y-4" style="animation-delay:.55s">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
+                            <i class="fa-solid fa-users text-sm"></i>
+                        </div>
+                        <p class="text-sm text-mist-100/90">Keep member records organized</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
+                            <i class="fa-solid fa-hand-holding-heart text-sm"></i>
+                        </div>
+                        <p class="text-sm text-mist-100/90">Track giving and pledges with ease</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
+                            <i class="fa-solid fa-shield-halved text-sm"></i>
+                        </div>
+                        <p class="text-sm text-mist-100/90">Secure, session-based account access</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- footer stat -->
+            <div class="relative z-10 rise-in flex items-center gap-6 border-t border-white/10 pt-6" style="animation-delay:.7s">
+                <div>
+                    <p class="font-display text-2xl font-semibold text-white">850<span class="text-gold-300">+</span></p>
+                    <p class="text-[11px] uppercase tracking-wide text-mist-100/60">Churches onboard</p>
+                </div>
+                <div class="h-8 w-px bg-white/10"></div>
+                <div>
+                    <p class="font-display text-2xl font-semibold text-white">120k<span class="text-gold-300">+</span></p>
+                    <p class="text-[11px] uppercase tracking-wide text-mist-100/60">Members managed</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- RIGHT: Login panel -->
+        <main class="relative flex min-h-full items-center justify-center bg-white px-6 py-12 sm:px-10">
+
+            <!-- soft mesh backdrop -->
+            <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.06),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(224,178,92,0.06),_transparent_40%)]"></div>
+
+            <div x-data="{ loading: false }" class="relative w-full max-w-sm">
+
+                <!-- mobile-only brand mark -->
+                <div class="mb-8 flex items-center gap-3 lg:hidden">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-pine-900 font-display font-extrabold text-sm text-gold-300">
+                        TM
+                    </div>
+                    <div class="leading-tight">
+                        <p class="text-sm font-bold text-pine-900">TmcsSmart</p>
+                        <p class="text-[10px] uppercase tracking-[0.18em] text-ink-400">Church Management System</p>
+                    </div>
+                </div>
+
+                <div class="rise-in" style="animation-delay:.1s">
+                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Welcome back</p>
+                    <h2 class="font-display mt-2 text-3xl font-semibold text-pine-900">Sign in to your account</h2>
+                    <p class="mt-2 text-sm text-ink-600">Enter your details to access your dashboard.</p>
+                </div>
+
+                @if(session('success'))
+                <div class="rise-in mt-6 flex items-start gap-2 rounded-xl border border-emerald-100 bg-mist-100 p-4 text-sm text-emerald-700" style="animation-delay:.15s">
+                    <i class="fa-solid fa-circle-check mt-0.5 text-emerald-600"></i>
+                    <span>{{ session('success') }}</span>
+                </div>
+                @endif
+
+                <form
+                    method="POST"
+                    action="{{ route('login.post') }}"
+                    @submit="loading = true"
+                    class="rise-in mt-8"
+                    style="animation-delay:.2s"
+                >
+                    @csrf
+
+                    <!-- Email -->
+                    <div class="mb-5">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Email address</label>
+                        <div class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <input
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                required
+                                autofocus
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="you@example.com"
+                            >
+                        </div>
+                        @error('email')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Password</label>
+                        <div x-data="{ show: false }" class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input
+                                :type="show ? 'text' : 'password'"
+                                name="password"
+                                required
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="••••••••"
+                            >
+                            <button
+                                type="button"
+                                @click="show = !show"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
+                            >
+                                <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Forgot password -->
+                    <div class="mb-7 flex items-center justify-end">
+                        <a href="{{ route('password.request') }}" class="text-sm font-medium text-ink-600 transition-colors hover:text-emerald-600">Forgot password?</a>
+                    </div>
+
+                    <!-- Submit -->
+                    <button
+                        type="submit"
+                        :disabled="loading"
+                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        <span x-show="!loading">Sign in</span>
+                        <span x-show="loading" class="flex items-center gap-2">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Signing in&hellip;
+                        </span>
+                    </button>
+                </form>
+
+                <p class="rise-in mt-8 text-center text-sm text-ink-600" style="animation-delay:.25s">
+                    Don't have an account?
+                    <a href="{{ route('register') }}" class="font-semibold text-emerald-600 hover:text-emerald-700">Register here</a>
+                </p>
+
+                <p class="rise-in mt-8 text-center text-xs text-ink-400" style="animation-delay:.3s">
+                    &copy; {{ date('Y') }} TmcsSmart Church Management System. All rights reserved.
+                </p>
+            </div>
+        </main>
     </div>
-    
-    <div style="text-align: center; margin-top: 2rem; color: var(--text-secondary); font-size: 11px; font-weight: 500; opacity: 0.8;">
-      <p>© 2026 TmcsSmart Church Management System</p>
-    </div>
-  </div>
 </body>
 </html>

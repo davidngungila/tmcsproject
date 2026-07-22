@@ -15,14 +15,16 @@ class PasswordResetMailable extends Mailable
 
     public $user;
     public $newPassword;
+    public $subject;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(User $user, $newPassword)
+    public function __construct(User $user, $newPassword, $subject = null)
     {
         $this->user = $user;
         $this->newPassword = $newPassword;
+        $this->subject = $subject ?? 'Your Account Password Has Been Reset - TmcsSmart';
     }
 
     /**
@@ -31,7 +33,7 @@ class PasswordResetMailable extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your Account Password Has Been Reset - TmcsSmart',
+            subject: $this->subject,
         );
     }
 

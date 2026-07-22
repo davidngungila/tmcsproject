@@ -50,13 +50,9 @@
                 <svg width="20" height="20" class="text-indigo-400 group-hover:text-indigo-600 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-indigo-600">Members</span>
             </a>
-            <a href="{{ route('groups.operations.contributions', $community->id) }}" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-indigo-100 hover:border-green-600 hover:shadow-md transition-all group">
+            <a href="{{ route('groups.operations.meeting', $community->id) }}" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-indigo-100 hover:border-green-600 hover:shadow-md transition-all group">
                 <svg width="20" height="20" class="text-indigo-400 group-hover:text-green-600 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-green-600">Giving</span>
-            </a>
-            <a href="{{ route('groups.operations.attendance', $community->id) }}" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-indigo-100 hover:border-amber-600 hover:shadow-md transition-all group">
-                <svg width="20" height="20" class="text-indigo-400 group-hover:text-amber-600 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-amber-600">Attendance</span>
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-green-600">Meeting</span>
             </a>
             <a href="{{ route('groups.operations.messages', $community->id) }}" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-white border border-indigo-100 hover:border-purple-600 hover:shadow-md transition-all group">
                 <svg width="20" height="20" class="text-indigo-400 group-hover:text-purple-600 mb-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -67,6 +63,79 @@
           <a href="{{ route('groups.operations.planning', $community->id) }}" class="btn btn-primary w-full py-4 font-black uppercase tracking-[0.2em] text-[10px]">
             Community Strategic Planning
           </a>
+        </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+  @endif
+
+  <!-- UPCOMING EVENTS -->
+  @if($upcomingEvents->count() > 0)
+  <div class="card shadow-sm border-none">
+    <div class="card-header border-b p-6 flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">Upcoming Events</h3>
+        <p class="text-xs text-muted font-medium">Events for your communities</p>
+      </div>
+      <div class="flex items-center gap-2 bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+        <svg width="16" height="16" class="text-green-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <span class="text-[10px] font-black text-green-700 uppercase tracking-widest">{{ $upcomingEvents->count() }} Events</span>
+      </div>
+    </div>
+    <div class="card-body p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach($upcomingEvents as $event)
+        <div class="p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-md transition-shadow group">
+          <div class="flex items-start gap-4">
+            <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex-center shrink-0">
+              <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="flex-1">
+              <div class="font-black text-gray-800 text-sm mb-1">{{ $event->title }}</div>
+              <div class="text-[10px] text-gray-500 mb-2">{{ $event->start_date->format('M d, Y - g:i A') }}</div>
+              @if($event->location)
+              <div class="text-[9px] text-gray-400">{{ $event->location }}</div>
+              @endif
+            </div>
+          </div>
+        </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+  @endif
+
+  <!-- ANNOUNCEMENTS -->
+  @if($announcements->count() > 0)
+  <div class="card shadow-sm border-none">
+    <div class="card-header border-b p-6 flex items-center justify-between">
+      <div>
+        <h3 class="text-sm font-black text-gray-800 uppercase tracking-widest">Announcements</h3>
+        <p class="text-xs text-muted font-medium">Updates for your communities</p>
+      </div>
+      <div class="flex items-center gap-2 bg-blue-50 px-4 py-2 rounded-xl border border-blue-100">
+        <svg width="16" height="16" class="text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+        <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest">{{ $announcements->count() }} New</span>
+      </div>
+    </div>
+    <div class="card-body p-6">
+      <div class="space-y-4">
+        @foreach($announcements as $announcement)
+        <div class="p-4 bg-white rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex-center shrink-0">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="badge blue text-[9px] uppercase font-bold">{{ $announcement->type }}</span>
+                <span class="text-[9px] text-gray-400">{{ $announcement->created_at->format('M d, Y') }}</span>
+              </div>
+              <div class="font-black text-gray-800 text-sm mb-2">{{ $announcement->title }}</div>
+              <div class="text-xs text-gray-600 line-clamp-2">{{ Str::limit($announcement->content, 150) }}</div>
+            </div>
+          </div>
         </div>
         @endforeach
       </div>

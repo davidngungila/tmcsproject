@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   @stack('styles')
 </head>
 <body>
@@ -43,7 +44,7 @@
       --bg-sidebar2:  #064e3b;
       --text-primary: #0a1a12;
       --text-secondary:#3d6b54;
-      --text-muted:   #6b9e82;
+      --text-muted:   #5a7a68;
       --border:       #c6e8d7;
       --border-light: #e6f7ef;
       --shadow:       0 4px 24px rgba(4,46,30,0.10);
@@ -58,29 +59,6 @@
       --badge-red-tx:   #b91c1c;
       --badge-blue-bg:  #d1fae5;
       --badge-blue-tx:  #047857;
-    }
-    [data-theme="dark"] {
-      --bg-base:      #031a10;
-      --bg-card:      #052819;
-      --bg-sidebar:   #021c13;
-      --bg-sidebar2:  #042f1e;
-      --text-primary: #e2f5eb;
-      --text-secondary:#7ecfa0;
-      --text-muted:   #4d8a65;
-      --border:       #0e4a2e;
-      --border-light: #0b3d26;
-      --shadow:       0 4px 24px rgba(0,0,0,0.40);
-      --shadow-lg:    0 8px 40px rgba(0,0,0,0.60);
-      --input-bg:     #042014;
-      --hover-row:    #063320;
-      --badge-green-bg: #064e3b;
-      --badge-green-tx: #34d399;
-      --badge-amber-bg: #451a03;
-      --badge-amber-tx: #fbbf24;
-      --badge-red-bg:   #450a0a;
-      --badge-red-tx:   #f87171;
-      --badge-blue-bg:  #1e3a8a;
-      --badge-blue-tx:  #93c5fd;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -208,6 +186,7 @@
     }
     .nav-item.open .dropdown-arrow { transform: rotate(180deg); }
     .nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
+    .dropdown-arrow { width: 16px; height: 16px; flex-shrink: 0; }
     .nav-badge {
       margin-left: auto;
       background: var(--gold-400);
@@ -380,6 +359,11 @@
     .card-header { padding: 18px 20px; border-bottom: 1px solid var(--border-light); }
     .card-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
     .card-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Green gradient cards - force black text */
+    .bg-gradient-to-br {
+      color: #000000 !important;
+    }
 
     /* STAT CARDS */
     .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
@@ -703,6 +687,9 @@
     }
     .form-control:focus { border-color: var(--green-500); box-shadow: 0 0 0 3px rgba(5,150,105,.12); }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    /* Input icon styling */
+    .relative .form-control { padding-left: 2.5rem !important; }
+    .relative span.inset-y-0 { display: flex; align-items: center; justify-content: center; width: 2.25rem; }
     @media(max-width:640px){ .form-row { grid-template-columns: 1fr; } }
     
     /* FILTER ROW LAYOUT */
@@ -870,26 +857,19 @@
           <span class="nav-label">My Groups</span>
         </a>
 
-        <div class="nav-group">
-          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('member/contributions*') || request()->is('member/pay*') ? 'open' : '' }}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="nav-label">My Contributions</span>
-            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="nav-dropdown {{ request()->is('member/contributions*') || request()->is('member/pay*') ? 'show' : '' }}">
-            <a href="{{ route('member.contributions.index') }}" class="dropdown-item {{ request()->is('member/contributions') ? 'active' : '' }}">Contribution History</a>
-            <a href="{{ route('member.profile.pay') }}" class="dropdown-item {{ request()->is('member/pay') ? 'active' : '' }}">Make Payment</a>
-          </div>
-        </div>
+        <a href="{{ route('member.contributions.index') }}" class="nav-item {{ request()->is('member/contributions*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span class="nav-label">My Contributions</span>
+        </a>
 
         <a href="{{ route('member.events') }}" class="nav-item {{ request()->is('member/events*') ? 'active' : '' }}">
           <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           <span class="nav-label">Events</span>
         </a>
 
-        <a href="{{ route('resources.library') }}" class="nav-item {{ request()->is('resources/library*') ? 'active' : '' }}">
-          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-          <span class="nav-label">Resource Library</span>
+        <a href="{{ route('member.profile.pay') }}" class="nav-item {{ request()->is('member/profile/pay*') ? 'active' : '' }}">
+          <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+          <span class="nav-label">Payment Online</span>
         </a>
         @endif
 
@@ -922,7 +902,6 @@
             <a href="{{ route('finance.types.index') }}" class="dropdown-item {{ request()->is('finance/types*') ? 'active' : '' }}">Contribution Types</a>
             <a href="{{ route('finance.create') }}" class="dropdown-item {{ request()->is('finance/create') ? 'active' : '' }}">Record Giving</a>
             <a href="{{ route('expenses.index') }}" class="dropdown-item {{ request()->is('expenses*') ? 'active' : '' }}">Expenses</a>
-            <a href="{{ route('reconciliation.index') }}" class="dropdown-item {{ request()->is('reconciliation*') ? 'active' : '' }}">Reconciliation</a>
             <a href="{{ route('finance.reports') }}" class="dropdown-item {{ request()->is('finance/reports') ? 'active' : '' }}">Financial Reports</a>
             <a href="{{ route('finance.settings') }}" class="dropdown-item {{ request()->is('finance/settings') ? 'active' : '' }}">Finance Settings</a>
           </div>
@@ -946,6 +925,20 @@
 
         @if(!auth()->user()->member && auth()->user()->hasPermission('communications.view'))
         <div class="nav-group">
+          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('announcements*') ? 'open' : '' }}">
+            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+            <span class="nav-label">Announcements</span>
+            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div class="nav-dropdown {{ request()->is('announcements*') ? 'show' : '' }}">
+            <a href="{{ route('announcements.index') }}" class="dropdown-item {{ request()->is('announcements') ? 'active' : '' }}">All Announcements</a>
+            <a href="{{ route('announcements.create') }}" class="dropdown-item {{ request()->is('announcements/create') ? 'active' : '' }}">New Announcement</a>
+          </div>
+        </div>
+        @endif
+
+        @if(!auth()->user()->member && auth()->user()->hasPermission('communications.view'))
+        <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('communications*') ? 'open' : '' }}">
             <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
             <span class="nav-label">Communications</span>
@@ -960,20 +953,7 @@
         </div>
         @endif
 
-        @if(!auth()->user()->member && auth()->user()->hasPermission('certificates.view'))
-        <div class="nav-group">
-          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('certificates*') ? 'open' : '' }}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="nav-label">Certificates</span>
-            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="nav-dropdown {{ request()->is('certificates*') ? 'show' : '' }}">
-            <a href="{{ route('certificates.index') }}" class="dropdown-item {{ request()->is('certificates') ? 'active' : '' }}">All Certificates</a>
-            <a href="{{ route('certificates.create') }}" class="dropdown-item {{ request()->is('certificates/create') ? 'active' : '' }}">Generate New</a>
-            <a href="{{ route('certificates.verify') }}" class="dropdown-item {{ request()->is('certificates/verify') ? 'active' : '' }}">Verification</a>
-          </div>
-        </div>
-        @endif
+
 
         @if(!auth()->user()->member && auth()->user()->hasPermission('events.view'))
         <div class="nav-group">
@@ -990,66 +970,7 @@
         </div>
         @endif
 
-        @if(!auth()->user()->member && auth()->user()->hasPermission('elections.view'))
-        <div class="nav-group">
-          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('elections*') ? 'open' : '' }}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            <span class="nav-label">Elections</span>
-            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="nav-dropdown {{ request()->is('elections*') ? 'show' : '' }}">
-            <a href="{{ route('elections.index') }}" class="dropdown-item {{ request()->is('elections') ? 'active' : '' }}">All Elections</a>
-            <a href="{{ route('elections.create') }}" class="dropdown-item {{ request()->is('elections/create') ? 'active' : '' }}">New Election</a>
-            <a href="{{ route('elections.results') }}" class="dropdown-item {{ request()->is('elections/results') ? 'active' : '' }}">Voting Results</a>
-          </div>
-        </div>
-        @endif
-
         @if(!auth()->user()->member)
-        <div class="nav-group">
-          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('admin/resources*') || request()->is('admin/resource-categories*') ? 'open' : '' }}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-            <span class="nav-label">Resources Management</span>
-            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="nav-dropdown {{ request()->is('admin/resources*') || request()->is('admin/resource-categories*') ? 'show' : '' }}">
-            <a href="{{ route('admin.resources.index') }}" class="dropdown-item {{ request()->is('admin/resources*') ? 'active' : '' }}">Documents</a>
-            <a href="{{ route('admin.resource-categories.index') }}" class="dropdown-item {{ request()->is('admin/resource-categories*') ? 'active' : '' }}">Categories</a>
-          </div>
-        </div>
-        @endif
-
-        @if(!auth()->user()->member && auth()->user()->hasPermission('assets.view'))
-        <div class="nav-group">
-          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('assets*') ? 'open' : '' }}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            <span class="nav-label">Assets</span>
-            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="nav-dropdown {{ request()->is('assets*') ? 'show' : '' }}">
-            <a href="{{ route('assets.index') }}" class="dropdown-item {{ request()->is('assets') ? 'active' : '' }}">Inventory</a>
-            <a href="{{ route('assets.maintenance') }}" class="dropdown-item {{ request()->is('assets/maintenance') ? 'active' : '' }}">Maintenance</a>
-            <a href="{{ route('assets.assignments') }}" class="dropdown-item {{ request()->is('assets/assignments') ? 'active' : '' }}">Assignments</a>
-          </div>
-        </div>
-        @endif
-
-        @if(!auth()->user()->member && auth()->user()->hasPermission('shop.view'))
-        <div class="nav-group">
-          <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('shop*') ? 'open' : '' }}">
-            <svg class="nav-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <span class="nav-label">Shop (POS)</span>
-            <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div class="nav-dropdown {{ request()->is('shop*') ? 'show' : '' }}">
-            <a href="{{ route('shop.index') }}" class="dropdown-item {{ request()->is('shop') ? 'active' : '' }}">Products</a>
-            <a href="{{ route('shop.create-sale') }}" class="dropdown-item {{ request()->is('shop/create-sale') ? 'active' : '' }}">New Sale</a>
-            <a href="{{ route('shop.sales') }}" class="dropdown-item {{ request()->is('shop/sales') ? 'active' : '' }}">Sales History</a>
-          </div>
-        </div>
-        @endif
-
-      
         <div class="nav-section-label">Administrator</div>
         <div class="nav-group">
           <button onclick="toggleDropdown(this)" class="nav-item {{ request()->is('settings*') ? 'open' : '' }}">
@@ -1065,7 +986,7 @@
             <a href="{{ route('settings.index') }}" class="dropdown-item {{ request()->is('settings') ? 'active' : '' }}">General Config</a>
           </div>
         </div>
-   
+        @endif
       </div>
 
       <!-- SIDEBAR FOOTER REMOVED -->
@@ -1088,12 +1009,6 @@
             <span class="notif-dot"></span>
           </button>
 
-          <!-- THEME TOGGLE (ICON ONLY) -->
-          <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="themeIcon">
-              <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-            </svg>
-          </button>
 
           <!-- PROFILE DROPDOWN -->
           <div class="topbar-dropdown">
@@ -1192,32 +1107,6 @@
   @stack('modals')
 
   <script>
-    // Theme Toggle
-    let darkMode = false;
-    function toggleTheme() {
-      darkMode = !darkMode;
-      const theme = darkMode ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      
-      const icon = document.getElementById('themeIcon');
-      icon.innerHTML = darkMode
-        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
-        : '<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>';
-      
-      // Dispatch event for charts to update
-      window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: theme } }));
-    }
-
-    // Initialize theme from localStorage
-    document.addEventListener('DOMContentLoaded', () => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            darkMode = false; // will be toggled
-            toggleTheme();
-        }
-    });
-
     // Topbar Dropdown Toggle
     function toggleTopbarDropdown(id) {
       const dropdown = document.getElementById(id);

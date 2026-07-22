@@ -244,6 +244,37 @@
 
 @push('scripts')
 <script>
+// Check for session messages and show SweetAlert2
+document.addEventListener('DOMContentLoaded', function() {
+  @if(session('success'))
+    Swal.fire({
+      title: 'Success!',
+      text: '{{ session('success') }}',
+      icon: 'success',
+      timer: 3000,
+      showConfirmButton: false
+    });
+  @endif
+  
+  @if(session('error'))
+    Swal.fire({
+      title: 'Error!',
+      text: '{{ session('error') }}',
+      icon: 'error',
+      confirmButtonColor: '#059669'
+    });
+  @endif
+
+  @if(session('warning'))
+    Swal.fire({
+      title: 'Warning',
+      text: '{{ session('warning') }}',
+      icon: 'warning',
+      confirmButtonColor: '#059669'
+    });
+  @endif
+});
+
 function deleteMember(memberId) {
   if (confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
     const form = document.createElement('form');

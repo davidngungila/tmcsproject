@@ -20,25 +20,25 @@
 <div class="animate-in space-y-6">
   <!-- TOP STATS -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700 text-white">
-      <div class="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Total Events</div>
+    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700">
+      <div class="text-[10px] font-black uppercase tracking-widest mb-1">Total Events</div>
       <div class="text-2xl font-black">{{ $totalEvents }}</div>
-      <div class="mt-2 text-[10px] font-bold opacity-70">Church lifecycle</div>
+      <div class="mt-2 text-[10px] font-bold">Church lifecycle</div>
     </div>
-    <div class="card p-6 border-none shadow-sm">
-      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Upcoming</div>
-      <div class="text-2xl font-black text-blue-600">{{ $upcomingEvents }}</div>
-      <div class="mt-2 text-[10px] font-bold text-muted">Planned sessions</div>
+    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700">
+      <div class="text-[10px] font-black uppercase tracking-widest mb-1">Upcoming</div>
+      <div class="text-2xl font-black">{{ $upcomingEvents }}</div>
+      <div class="mt-2 text-[10px] font-bold">Planned sessions</div>
     </div>
-    <div class="card p-6 border-none shadow-sm">
-      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Total Attendees</div>
-      <div class="text-2xl font-black text-amber-600">{{ $totalAttendees }}</div>
-      <div class="mt-2 text-[10px] font-bold text-muted">Overall engagement</div>
+    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700">
+      <div class="text-[10px] font-black uppercase tracking-widest mb-1">Total Attendees</div>
+      <div class="text-2xl font-black">{{ $totalAttendees }}</div>
+      <div class="mt-2 text-[10px] font-bold">Overall engagement</div>
     </div>
-    <div class="card p-6 border-none shadow-sm">
-      <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Past Events</div>
-      <div class="text-2xl font-black text-gray-800">{{ $pastEvents }}</div>
-      <div class="mt-2 text-[10px] font-bold text-muted">History archive</div>
+    <div class="card p-6 border-none shadow-sm bg-gradient-to-br from-green-600 to-green-700">
+      <div class="text-[10px] font-black uppercase tracking-widest mb-1">Past Events</div>
+      <div class="text-2xl font-black">{{ $pastEvents }}</div>
+      <div class="mt-2 text-[10px] font-bold">History archive</div>
     </div>
   </div>
 
@@ -134,27 +134,6 @@
     </div>
   </div>
 </div>
-          @empty
-          <tr>
-            <td colspan="6" class="px-6 py-12 text-center text-muted">
-              <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin:0 auto 12px;display:block;">
-                <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-              </svg>
-              <p>No events found</p>
-              <a href="{{ route('events.create') }}" class="btn btn-primary mt-4 btn-sm">Create First Event</a>
-            </td>
-          </tr>
-          @endforelse
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- PAGINATION -->
-  <div class="mb-8">
-    {{ $events->links() }}
-  </div>
-</div>
 
 <!-- VIEW EVENT MODAL -->
 <div class="modal-overlay" id="viewEventModal">
@@ -201,8 +180,6 @@
     </div>
   </div>
 </div>
-@endsection
-
 @endsection
 
 @push('scripts')
@@ -254,12 +231,6 @@ function switchView(view) {
         calendarToggle.classList.remove('bg-white', 'shadow-sm', 'text-green-600');
         calendarToggle.classList.add('text-gray-400');
     }
-}
-</script>
-@endpush
-        displayRecentCheckins(data.checkins);
-      }
-    });
 }
 
 function displayRecentCheckins(checkins) {

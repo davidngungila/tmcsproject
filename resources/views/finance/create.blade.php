@@ -54,7 +54,7 @@
           </div>
           <div class="form-group">
             <label class="form-label">Payment Method *</label>
-            <select name="payment_method" class="form-control" required>
+            <select name="payment_method" class="form-control" required id="paymentMethod">
               <option value="">Select Method</option>
               <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Cash</option>
               <option value="bank_transfer" {{ old('payment_method') == 'bank_transfer' ? 'selected' : '' }}>Bank Transfer</option>
@@ -133,9 +133,9 @@
     <!-- FORM ACTIONS -->
     <div class="flex gap-3">
       <a href="{{ route('finance.index') }}" class="btn btn-secondary">Cancel</a>
-      <button type="submit" class="btn btn-primary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>
-        Record Contribution
+      <button type="submit" class="btn btn-primary" id="submitBtn">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="submitIcon"><path d="M5 13l4 4L19 7"/></svg>
+        <span id="submitText">Record Contribution</span>
       </button>
     </div>
   </form>
@@ -144,6 +144,64 @@
 
 @push('scripts')
 <script>
+// Form submission with loading indicator
+document.querySelector('form').addEventListener('submit', function(e) {
+  const submitBtn = document.getElementById('submitBtn');
+  const submitIcon = document.getElementById('submitIcon');
+  const submitText = document.getElementById('submitText');
+  const paymentMethod = document.getElementById('paymentMethod').value;
+  
+  // Disable button and show loading state
+  submitBtn.disabled = true;
+  submitIcon.innerHTML = '<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>';
+  submitIcon.classList.add('animate-spin');
+  submitText.textContent = 'Processing...';
+  
+  // Show SweetAlert for mobile money payments
+  if (paymentMethod === 'mobile_money') {
+    Swal.fire({
+      title: 'Initiating Payment',
+      text: 'Please wait while we process your payment request via mobile money...',
+      icon: 'info',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+  }
+});
+
+// Check for session messages and show SweetAlert2
+document.addEventListener('DOMContentLoaded', function() {
+  @if(session('success'))
+    Swal.fire({
+      title: 'Success!',
+      text: '{{ session('success') }}',
+      icon: 'success',
+      timer: 3000,
+      showConfirmButton: false
+    });
+  @endif
+  
+  @if(session('error'))
+    Swal.fire({
+      title: 'Error!',
+      text: '{{ session('error') }}',
+      icon: 'error',
+      confirmButtonColor: '#059669'
+    });
+  @endif
+  
+  @if(session('warning'))
+    Swal.fire({
+      title: 'Warning',
+      text: '{{ session('warning') }}',
+      icon: 'warning',
+      confirmButtonColor: '#059669'
+    });
+  @endif
+});
+
 // Receipt preview
 function generateReceiptNumber() {
   const year = new Date().getFullYear();

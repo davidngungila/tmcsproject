@@ -86,7 +86,8 @@
               </div>
               <div class="form-group">
                 <label class="form-label text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Date of Birth *</label>
-                <input type="date" name="date_of_birth" class="form-control focus:ring-2 focus:ring-primary/20" value="{{ old('date_of_birth') }}" required>
+                <input type="date" name="date_of_birth" id="date_of_birth" class="form-control focus:ring-2 focus:ring-primary/20" value="{{ old('date_of_birth') }}" required onchange="calculateAge()">
+                <p id="age_display" class="text-xs text-muted mt-1"></p>
                 @error('date_of_birth') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
               </div>
             </div>
@@ -111,6 +112,48 @@
                   <input type="tel" name="phone" class="form-control pl-9 focus:ring-2 focus:ring-primary/20" value="{{ old('phone') }}" placeholder="e.g. 0712345678">
                 </div>
                 @error('phone') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FAMILY INFORMATION -->
+        <div class="card shadow-sm border-muted/20">
+          <div class="card-header border-b border-muted/10 bg-muted/5">
+            <div class="flex items-center gap-2">
+              <svg width="18" height="18" class="text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <h3 class="font-bold text-base">Family Information</h3>
+            </div>
+          </div>
+          <div class="card-body p-6 space-y-4">
+            <div class="form-group">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="has_family" class="w-4 h-4 rounded border-muted/30 text-primary focus:ring-primary/20" onchange="toggleFamilyFields()">
+                <span class="text-sm font-medium">Register as part of a family</span>
+              </label>
+            </div>
+
+            <div id="family_fields" class="space-y-4" style="display: none;">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="form-group">
+                  <label class="form-label text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Family Head</label>
+                  <select name="parent_id" class="form-control focus:ring-2 focus:ring-primary/20">
+                    <option value="">Select Family Head</option>
+                    @foreach($familyHeads as $head)
+                      <option value="{{ $head->id }}" {{ old('parent_id') == $head->id ? 'selected' : '' }}>{{ $head->full_name }} ({{ $head->phone ?? 'No phone' }})</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Relationship</label>
+                  <select name="relationship" class="form-control focus:ring-2 focus:ring-primary/20">
+                    <option value="">Select Relationship</option>
+                    <option value="Child" {{ old('relationship') == 'Child' ? 'selected' : '' }}>Child</option>
+                    <option value="Spouse" {{ old('relationship') == 'Spouse' ? 'selected' : '' }}>Spouse</option>
+                    <option value="Parent" {{ old('relationship') == 'Parent' ? 'selected' : '' }}>Parent</option>
+                    <option value="Sibling" {{ old('relationship') == 'Sibling' ? 'selected' : '' }}>Sibling</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -260,6 +303,21 @@
 
 @push('scripts')
 <script>
+// Calculate age from date of birth
+function calculateAge() {
+  const dob = document.getElementById('date_of_birth').value;
+  if (dob) {
+    const today = new Date();
+    const birthDate = new Date(dob);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    document.getElementById('age_display').textContent = `Age: ${age} years old`;
+  }
+}
+
 // Toggle Registration Number based on category
 function toggleRegNumber() {
   const categorySelect = document.getElementById('category_id');
@@ -270,8 +328,8 @@ function toggleRegNumber() {
   const selectedOption = categorySelect.options[categorySelect.selectedIndex];
   const categoryName = selectedOption ? selectedOption.getAttribute('data-name') : '';
   
-  // Show Reg Number and Program for Undergraduate and Postgraduate
-  const isStudent = ['Undergraduate', 'Postgraduate'].includes(categoryName);
+  // Show Reg Number and Program for Student
+  const isStudent = ['Student'].includes(categoryName);
   
   if (isStudent) {
     regNumberGroup.style.display = 'block';
@@ -284,9 +342,22 @@ function toggleRegNumber() {
   }
 }
 
+// Toggle Family Fields
+function toggleFamilyFields() {
+  const hasFamily = document.getElementById('has_family').checked;
+  const familyFields = document.getElementById('family_fields');
+  familyFields.style.display = hasFamily ? 'block' : 'none';
+}
+
 // Call on load to handle validation errors/old values
 document.addEventListener('DOMContentLoaded', function() {
+  calculateAge();
   toggleRegNumber();
+  toggleFamilyFields();
+  if ({{ old('parent_id') ? 'true' : 'false' }}) {
+    document.getElementById('has_family').checked = true;
+    toggleFamilyFields();
+  }
 });
 
 // Photo preview

@@ -228,10 +228,7 @@ function sendEmail(id) {
   alert('Send email feature for member ' + id);
 }
 
-function generateCertificate(id) {
-  // Logic for generating certificate
-  window.location.href = "{{ route('certificates.create') }}?member_id=" + id;
-}
+
 
 function viewHistory(id) {
   // Logic for viewing history

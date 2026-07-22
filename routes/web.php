@@ -18,7 +18,7 @@ use App\Http\Controllers\CommunicationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\ShopController;
-use App\Http\Controllers\CertificateController;
+
 use App\Http\Controllers\ElectionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ApiConfigController;
@@ -28,6 +28,8 @@ use App\Http\Controllers\ReconciliationController;
 use App\Http\Controllers\FinancialReportController;
 use App\Http\Controllers\FinancialStatementController;
 use App\Http\Controllers\Member\ProfileController as MemberProfileController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\PaymentCallbackController;
 
 use App\Http\Controllers\ResourceController;
 use App\Http\Controllers\ResourceManagementController;
@@ -66,6 +68,9 @@ Route::get('/', function () {
 
 // Webhooks
 Route::post('/webhooks/snipe', [WebhookController::class, 'handleSnipe']);
+
+// Payment Callbacks (Public endpoints for payment providers)
+Route::post('/api/payments/feedtan/callback', [PaymentCallbackController::class, 'feedTanCallback']);
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
@@ -168,9 +173,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/members', [GroupOperationController::class, 'members'])->name('members');
         Route::post('/members/add', [GroupOperationController::class, 'addMember'])->name('members.add');
         Route::delete('/members/{member}/remove', [GroupOperationController::class, 'removeMember'])->name('members.remove');
-        Route::get('/contributions', [GroupOperationController::class, 'contributions'])->name('contributions');
+        Route::get('/meeting', [GroupOperationController::class, 'meeting'])->name('meeting');
         Route::post('/contributions', [GroupOperationController::class, 'storeContribution'])->name('contributions.store');
-        Route::get('/attendance', [GroupOperationController::class, 'attendance'])->name('attendance');
         Route::post('/attendance', [GroupOperationController::class, 'storeAttendance'])->name('attendance.store');
         Route::get('/meeting/{meeting}', [GroupOperationController::class, 'showMeeting'])->name('meeting.show');
         Route::get('/planning', [GroupOperationController::class, 'planning'])->name('planning');
@@ -183,6 +187,8 @@ Route::middleware('auth')->group(function () {
 
     // Communications
     Route::get('/communications/announcements', [CommunicationController::class, 'announcements'])->name('communications.announcements');
+    Route::get('/communications/send-sms', [CommunicationController::class, 'sendSms'])->name('communications.send-sms');
+    Route::get('/communications/send-email', [CommunicationController::class, 'sendEmail'])->name('communications.send-email');
     Route::resource('communications', CommunicationController::class);
     Route::post('/message-templates/test', [MessageTemplateController::class, 'test'])->name('message-templates.test');
     Route::resource('message-templates', MessageTemplateController::class);
@@ -193,6 +199,9 @@ Route::middleware('auth')->group(function () {
     // Events
     Route::get('/events/attendance', [EventController::class, 'attendance'])->name('events.attendance');
     Route::resource('events', EventController::class);
+
+    // Announcements
+    Route::resource('announcements', AnnouncementController::class);
 
     // Assets
     Route::get('/assets/maintenance', [AssetController::class, 'maintenance'])->name('assets.maintenance');
@@ -205,9 +214,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/shop/store-sale', [ShopController::class, 'storeSale'])->name('shop.store-sale');
     Route::resource('shop', ShopController::class);
 
-    // Certificates
-    Route::get('/certificates/verify', [CertificateController::class, 'verify'])->name('certificates.verify');
-    Route::resource('certificates', CertificateController::class);
+
 
     // Member Self-Service Routes
     Route::prefix('member')->name('member.')->group(function () {
@@ -217,6 +224,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/pay', [MemberProfileController::class, 'pay'])->name('profile.pay');
         Route::post('/pay', [MemberProfileController::class, 'processPayment'])->name('profile.process-payment');
         Route::get('/payment-status/{contribution}', [MemberProfileController::class, 'checkStatus'])->name('profile.payment-status');
+        Route::post('/payment-retry/{contribution}', [MemberProfileController::class, 'retryPayment'])->name('payment-retry');
         
         // New specific member portal views
         Route::get('/communities', [MemberProfileController::class, 'communities'])->name('communities');

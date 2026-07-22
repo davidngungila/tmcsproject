@@ -45,7 +45,10 @@ class MemberController extends Controller
         $groups = Group::all();
         $categories = MemberCategory::where('is_active', true)->get();
         $programs = Program::where('is_active', true)->get();
-        return view('members.create', compact('groups', 'categories', 'programs'));
+        $familyHeads = Member::whereNull('parent_id')->whereHas('category', function($q) {
+            $q->whereIn('name', ['Student', 'Staff', 'Non-Staff']);
+        })->get();
+        return view('members.create', compact('groups', 'categories', 'programs', 'familyHeads'));
     }
 
     public function store(Request $request)
@@ -66,6 +69,8 @@ class MemberController extends Controller
             'region' => 'nullable|string|max:255',
             'registration_date' => 'required|date',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'parent_id' => 'nullable|exists:members,id',
+            'relationship' => 'nullable|string',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -73,8 +78,16 @@ class MemberController extends Controller
             $validated['photo'] = $path;
         }
 
-        // Map category to member_type
+        // Calculate age
+        $dob = \Carbon\Carbon::parse($validated['date_of_birth']);
+        $age = $dob->age;
         $category = MemberCategory::find($request->category_id);
+        
+        // If child and >=18, change to appropriate category (Student or Non-Staff)
+        if ($category->name === 'Child' && $age >= 18) {
+            // Default to Non-Staff if not a student, but keep original selection if user changed
+        }
+
         $validated['member_type'] = $category->name;
 
         if (empty($validated['registration_number'])) {
@@ -90,8 +103,18 @@ class MemberController extends Controller
         // Automatically assign to communities based on criteria
         $this->groupService->autoAssignMemberToCommunities($member);
 
-        // Auto-create User account for Member if email exists
+        // Auto-create User account only for members >= 18 or not a child
+        $createUser = false;
         if ($member->email) {
+            if ($age >= 18) {
+                $createUser = true;
+            } elseif ($category->name !== 'Child') {
+                $createUser = true;
+            }
+        }
+
+        $password = null;
+        if ($createUser) {
             // Get last name and capitalize it for the password
             $nameParts = explode(' ', trim($member->full_name));
             $lastName = end($nameParts);
@@ -118,10 +141,12 @@ class MemberController extends Controller
             $member->groups()->attach($request->groups, ['join_date' => now(), 'is_active' => true]);
         }
 
-        // Send Welcome Notifications
-        $this->sendWelcomeNotifications($member, $password ?? null);
+        // Send Welcome Notifications only if user was created
+        if ($createUser) {
+            $this->sendWelcomeNotifications($member, $password);
+        }
 
-        return redirect()->route('members.index')->with('success', 'Member registered successfully. User account created (Username: ' . $member->email . ')');
+        return redirect()->route('members.index')->with('success', 'Member registered successfully' . ($createUser ? '. User account created (Username: ' . $member->email . ')' : ''));
     }
 
     /**
@@ -132,7 +157,11 @@ class MemberController extends Controller
         // 1. Send SMS (Queued)
         if ($member->phone) {
             Log::info("Dispatching Welcome SMS for member: {$member->full_name} ({$member->phone})");
-            $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
+            if ($password && $password !== '******') {
+                $smsMessage = "Welcome to TMCS, {$member->full_name}! Your account has been created. Email: {$member->email}, Password: {$password}. ID: {$member->registration_number}. God bless you!";
+            } else {
+                $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
+            }
             SendSmsJob::dispatch($member->phone, $smsMessage);
         }
 
@@ -230,7 +259,10 @@ class MemberController extends Controller
         // 3. Activate Group Memberships
         $member->groups()->updateExistingPivot($member->groups->pluck('id'), ['is_active' => true]);
 
-        // 4. Send Notifications (Queued)
+        // 4. Auto-assign to communities based on criteria
+        $this->groupService->autoAssignMemberToCommunities($member);
+
+        // 5. Send Notifications (Queued)
         if ($member->phone) {
             $smsMessage = "Congratulations {$member->full_name}! Your TMCS account has been approved. Your ID is {$member->registration_number}. You can now login to your portal.";
             SendSmsJob::dispatch($member->phone, $smsMessage);

@@ -48,6 +48,17 @@ Route::middleware('auth:sanctum')->group(function () {
     
     // Announcements & Notifications
     Route::get('/announcements', [MemberApiController::class, 'announcements']);
+
+    // Resources Module
+    Route::prefix('resources')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\ResourceApiController::class, 'index']);
+        Route::get('/categories', [\App\Http\Controllers\Api\ResourceApiController::class, 'categories']);
+        Route::get('/{resource:slug}', [\App\Http\Controllers\Api\ResourceApiController::class, 'show']);
+        Route::post('/{resource:slug}/bookmark', [\App\Http\Controllers\Api\ResourceApiController::class, 'toggleBookmark']);
+        Route::post('/{resource:slug}/progress', [\App\Http\Controllers\Api\ResourceApiController::class, 'updateProgress']);
+        Route::post('/{resource:slug}/notes', [\App\Http\Controllers\Api\ResourceApiController::class, 'updateNotes']);
+        Route::get('/{resource:slug}/download', [\App\Http\Controllers\Api\ResourceApiController::class, 'download']);
+    });
     
     // Security
     Route::post('/change-password', [MemberApiController::class, 'changePassword']);

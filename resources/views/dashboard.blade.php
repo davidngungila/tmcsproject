@@ -12,33 +12,6 @@
       background: linear-gradient(135deg, var(--green-600), var(--green-500));
       color: white !important;
     }
-    [data-theme="dark"] .stat-card {
-      background: var(--bg-card);
-      border-color: var(--border);
-    }
-    [data-theme="dark"] .stat-value {
-      color: var(--text-primary);
-    }
-    [data-theme="dark"] .stat-label {
-      color: var(--text-secondary);
-    }
-    [data-theme="dark"] .stat-subtitle {
-      color: var(--text-muted);
-    }
-    [data-theme="dark"] .card {
-      background: var(--bg-card);
-      border-color: var(--border);
-    }
-    [data-theme="dark"] .card-title {
-      color: var(--text-primary);
-    }
-    [data-theme="dark"] tr:hover {
-      background: var(--hover-row);
-    }
-    [data-theme="dark"] td {
-      color: var(--text-primary);
-      border-color: var(--border-light);
-    }
 
     /* Responsive Adjustments */
     @media (max-width: 768px) {
@@ -61,74 +34,6 @@
   </style>
 
   <!-- WELCOME HEADER -->
-  <div class="welcome-header mb-6">
-    <div class="welcome-content">
-      <div class="welcome-text">
-        <h1 class="welcome-title">Welcome back, {{ auth()->user()->name }}!</h1>
-        <p class="welcome-subtitle">Here's what's happening with your church today</p>
-      </div>
-      <div class="welcome-actions">
-        <div class="date-time" id="currentDateTime">{{ now()->format('l, F j, Y') }}</div>
-        <div class="weather-widget">
-          <div class="weather-icon">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-          </div>
-          <div class="weather-info">
-            <div class="temperature">28°C</div>
-            <div class="condition">Partly Cloudy</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- QUICK ACCESS & REPORTS -->
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <a href="{{ route('finance.reports') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-green-50 to-white">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex-center group-hover:bg-green-600 group-hover:text-white transition-all">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        </div>
-        <div>
-          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Financial</div>
-          <div class="text-sm font-black text-gray-800">Reports</div>
-        </div>
-      </div>
-    </a>
-    <a href="{{ route('activity-logs.index') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-blue-50 to-white">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-        </div>
-        <div>
-          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Admin</div>
-          <div class="text-sm font-black text-gray-800">Reports</div>
-        </div>
-      </div>
-    </a>
-    <a href="{{ route('communications.index') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-purple-50 to-white">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex-center group-hover:bg-purple-600 group-hover:text-white transition-all">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
-        </div>
-        <div>
-          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Comm</div>
-          <div class="text-sm font-black text-gray-800">Reports</div>
-        </div>
-      </div>
-    </a>
-    <a href="{{ route('groups.communities') }}" class="card p-4 border-none shadow-sm hover:shadow-md transition-all group bg-gradient-to-br from-amber-50 to-white">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex-center group-hover:bg-amber-600 group-hover:text-white transition-all">
-          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-        </div>
-        <div>
-          <div class="text-[10px] font-black uppercase text-gray-400 tracking-widest">Meeting</div>
-          <div class="text-sm font-black text-gray-800">Reports</div>
-        </div>
-      </div>
-    </a>
-  </div>
 
   <!-- KEY METRICS OVERVIEW -->
   <div class="metrics-overview mb-6">
@@ -427,7 +332,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const ctx = document.getElementById('financeTrendChart');
     if (ctx) {
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -462,10 +366,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         beginAtZero: true,
                         grid: { 
                             borderDash: [5, 5], 
-                            color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)' 
+                            color: 'rgba(0,0,0,0.05)' 
                         },
                         ticks: {
-                            color: isDark ? '#7ecfa0' : '#3d6b54',
+                            color: '#3d6b54',
                             callback: function(value) {
                                 if (value >= 1000000) return (value/1000000) + 'M';
                                 if (value >= 1000) return (value/1000) + 'K';
@@ -476,21 +380,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     x: { 
                         grid: { display: false },
                         ticks: {
-                            color: isDark ? '#7ecfa0' : '#3d6b54'
+                            color: '#3d6b54'
                         }
                     }
                 }
             }
         });
 
-        // Listen for theme changes
-        window.addEventListener('themeChanged', (e) => {
-            const dark = e.detail.theme === 'dark';
-            chart.options.scales.y.grid.color = dark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0,0,0,0.05)';
-            chart.options.scales.y.ticks.color = dark ? '#7ecfa0' : '#3d6b54';
-            chart.options.scales.x.ticks.color = dark ? '#7ecfa0' : '#3d6b54';
-            chart.update();
-        });
     }
 });
 </script>

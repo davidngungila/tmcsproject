@@ -6,24 +6,16 @@
 
 @section('content')
 <div class="animate-in space-y-6">
-    <!-- Header -->
-    <div class="card overflow-hidden">
-        <div class="p-8 text-center border-b border-gray-50 bg-gray-50/30">
-            <div class="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-            </div>
-            <h2 class="text-2xl font-black text-gray-900 tracking-tight">Financial Performance Reports</h2>
-            <p class="text-[10px] text-muted font-black mt-1 uppercase tracking-widest">ST. JOSEPH THE WORKER CHAPLAINCY</p>
-            
-            <div class="mt-6 flex items-center justify-center gap-3">
-                <form action="{{ route('finance.reports') }}" method="GET" class="flex items-center gap-2">
-                    <select name="year" class="form-control text-xs py-1.5 min-w-[150px]" onchange="this.form.submit()">
-                        @for($i = date('Y'); $i >= 2023; $i--)
-                            <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>Financial Year {{ $i }}</option>
-                        @endfor
-                    </select>
-                </form>
-            </div>
+    <!-- Year Selector -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <form action="{{ route('finance.reports') }}" method="GET" class="flex items-center gap-2">
+                <select name="year" class="form-control text-xs py-1.5 min-w-[150px]" onchange="this.form.submit()">
+                    @for($i = date('Y'); $i >= 2023; $i--)
+                        <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>Financial Year {{ $i }}</option>
+                    @endfor
+                </select>
+            </form>
         </div>
     </div>
 

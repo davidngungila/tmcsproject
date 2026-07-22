@@ -39,8 +39,7 @@
                 </button>
                 <div class="dropdown-menu" id="commOpsMenu" style="right: 0; left: auto;">
                     <a href="{{ route('groups.operations.members', $group->id) }}" class="dropdown-menu-item">Manage Members</a>
-                    <a href="{{ route('groups.operations.contributions', $group->id) }}" class="dropdown-menu-item">Record Giving</a>
-                    <a href="{{ route('groups.operations.attendance', $group->id) }}" class="dropdown-menu-item">Mark Attendance</a>
+                    <a href="{{ route('groups.operations.meeting', $group->id) }}" class="dropdown-menu-item">Record Meeting</a>
                     <a href="{{ route('groups.operations.planning', $group->id) }}" class="dropdown-menu-item">Strategic Planning</a>
                     <a href="{{ route('groups.operations.messages', $group->id) }}" class="dropdown-menu-item">Send Broadcast</a>
                 </div>

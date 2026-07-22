@@ -132,20 +132,59 @@
 @endsection
 
 @push('scripts')
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+
 <script>
+let quill;
 const contentArea = document.querySelector('textarea[name="content"]');
 const charCount = document.getElementById('charCount');
 const smsSegments = document.getElementById('smsSegments');
 const templateType = document.getElementById('templateType');
 const subjectGroup = document.getElementById('subjectGroup');
 
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize Quill
+  const quillContainer = document.createElement('div');
+  quillContainer.id = 'quill-editor';
+  contentArea.style.display = 'none';
+  contentArea.parentNode.insertBefore(quillContainer, contentArea);
+  
+  quill = new Quill('#quill-editor', {
+    theme: 'snow',
+    placeholder: 'Type the reusable content here...',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'image'],
+        ['clean']
+      ]
+    }
+  });
+  
+  // Set initial content
+  if (contentArea.value) {
+    quill.root.innerHTML = contentArea.value;
+  }
+  
+  // Sync Quill content with hidden textarea
+  quill.on('text-change', function() {
+    const html = quill.root.innerHTML;
+    contentArea.value = html === '<p><br></p>' ? '' : html;
+    updateCounts();
+  });
+  
+  updateCounts();
+});
+
 function updateCounts() {
-  const len = contentArea.value.length;
+  const len = quill ? quill.getText().length : contentArea.value.length;
   charCount.textContent = len;
   smsSegments.textContent = Math.ceil(len / 160) || 0;
 }
-
-contentArea.addEventListener('input', updateCounts);
 
 templateType.addEventListener('change', function() {
   if (this.value === 'Email') {
@@ -156,13 +195,12 @@ templateType.addEventListener('change', function() {
 });
 
 function insertPlaceholder(placeholder) {
-  const start = contentArea.selectionStart;
-  const end = contentArea.selectionEnd;
-  const text = contentArea.value;
-  contentArea.value = text.substring(0, start) + placeholder + text.substring(end);
-  contentArea.focus();
-  contentArea.setSelectionRange(start + placeholder.length, start + placeholder.length);
-  updateCounts();
+  const range = quill.getSelection();
+  if (range) {
+    quill.insertText(range.index, placeholder);
+    quill.setSelection(range.index + placeholder.length);
+    updateCounts();
+  }
 }
 
 function runQuickTest() {
@@ -177,8 +215,5 @@ function runQuickTest() {
   
   document.getElementById('testForm').submit();
 }
-
-// Initial count
-updateCounts();
 </script>
 @endpush

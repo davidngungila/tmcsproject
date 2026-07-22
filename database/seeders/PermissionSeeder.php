@@ -46,11 +46,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'communications.schedule', 'display_name' => 'Schedule Communications', 'module' => 'communications'],
             ['name' => 'communications.broadcast', 'display_name' => 'Broadcast to All', 'module' => 'communications'],
             
-            // Certificate management permissions
-            ['name' => 'certificates.view', 'display_name' => 'View Certificates', 'module' => 'certificates'],
-            ['name' => 'certificates.create', 'display_name' => 'Generate Certificates', 'module' => 'certificates'],
-            ['name' => 'certificates.verify', 'display_name' => 'Verify Certificates', 'module' => 'certificates'],
-            ['name' => 'certificates.revoke', 'display_name' => 'Revoke Certificates', 'module' => 'certificates'],
+
             
             // Event management permissions
             ['name' => 'events.view', 'display_name' => 'View Events', 'module' => 'events'],

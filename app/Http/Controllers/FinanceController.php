@@ -6,7 +6,7 @@ use App\Models\Contribution;
 use App\Models\Member;
 use App\Models\Account;
 use App\Models\LedgerEntry;
-use App\Services\SnippePaymentService;
+use App\Services\FeedTanEcommerceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,13 +24,13 @@ use App\Models\SystemSetting;
 
 class FinanceController extends Controller
 {
-    protected $snipeService;
     protected $messagingService;
+    protected $feedTanService;
 
-    public function __construct(SnippePaymentService $snipeService, MessagingService $messagingService)
+    public function __construct(MessagingService $messagingService, FeedTanEcommerceService $feedTanService)
     {
-        $this->snipeService = $snipeService;
         $this->messagingService = $messagingService;
+        $this->feedTanService = $feedTanService;
     }
 
     public function index(Request $request)
@@ -163,7 +163,7 @@ class FinanceController extends Controller
             'contribution_type' => 'required|string',
             'amount' => 'required|numeric|min:0',
             'contribution_date' => 'required|date',
-            'payment_method' => 'required|string', // cash, mobile_money, card, dynamic-qr
+            'payment_method' => 'required|string', // cash, mobile_money, card, dynamic-qr, feedtan
             'notes' => 'nullable|string',
         ]);
 
@@ -186,35 +186,49 @@ class FinanceController extends Controller
 
         DB::beginTransaction();
         try {
-            // Handle digital payments via Snipe
-            if (in_array($validated['payment_method'], ['mobile_money', 'card', 'dynamic-qr'])) {
+            // Handle mobile money payments using FeedTan
+            if ($validated['payment_method'] === 'mobile_money') {
                 $contribution = Contribution::create($contributionData);
                 
-                if ($validated['payment_method'] === 'mobile_money') {
-                    $response = $this->snipeService->createMobileMoneyPayment($contribution);
+                // Initiate FeedTan payment - use alphanumeric only order reference
+                $orderReference = 'TMCS' . $contribution->id . str_replace(['-', ':', ' '], '', now()->format('YmdHis'));
+                
+                $feedTanResponse = $this->feedTanService->initiatePayment([
+                    'amount' => $validated['amount'],
+                    'phone_number' => $member->phone,
+                    'payer_name' => $member->full_name,
+                    'description' => "Contribution: {$validated['contribution_type']} - {$receiptNumber}",
+                    'order_reference' => $orderReference,
+                    'email' => $member->email,
+                    'metadata' => [
+                        'contribution_id' => $contribution->id,
+                        'receipt_number' => $receiptNumber,
+                        'contribution_type' => $validated['contribution_type'],
+                    ]
+                ]);
+
+                if ($feedTanResponse['success']) {
+                    // Update contribution with FeedTan references
+                    $contribution->update([
+                        'feedtan_order_reference' => $feedTanResponse['data']['order_reference'],
+                        'feedtan_transaction_id' => $feedTanResponse['data']['transaction_id'],
+                        'feedtan_status' => $feedTanResponse['data']['status'],
+                        'payment_phone' => $member->phone,
+                    ]);
+
+                    DB::commit();
                     
-                    if (isset($response['error'])) {
-                        DB::rollBack();
-                        return back()->with('error', 'Payment failed: ' . $response['error']);
-                    }
-
-                    DB::commit();
-                    $this->sendContributionNotifications($contribution);
-                    return redirect()->route('finance.index')->with('success', 'Payment initiated! Please check the member\'s phone for the USSD prompt.');
-                }
-
-                $checkoutResponse = $this->snipeService->createCheckout($contribution);
-
-                if ($checkoutResponse && isset($checkoutResponse['checkout_url'])) {
-                    DB::commit();
-                    $this->sendContributionNotifications($contribution);
-                    return redirect($checkoutResponse['checkout_url']);
+                    // Dispatch job to poll payment status
+                    \App\Jobs\CheckFeedTanPaymentStatus::dispatch($contribution->id)->delay(now()->addSeconds(30));
+                    
+                    return redirect()->route('finance.create')->with('success', 'Payment initiated! Check your phone for USSD prompt to confirm payment.');
                 }
 
                 DB::rollBack();
-                return back()->with('error', 'Failed to initiate payment session. Please check your configuration.');
+                return back()->with('error', 'Failed to initiate payment: ' . ($feedTanResponse['error'] ?? 'Unknown error'));
             }
 
+            // Handle cash payments
             $contribution = Contribution::create($contributionData);
 
             // If verified (Cash), create accounting entries
@@ -224,7 +238,7 @@ class FinanceController extends Controller
 
             DB::commit();
             $this->sendContributionNotifications($contribution);
-            return redirect()->route('finance.index')->with('success', 'Contribution recorded successfully');
+            return redirect()->route('finance.create')->with('success', 'Contribution recorded successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Contribution Store Error: ' . $e->getMessage());
@@ -254,7 +268,8 @@ class FinanceController extends Controller
             $this->createAccountingEntries($contribution);
 
             DB::commit();
-            return back()->with('success', 'Contribution verified successfully and accounting entries recorded.');
+            $this->sendContributionNotifications($contribution);
+            return back()->with('success', 'Contribution verified successfully and notifications sent!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Contribution Verification Error: ' . $e->getMessage());

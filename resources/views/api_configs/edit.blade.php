@@ -6,7 +6,7 @@
 
 @section('content')
 <div class="animate-in">
-  <div class="card max-w-2xl mx-auto">
+  <div class="card">
     <div class="card-header">
       <div class="card-title">Edit: {{ $apiConfig->name }}</div>
       <div class="card-subtitle">Update your messaging or email gateway settings</div>

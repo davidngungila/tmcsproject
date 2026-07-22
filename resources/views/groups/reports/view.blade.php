@@ -44,50 +44,143 @@
 
     <!-- KPI CARDS -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
-            <div class="relative">
-                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Revenue</div>
-                <div class="text-xl font-black text-gray-800 mt-2">TZS {{ number_format($data['totalCollected'], 0) }}</div>
-                <div class="text-[9px] font-bold text-green-600 mt-3 flex items-center gap-1">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
-                    +12.5% vs last month
+        @if($data['type'] == 'financial')
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Revenue</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">TZS {{ number_format($data['totalCollected'], 0) }}</div>
+                    <div class="text-[9px] font-bold text-green-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Total Collected
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
-            <div class="relative">
-                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Membership</div>
-                <div class="text-xl font-black text-gray-800 mt-2">{{ $data['totalMembers'] }} Members</div>
-                <div class="text-[9px] font-bold text-blue-600 mt-3 flex items-center gap-1">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
-                    +3 new this month
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Avg Meeting Giving</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">TZS {{ number_format($data['avgMeetingGiving'], 0) }}</div>
+                    <div class="text-[9px] font-bold text-blue-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Per Meeting
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
-            <div class="relative">
-                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Avg. Attendance</div>
-                <div class="text-xl font-black text-gray-800 mt-2">84.2%</div>
-                <div class="text-[9px] font-bold text-amber-600 mt-3 flex items-center gap-1">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
-                    -2.1% vs last month
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Meetings</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $group->meetings->count() }}</div>
+                    <div class="text-[9px] font-bold text-amber-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Meetings Held
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
-            <div class="absolute -right-4 -top-4 w-20 h-20 bg-purple-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
-            <div class="relative">
-                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Engagement Score</div>
-                <div class="text-xl font-black text-gray-800 mt-2">9.2 / 10</div>
-                <div class="text-[9px] font-bold text-purple-600 mt-3 flex items-center gap-1">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
-                    High Performance
+        @elseif($data['type'] == 'administrative')
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Members</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['totalMembers'] }}</div>
+                    <div class="text-[9px] font-bold text-green-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Active Members
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">New This Month</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['newThisMonth'] }}</div>
+                    <div class="text-[9px] font-bold text-blue-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Joined This Month
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Active Plans</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['activePlans'] }}</div>
+                    <div class="text-[9px] font-bold text-amber-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Current Plans
+                    </div>
+                </div>
+            </div>
+        @elseif($data['type'] == 'meetings')
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Meetings</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $group->meetings->count() }}</div>
+                    <div class="text-[9px] font-bold text-green-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Total Held
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Avg Attendance</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['avgAttendanceRate'] }}%</div>
+                    <div class="text-[9px] font-bold text-blue-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Average Rate
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Collected</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">TZS {{ number_format($data['totalCollected'], 0) }}</div>
+                    <div class="text-[9px] font-bold text-amber-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Total Giving
+                    </div>
+                </div>
+            </div>
+        @elseif($data['type'] == 'communication')
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-green-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Messages</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['totalMessages'] }}</div>
+                    <div class="text-[9px] font-bold text-green-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Total Sent
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Scheduled Messages</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['scheduledCount'] }}</div>
+                    <div class="text-[9px] font-bold text-blue-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Upcoming
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 border-none shadow-sm relative overflow-hidden group">
+                <div class="absolute -right-4 -top-4 w-20 h-20 bg-amber-50 rounded-full opacity-50 group-hover:scale-150 transition-transform duration-700"></div>
+                <div class="relative">
+                    <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">Templates</div>
+                    <div class="text-xl font-black text-gray-800 mt-2">{{ $data['templateCount'] }}</div>
+                    <div class="text-[9px] font-bold text-amber-600 mt-3 flex items-center gap-1">
+                        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg>
+                        Available
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- CHARTS ROW -->
@@ -116,27 +209,45 @@
                 <canvas id="donutChart"></canvas>
             </div>
             <div class="mt-8 space-y-3">
-                <div class="flex items-center justify-between text-[10px] font-bold">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                        <span class="text-gray-600">Category A</span>
+                @if($data['type'] == 'administrative')
+                    @foreach($data['genderDist'] as $dist)
+                        <div class="flex items-center justify-between text-[10px] font-bold">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-{{ $dist->gender == 'male' ? 'green' : ($dist->gender == 'female' ? 'blue' : 'purple') }}-500"></span>
+                                <span class="text-gray-600">{{ ucfirst($dist->gender) }}</span>
+                            </div>
+                            <span class="text-gray-800">{{ $data['totalMembers'] > 0 ? round(($dist->count / $data['totalMembers']) * 100, 1) : 0 }}%</span>
+                        </div>
+                    @endforeach
+                @elseif($data['type'] == 'meetings')
+                    @foreach($data['attendanceDist'] as $dist)
+                        <div class="flex items-center justify-between text-[10px] font-bold">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-{{ $dist->status == 'present' ? 'green' : ($dist->status == 'absent' ? 'red' : 'blue') }}-500"></span>
+                                <span class="text-gray-600">{{ ucfirst($dist->status) }}</span>
+                            </div>
+                            <span class="text-gray-800">{{ $data['attendanceDist']->sum('count') > 0 ? round(($dist->count / $data['attendanceDist']->sum('count')) * 100, 1) : 0 }}%</span>
+                        </div>
+                    @endforeach
+                @elseif($data['type'] == 'communication')
+                    @foreach($data['messageDist'] as $dist)
+                        <div class="flex items-center justify-between text-[10px] font-bold">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                <span class="text-gray-600">{{ ucfirst($dist->type) }}</span>
+                            </div>
+                            <span class="text-gray-800">{{ $data['totalMessages'] > 0 ? round(($dist->count / $data['totalMessages']) * 100, 1) : 0 }}%</span>
+                        </div>
+                    @endforeach
+                @else
+                    <div class="flex items-center justify-between text-[10px] font-bold">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                            <span class="text-gray-600">Meetings</span>
+                        </div>
+                        <span class="text-gray-800">100%</span>
                     </div>
-                    <span class="text-gray-800">45%</span>
-                </div>
-                <div class="flex items-center justify-between text-[10px] font-bold">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                        <span class="text-gray-600">Category B</span>
-                    </div>
-                    <span class="text-gray-800">30%</span>
-                </div>
-                <div class="flex items-center justify-between text-[10px] font-bold">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                        <span class="text-gray-600">Category C</span>
-                    </div>
-                    <span class="text-gray-800">25%</span>
-                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -169,19 +280,42 @@
                                 <td class="px-6 py-4 text-right text-xs font-black text-green-600">TZS {{ number_format($tx->total_collected, 0) }}</td>
                             </tr>
                             @endforeach
-                        @else
-                            @for($i=1; $i<=5; $i++)
+                        @elseif($data['type'] == 'administrative')
+                            @foreach($data['membershipTable'] as $member)
                             <tr class="hover:bg-gray-50/50 transition-colors">
-                                <td class="px-6 py-4 text-xs font-bold text-gray-600">May {{ 15-$i }}, 2026</td>
-                                <td class="px-6 py-4 text-xs font-black text-gray-800">Sample Report Entry #{{ $i }}</td>
-                                <td class="px-6 py-4"><span class="badge blue">ADMIN</span></td>
-                                <td class="px-6 py-4 text-right text-xs font-black text-gray-800">Value {{ 100 * $i }}</td>
+                                <td class="px-6 py-4 text-xs font-bold text-gray-600">{{ $member->created_at->format('M d, Y') }}</td>
+                                <td class="px-6 py-4 text-xs font-black text-gray-800">{{ $member->full_name }}</td>
+                                <td class="px-6 py-4"><span class="badge blue">MEMBER</span></td>
+                                <td class="px-6 py-4 text-right text-xs font-black text-gray-800">{{ ucfirst($member->gender ?? 'N/A') }}</td>
                             </tr>
-                            @endfor
+                            @endforeach
+                        @elseif($data['type'] == 'meetings')
+                            @foreach($data['recentMeetings'] as $meeting)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 text-xs font-bold text-gray-600">{{ $meeting->meeting_date->format('M d, Y') }}</td>
+                                <td class="px-6 py-4 text-xs font-black text-gray-800">Group Meeting</td>
+                                <td class="px-6 py-4"><span class="badge amber">MEETING</span></td>
+                                <td class="px-6 py-4 text-right text-xs font-black text-green-600">TZS {{ number_format($meeting->total_collected, 0) }}</td>
+                            </tr>
+                            @endforeach
+                        @elseif($data['type'] == 'communication')
+                            @foreach($data['recentMessages'] as $msg)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 text-xs font-bold text-gray-600">{{ $msg->created_at->format('M d, Y') }}</td>
+                                <td class="px-6 py-4 text-xs font-black text-gray-800">{{ Str::limit($msg->content ?? 'No content', 30) }}</td>
+                                <td class="px-6 py-4"><span class="badge purple">{{ strtoupper($msg->type) }}</span></td>
+                                <td class="px-6 py-4 text-right text-xs font-black text-gray-800">{{ $msg->status }}</td>
+                            </tr>
+                            @endforeach
                         @endif
                     </tbody>
                 </table>
             </div>
+            @if($data['type'] == 'administrative' && $data['membershipTable']->hasPages())
+                <div class="p-6 border-t border-gray-50 bg-gray-50/30">
+                    {{ $data['membershipTable']->links() }}
+                </div>
+            @endif
         </div>
 
         <!-- ACTIVITY TIMELINE -->
@@ -234,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
             datasets: [{
-                label: '{{ $data["type"] == "financial" ? "Giving (TZS)" : ($data["type"] == "administrative" ? "New Members" : ($data["type"] == "meetings" ? "Avg Collection" : "Messages Sent")) }}',
+                label: '{{ $data["type"] == "financial" ? "Giving (TZS)" : ($data["type"] == "administrative" ? "New Members" : ($data["type"] == "meetings" ? "Meetings Held" : "Messages Sent")) }}',
                 data: @json(array_values($data['chartData'])),
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
@@ -267,15 +401,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // DONUT CHART DATA
+    let donutLabels = [];
+    let donutData = [];
+    let donutColors = [];
+    
+    @if($data['type'] == 'administrative')
+        @foreach($data['genderDist'] as $dist)
+            donutLabels.push('{{ ucfirst($dist->gender) }}');
+            donutData.push({{ $dist->count }});
+            donutColors.push('{{ $dist->gender == "male" ? "#10b981" : ($dist->gender == "female" ? "#3b82f6" : "#8b5cf6") }}');
+        @endforeach
+    @elseif($data['type'] == 'meetings')
+        @foreach($data['attendanceDist'] as $dist)
+            donutLabels.push('{{ ucfirst($dist->status) }}');
+            donutData.push({{ $dist->count }});
+            donutColors.push('{{ $dist->status == "present" ? "#10b981" : ($dist->status == "absent" ? "#ef4444" : "#3b82f6") }}');
+        @endforeach
+    @elseif($data['type'] == 'communication')
+        @foreach($data['messageDist'] as $dist)
+            donutLabels.push('{{ ucfirst($dist->type) }}');
+            donutData.push({{ $dist->count }});
+            donutColors.push('#10b981');
+        @endforeach
+    @else
+        donutLabels = ['Meetings'];
+        donutData = [1];
+        donutColors = ['#10b981'];
+    @endif
+
     // DONUT CHART
     const donutCtx = document.getElementById('donutChart').getContext('2d');
     new Chart(donutCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Category A', 'Category B', 'Category C'],
+            labels: donutLabels,
             datasets: [{
-                data: [45, 30, 25],
-                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b'],
+                data: donutData,
+                backgroundColor: donutColors,
                 borderWidth: 0,
                 hoverOffset: 10
             }]

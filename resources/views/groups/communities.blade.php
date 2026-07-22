@@ -159,11 +159,8 @@
                   <a href="{{ route('groups.operations.members', $group->id) }}" class="p-2 rounded-lg text-green-600 hover:bg-green-600 hover:text-white transition-all" title="Community Stats">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                   </a>
-                  <a href="{{ route('groups.operations.contributions', $group->id) }}" class="p-2 rounded-lg text-green-600 hover:bg-green-600 hover:text-white transition-all" title="Giving Record">
+                  <a href="{{ route('groups.operations.meeting', $group->id) }}" class="p-2 rounded-lg text-green-600 hover:bg-green-600 hover:text-white transition-all" title="Meeting Record">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  </a>
-                  <a href="{{ route('groups.operations.attendance', $group->id) }}" class="p-2 rounded-lg text-green-600 hover:bg-green-600 hover:text-white transition-all" title="Attendance">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                   </a>
                 </div>
                 <div class="flex items-center bg-gray-50 p-1 rounded-xl border border-muted/10">

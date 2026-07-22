@@ -91,6 +91,26 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Check for session messages and show SweetAlert2
+    @if(session('success'))
+      Swal.fire({
+        title: 'Success!',
+        text: '{{ session('success') }}',
+        icon: 'success',
+        timer: 3000,
+        showConfirmButton: false
+      });
+    @endif
+    
+    @if(session('error'))
+      Swal.fire({
+        title: 'Error!',
+        text: '{{ session('error') }}',
+        icon: 'error',
+        confirmButtonColor: '#059669'
+      });
+    @endif
+
     const ctx = document.getElementById('expenseChart');
     if (ctx) {
         new Chart(ctx, {

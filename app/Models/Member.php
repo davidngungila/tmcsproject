@@ -31,6 +31,8 @@ class Member extends Model
         'registration_date',
         'created_by',
         'updated_by',
+        'parent_id',
+        'relationship',
     ];
 
     protected $casts = [
@@ -38,6 +40,14 @@ class Member extends Model
         'registration_date' => 'date',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the age of the member.
+     */
+    public function getAgeAttribute()
+    {
+        return $this->date_of_birth ? $this->date_of_birth->age : null;
+    }
 
     /**
      * Get the user linked to this member.
@@ -61,6 +71,22 @@ class Member extends Model
     public function program(): BelongsTo
     {
         return $this->belongsTo(Program::class, 'program_id');
+    }
+
+    /**
+     * Get the parent (head of family) of this member.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'parent_id');
+    }
+
+    /**
+     * Get the children and spouse members of this family head.
+     */
+    public function familyMembers(): HasMany
+    {
+        return $this->hasMany(Member::class, 'parent_id');
     }
 
     /**
@@ -92,13 +118,7 @@ class Member extends Model
         return $this->hasMany(SavedPaymentMethod::class);
     }
 
-    /**
-     * Get the certificates for the member.
-     */
-    public function certificates(): HasMany
-    {
-        return $this->hasMany(Certificate::class);
-    }
+
 
     /**
      * Get the groups that belong to the member.
@@ -108,6 +128,38 @@ class Member extends Model
         return $this->belongsToMany(Group::class, 'member_groups')
             ->withPivot(['join_date', 'is_active'])
             ->withTimestamps();
+    }
+
+    /**
+     * Get the groups where the member is the chairperson.
+     */
+    public function chairpersonGroups(): HasMany
+    {
+        return $this->hasMany(Group::class, 'chairperson_id');
+    }
+
+    /**
+     * Get the groups where the member is the secretary.
+     */
+    public function secretaryGroups(): HasMany
+    {
+        return $this->hasMany(Group::class, 'secretary_id');
+    }
+
+    /**
+     * Get the groups where the member is the accountant.
+     */
+    public function accountantGroups(): HasMany
+    {
+        return $this->hasMany(Group::class, 'accountant_id');
+    }
+
+    /**
+     * Get the groups where the member is a leader (chairperson, secretary, or accountant).
+     */
+    public function leadingGroups(): HasMany
+    {
+        return $this->chairpersonGroups()->orWhere('secretary_id', $this->id)->orWhere('accountant_id', $this->id);
     }
 
     /**

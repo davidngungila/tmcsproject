@@ -41,7 +41,8 @@ class GroupOperationController extends Controller
 
         if ($group->chairperson_id != $memberId && 
             $group->secretary_id != $memberId && 
-            $group->accountant_id != $memberId) {
+            $group->accountant_id != $memberId &&
+            $group->leader_id != $memberId) {
             abort(403, 'Unauthorized. You are not a leader of this group.');
         }
     }
@@ -134,11 +135,19 @@ class GroupOperationController extends Controller
             );
 
             DB::commit();
-            return redirect()->route('groups.operations.contributions', $group->id)->with('success', 'Total giving recorded successfully.');
+            return redirect()->route('groups.operations.meeting', $group->id)->with('success', 'Total giving recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to record giving: ' . $e->getMessage());
         }
+    }
+
+    public function meeting(Group $group)
+    {
+        $this->authorizeLeader($group);
+        $group->load('members');
+        $meetings = $group->meetings()->latest()->paginate(10);
+        return view('groups.operations.meeting', compact('group', 'meetings'));
     }
 
     public function attendance(Group $group)
@@ -217,7 +226,7 @@ class GroupOperationController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('groups.operations.attendance', $group->id)->with('success', 'Attendance recorded successfully.');
+            return redirect()->route('groups.operations.meeting', $group->id)->with('success', 'Attendance recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to record attendance: ' . $e->getMessage());

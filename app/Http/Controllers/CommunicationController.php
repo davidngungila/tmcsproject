@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Communication;
 use App\Models\Member;
 use App\Models\Group;
+use App\Models\MemberCategory;
+use App\Models\Program;
 use App\Models\ApiConfig;
 use App\Services\MessagingService;
 use App\Models\MessageTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Jobs\ProcessCommunicationJob;
+use App\Models\Contribution;
 
 class CommunicationController extends Controller
 {
@@ -47,10 +50,12 @@ class CommunicationController extends Controller
     public function create()
     {
         $groups = Group::all();
+        $categories = MemberCategory::where('is_active', true)->get();
+        $programs = Program::where('is_active', true)->get();
         $members = Member::all();
         $activeGateways = ApiConfig::where('is_active', true)->get();
         $templates = MessageTemplate::where('is_active', true)->get();
-        return view('communications.create', compact('groups', 'members', 'activeGateways', 'templates'));
+        return view('communications.create', compact('groups', 'members', 'activeGateways', 'templates', 'categories', 'programs'));
     }
 
     public function store(Request $request)
@@ -58,26 +63,67 @@ class CommunicationController extends Controller
         $validated = $request->validate([
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
-            'type' => 'required|string', // SMS, Email, WhatsApp
-            'recipient_type' => 'required|string', // All, Group, Individual
+            'type' => 'required|string', // SMS, Email, WhatsApp, Announcement
+            'recipient_type' => 'required|string', // All, Group, Individual, Advanced
             'group_id' => 'required_if:recipient_type,Group|exists:groups,id',
             'member_id' => 'required_if:recipient_type,Individual|exists:members,id',
+            'criteria' => 'array',
+            'criteria.category_ids' => 'array',
+            'criteria.program_ids' => 'array',
+            'criteria.community_ids' => 'array',
+            'criteria.contribution_min' => 'numeric|min:0',
+            'criteria.contribution_max' => 'numeric|min:0',
+            'criteria.is_active' => 'nullable|string',
+            'send_option' => 'required|in:now,schedule',
+            'scheduled_at' => 'nullable|date|after:now',
         ]);
 
+        $query = Member::query();
         $recipients = [];
         $emailRecipients = [];
 
         if ($validated['recipient_type'] === 'All') {
-            $recipients = Member::whereNotNull('phone')->pluck('phone')->toArray();
-            $emailRecipients = Member::whereNotNull('email')->pluck('email')->toArray();
+            $query->whereNotNull('phone');
         } elseif ($validated['recipient_type'] === 'Group') {
             $group = Group::find($request->group_id);
-            $recipients = $group->members()->whereNotNull('phone')->pluck('phone')->toArray();
-            $emailRecipients = $group->members()->whereNotNull('email')->pluck('email')->toArray();
+            $query->whereHas('groups', function($q) use ($request) {
+                $q->where('groups.id', $request->group_id);
+            });
         } elseif ($validated['recipient_type'] === 'Individual') {
             $member = Member::find($request->member_id);
             $recipients = [$member->phone];
             $emailRecipients = [$member->email];
+        } elseif ($validated['recipient_type'] === 'Advanced') {
+            if (isset($validated['criteria']['category_ids']) && !empty($validated['criteria']['category_ids'])) {
+                $query->whereIn('category_id', $validated['criteria']['category_ids']);
+            }
+            if (isset($validated['criteria']['program_ids']) && !empty($validated['criteria']['program_ids'])) {
+                $query->whereIn('program_id', $validated['criteria']['program_ids']);
+            }
+            if (isset($validated['criteria']['community_ids']) && !empty($validated['criteria']['community_ids'])) {
+                $query->whereHas('groups', function($q) use ($validated) {
+                    $q->where('type', 'Community')
+                      ->whereIn('groups.id', $validated['criteria']['community_ids']);
+                });
+            }
+            if (isset($validated['criteria']['contribution_min']) || isset($validated['criteria']['contribution_max'])) {
+                $query->whereHas('contributions', function($q) use ($validated) {
+                    if (isset($validated['criteria']['contribution_min'])) {
+                        $q->where('amount', '>=', $validated['criteria']['contribution_min']);
+                    }
+                    if (isset($validated['criteria']['contribution_max'])) {
+                        $q->where('amount', '<=', $validated['criteria']['contribution_max']);
+                    }
+                });
+            }
+            if (isset($validated['criteria']['is_active'])) {
+                $query->where('is_active', $validated['criteria']['is_active'] === '1');
+            }
+        }
+
+        if ($validated['recipient_type'] !== 'Individual') {
+            $recipients = $query->whereNotNull('phone')->pluck('phone')->toArray();
+            $emailRecipients = $query->whereNotNull('email')->pluck('email')->toArray();
         }
 
         $recipients = array_filter($recipients); // Remove nulls
@@ -91,22 +137,64 @@ class CommunicationController extends Controller
             return back()->with('error', 'No valid email addresses found for the selected recipients.');
         }
 
-        $validated['sent_by'] = Auth::id();
-        $validated['status'] = 'Pending';
-        $validated['sent_at'] = now();
+        $communicationData = [
+            'subject' => $validated['subject'],
+            'message' => $validated['message'],
+            'type' => strtolower($validated['type']),
+            'recipient_type' => $validated['recipient_type'],
+            'group_id' => $validated['group_id'] ?? null,
+            'member_id' => $validated['member_id'] ?? null,
+            'criteria' => $validated['criteria'] ?? null,
+            'sent_by' => Auth::id(),
+            'recipients' => json_encode($validated['type'] === 'Email' ? $emailRecipients : $recipients),
+        ];
 
-        $communication = Communication::create($validated);
+        if ($validated['send_option'] === 'schedule' && $validated['scheduled_at']) {
+            $communicationData['status'] = 'scheduled';
+            $communicationData['scheduled_at'] = $validated['scheduled_at'];
+            $successMessage = 'Message scheduled successfully for ' . $validated['scheduled_at'];
+        } else {
+            $communicationData['status'] = 'pending';
+            $communicationData['sent_at'] = now();
+            $successMessage = 'Message queued for sending to ' . count($validated['type'] === 'Email' ? $emailRecipients : $recipients) . ' recipient(s)';
+        }
 
-        // Dispatch background job for processing
-        $finalRecipients = $validated['type'] === 'Email' ? $emailRecipients : $recipients;
-        ProcessCommunicationJob::dispatch($communication, $finalRecipients);
+        $communication = Communication::create($communicationData);
 
-        return redirect()->route('communications.index')->with('success', 'Message queued for sending');
+        // If sending now, dispatch the job
+        if ($validated['send_option'] === 'now') {
+            $finalRecipients = $validated['type'] === 'Email' ? $emailRecipients : $recipients;
+            ProcessCommunicationJob::dispatch($communication, $finalRecipients);
+        }
+
+        return redirect()->route('communications.index')->with('success', $successMessage);
     }
 
     public function announcements()
     {
         $announcements = Communication::where('type', 'Announcement')->latest()->paginate(10);
         return view('communications.announcements', compact('announcements'));
+    }
+
+    public function sendSms()
+    {
+        $groups = Group::all();
+        $categories = MemberCategory::where('is_active', true)->get();
+        $programs = Program::where('is_active', true)->get();
+        $members = Member::all();
+        $activeGateways = ApiConfig::where('is_active', true)->get();
+        $templates = MessageTemplate::where('is_active', true)->get();
+        return view('communications.send-sms', compact('groups', 'members', 'activeGateways', 'templates', 'categories', 'programs'));
+    }
+
+    public function sendEmail()
+    {
+        $groups = Group::all();
+        $categories = MemberCategory::where('is_active', true)->get();
+        $programs = Program::where('is_active', true)->get();
+        $members = Member::all();
+        $activeGateways = ApiConfig::where('is_active', true)->get();
+        $templates = MessageTemplate::where('is_active', true)->get();
+        return view('communications.send-email', compact('groups', 'members', 'activeGateways', 'templates', 'categories', 'programs'));
     }
 }
