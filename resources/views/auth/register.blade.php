@@ -45,322 +45,257 @@
         }
         .rise-in { opacity: 0; animation: riseIn 0.7s cubic-bezier(.22,.61,.36,1) forwards; }
 
-        @keyframes grainFloat {
-            0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
-            10%  { opacity: .55; }
-            85%  { opacity: .4; }
-            100% { transform: translateY(-140px) translateX(var(--drift,10px)) rotate(45deg); opacity: 0; }
-        }
-        .grain { position: absolute; animation: grainFloat linear infinite; }
-
         @keyframes glowSpin {
             from { transform: rotate(0deg); }
             to   { transform: rotate(360deg); }
         }
         .glow-spin { animation: glowSpin 22s linear infinite; }
 
-        @keyframes shimmer {
-            0%, 100% { opacity: .5; }
-            50% { opacity: 1; }
-        }
-        .shimmer { animation: shimmer 3.2s ease-in-out infinite; }
-
         @media (prefers-reduced-motion: reduce) {
-            .rise-in, .grain, .glow-spin, .shimmer { animation: none !important; opacity: 1 !important; transform: none !important; }
+            .rise-in, .glow-spin { animation: none !important; opacity: 1 !important; transform: none !important; }
         }
 
-        input:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px #f5faf7 inset; -webkit-text-fill-color: #0a1a12; }
+        input:-webkit-autofill, select:-webkit-autofill { -webkit-box-shadow: 0 0 0 1000px #f5faf7 inset; -webkit-text-fill-color: #0a1a12; }
+
+        .group-selection::-webkit-scrollbar { width: 6px; }
+        .group-selection::-webkit-scrollbar-thumb { background: #c6e8d7; border-radius: 999px; }
     </style>
 </head>
-<body class="h-full bg-white text-ink-900">
-    <div class="h-full lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
+<body class="min-h-full bg-mist-50 text-ink-900">
 
-        <!-- LEFT: Brand panel -->
-        <aside class="relative hidden lg:flex flex-col justify-between overflow-hidden bg-gradient-to-br from-pine-950 via-pine-900 to-pine-800 px-14 py-12 text-white">
+    <!-- top brand strip -->
+    <header class="relative overflow-hidden bg-gradient-to-br from-pine-950 via-pine-900 to-pine-800 px-6 py-10 text-white sm:px-10">
+        <div class="pointer-events-none absolute -top-24 -left-16 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl glow-spin"></div>
+        <div class="pointer-events-none absolute -bottom-20 right-[-4rem] h-64 w-64 rounded-full bg-gold-400/10 blur-3xl"></div>
 
-            <!-- ambient glow -->
-            <div class="pointer-events-none absolute -top-32 -left-24 h-[26rem] w-[26rem] rounded-full bg-emerald-500/20 blur-3xl glow-spin"></div>
-            <div class="pointer-events-none absolute bottom-[-8rem] right-[-6rem] h-[22rem] w-[22rem] rounded-full bg-gold-400/10 blur-3xl"></div>
-
-            <!-- drifting particles -->
-            <div class="pointer-events-none absolute inset-0 overflow-hidden">
-                <i class="grain fa-solid fa-dove text-gold-300/60 text-sm" style="left:12%; bottom:-5%; --drift:18px; animation-duration:9s; animation-delay:0s;"></i>
-                <i class="grain fa-solid fa-star text-gold-300/50 text-xs" style="left:28%; bottom:-8%; --drift:-14px; animation-duration:12s; animation-delay:1.4s;"></i>
-                <i class="grain fa-solid fa-leaf text-emerald-400/40 text-sm" style="left:47%; bottom:-6%; --drift:10px; animation-duration:10.5s; animation-delay:3s;"></i>
-                <i class="grain fa-solid fa-star text-gold-300/60 text-base" style="left:63%; bottom:-10%; --drift:-20px; animation-duration:13s; animation-delay:.7s;"></i>
-                <i class="grain fa-solid fa-dove text-emerald-400/30 text-xs" style="left:78%; bottom:-4%; --drift:16px; animation-duration:11s; animation-delay:4.2s;"></i>
-                <i class="grain fa-solid fa-star text-gold-300/40 text-sm" style="left:89%; bottom:-9%; --drift:-10px; animation-duration:9.5s; animation-delay:2.1s;"></i>
-            </div>
-
-            <!-- brand mark -->
-            <div class="relative z-10 rise-in" style="animation-delay:.05s">
-                <div class="flex items-center gap-3">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15 backdrop-blur-sm font-display font-extrabold text-lg text-gold-300">
-                        TM
-                    </div>
-                    <div class="leading-tight">
-                        <p class="text-[15px] font-bold tracking-wide">TmcsSmart</p>
-                        <p class="text-[11px] uppercase tracking-[0.18em] text-emerald-300/80">Church Management System</p>
-                    </div>
+        <div class="relative z-10 mx-auto max-w-3xl">
+            <div class="rise-in flex items-center gap-3" style="animation-delay:.05s">
+                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/15 backdrop-blur-sm font-display font-extrabold text-base text-gold-300">
+                    TM
+                </div>
+                <div class="leading-tight">
+                    <p class="text-[15px] font-bold tracking-wide">TmcsSmart</p>
+                    <p class="text-[11px] uppercase tracking-[0.18em] text-emerald-300/80">Church Management System</p>
                 </div>
             </div>
 
-            <!-- headline block -->
-            <div class="relative z-10 max-w-md">
-                <p class="rise-in text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/90" style="animation-delay:.15s">Join our community</p>
-                <h1 class="rise-in font-display mt-4 text-[2.6rem] leading-[1.1] font-semibold text-white" style="animation-delay:.25s">
-                    Create your account<br> in seconds.
-                </h1>
-                <p class="rise-in mt-5 text-[15px] leading-relaxed text-mist-100/80" style="animation-delay:.4s">
-                    Register with just your basic details. Complete your profile later to access all features.
-                </p>
+            <p class="rise-in mt-8 text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/90" style="animation-delay:.15s">Become a member</p>
+            <h1 class="rise-in font-display mt-2 text-3xl font-semibold text-white sm:text-4xl" style="animation-delay:.25s">Join TmcsSmart</h1>
+            <p class="rise-in mt-3 max-w-lg text-[15px] leading-relaxed text-mist-100/80" style="animation-delay:.35s">
+                Register yourself to our church management system to stay connected with your community, groups, and services.
+            </p>
+        </div>
+    </header>
 
-                <!-- feature rows -->
-                <div class="rise-in mt-9 space-y-4" style="animation-delay:.55s">
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                            <i class="fa-solid fa-user-plus text-sm"></i>
+    <!-- registration card -->
+    <main class="relative flex justify-center px-4 py-10 sm:px-6">
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.05),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(224,178,92,0.05),_transparent_40%)]"></div>
+
+        <div class="relative w-full max-w-3xl">
+            <div class="rise-in overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-lg shadow-pine-900/5" style="animation-delay:.2s">
+                <div class="p-6 sm:p-10">
+                    <form method="POST" action="{{ route('register.post') }}" x-data="{ loading: false }" @submit="loading = true">
+                        @csrf
+
+                        <!-- Section: Personal details -->
+                        <p class="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600">
+                            <i class="fa-solid fa-id-card"></i> Personal details
+                        </p>
+
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Full name</label>
+                                <div class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-user"></i>
+                                    </span>
+                                    <input type="text" name="full_name" value="{{ old('full_name') }}" required
+                                        class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                        placeholder="Your full name">
+                                </div>
+                                @error('full_name') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Email address</label>
+                                <div class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </span>
+                                    <input type="email" name="email" value="{{ old('email') }}" required
+                                        class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                        placeholder="email@example.com">
+                                </div>
+                                @error('email') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
                         </div>
-                        <p class="text-sm text-mist-100/90">Quick registration process</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                            <i class="fa-solid fa-sliders text-sm"></i>
+
+                        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Phone number</label>
+                                <div class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </span>
+                                    <input type="text" name="phone" value="{{ old('phone') }}" required
+                                        class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                        placeholder="e.g. 0712345678">
+                                </div>
+                                @error('phone') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Category</label>
+                                <div class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                    </span>
+                                    <select name="category_id" required
+                                        class="w-full appearance-none rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-10 text-pine-900 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10">
+                                        <option value="">Select category</option>
+                                        @foreach($categories as $category)
+                                          <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400">
+                                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                                    </span>
+                                </div>
+                                @error('category_id') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
                         </div>
-                        <p class="text-sm text-mist-100/90">Complete profile at your convenience</p>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                            <i class="fa-solid fa-shield-halved text-sm"></i>
+
+                        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Gender</label>
+                                <div class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-venus-mars"></i>
+                                    </span>
+                                    <select name="gender" required
+                                        class="w-full appearance-none rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-10 text-pine-900 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10">
+                                        <option value="">Select gender</option>
+                                        <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                        <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                        <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
+                                    </select>
+                                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400">
+                                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                                    </span>
+                                </div>
+                                @error('gender') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Date of birth</label>
+                                <div class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-cake-candles"></i>
+                                    </span>
+                                    <input type="date" name="date_of_birth" value="{{ old('date_of_birth') }}" required
+                                        class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10">
+                                </div>
+                                @error('date_of_birth') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
                         </div>
-                        <p class="text-sm text-mist-100/90">Secure, session-based account access</p>
-                    </div>
+
+                        <div class="mt-5">
+                            <label class="mb-2 block text-sm font-semibold text-pine-900">Home address</label>
+                            <div class="group relative">
+                                <span class="absolute left-0 top-3 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                </span>
+                                <textarea name="address" rows="2" required
+                                    class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                    placeholder="Street, Ward, District...">{{ old('address') }}</textarea>
+                            </div>
+                            @error('address') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- Section: Community -->
+                        <p class="mb-4 mt-9 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600">
+                            <i class="fa-solid fa-people-group"></i> Community
+                        </p>
+
+                        <div>
+                            <label class="mb-1 block text-sm font-semibold text-pine-900">Join communities / groups</label>
+                            <p class="mb-3 text-xs text-ink-600">Select any existing community you wish to join.</p>
+                            <div class="group-selection max-h-48 overflow-y-auto rounded-xl border-2 border-mist-100 bg-mist-50 p-2">
+                                @foreach($groups as $group)
+                                <label class="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-white">
+                                    <input type="checkbox" name="groups[]" value="{{ $group->id }}"
+                                        {{ is_array(old('groups')) && in_array($group->id, old('groups')) ? 'checked' : '' }}
+                                        class="h-4 w-4 rounded border-2 border-mist-100 text-emerald-600 focus:ring-emerald-500/30">
+                                    <div>
+                                        <p class="text-sm font-semibold text-pine-900">{{ $group->name }}</p>
+                                        <p class="text-xs text-ink-600">{{ $group->type }}</p>
+                                    </div>
+                                </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <!-- Section: Security -->
+                        <p class="mb-5 mt-9 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600">
+                            <i class="fa-solid fa-shield-halved"></i> Account security
+                        </p>
+
+                        <div class="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Password</label>
+                                <div x-data="{ show: false }" class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                    <input :type="show ? 'text' : 'password'" name="password" required
+                                        class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                        placeholder="Min 8 characters">
+                                    <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600">
+                                        <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                                    </button>
+                                </div>
+                                @error('password') <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600"><i class="fa-solid fa-circle-exclamation"></i> {{ $message }}</p> @enderror
+                            </div>
+
+                            <div>
+                                <label class="mb-2 block text-sm font-semibold text-pine-900">Confirm password</label>
+                                <div x-data="{ show: false }" class="group relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                        <i class="fa-solid fa-lock"></i>
+                                    </span>
+                                    <input :type="show ? 'text' : 'password'" name="password_confirmation" required
+                                        class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                        placeholder="Repeat password">
+                                    <button type="button" @click="show = !show" class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600">
+                                        <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <button type="submit" :disabled="loading"
+                            class="mt-9 flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70">
+                            <span x-show="!loading">Register my account</span>
+                            <span x-show="loading" class="flex items-center gap-2">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Creating account&hellip;
+                            </span>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="border-t border-mist-100 bg-mist-50 px-6 py-5 text-center sm:px-10">
+                    <p class="text-sm text-ink-600">
+                        Already have an account?
+                        <a href="{{ route('login') }}" class="font-semibold text-emerald-600 hover:text-emerald-700">Sign in here</a>
+                    </p>
                 </div>
             </div>
 
-            <!-- footer stat -->
-            <div class="relative z-10 rise-in flex items-center gap-6 border-t border-white/10 pt-6" style="animation-delay:.7s">
-                <div>
-                    <p class="font-display text-2xl font-semibold text-white">850<span class="text-gold-300">+</span></p>
-                    <p class="text-[11px] uppercase tracking-wide text-mist-100/60">Churches onboard</p>
-                </div>
-                <div class="h-8 w-px bg-white/10"></div>
-                <div>
-                    <p class="font-display text-2xl font-semibold text-white">120k<span class="text-gold-300">+</span></p>
-                    <p class="text-[11px] uppercase tracking-wide text-mist-100/60">Members managed</p>
-                </div>
-            </div>
-        </aside>
-
-        <!-- RIGHT: Register panel -->
-        <main class="relative flex min-h-full items-center justify-center bg-white px-4 py-8 sm:px-6 sm:py-10">
-
-            <!-- soft mesh backdrop -->
-            <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.06),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(224,178,92,0.06),_transparent_40%)]"></div>
-
-            <div x-data="{ loading: false }" class="relative w-full max-w-md">
-
-                <!-- mobile-only brand mark -->
-                <div class="mb-8 flex items-center gap-3 lg:hidden">
-                    <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-pine-900 font-display font-extrabold text-sm text-gold-300">
-                        TM
-                    </div>
-                    <div class="leading-tight">
-                        <p class="text-sm font-bold text-pine-900">TmcsSmart</p>
-                        <p class="text-[10px] uppercase tracking-[0.18em] text-ink-400">Church Management System</p>
-                    </div>
-                </div>
-
-                <div class="rise-in" style="animation-delay:.1s">
-                    <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Create account</p>
-                    <h2 class="font-display mt-2 text-2xl font-semibold text-pine-900">Register to get started</h2>
-                    <p class="mt-2 text-sm text-ink-600">Enter your details to create your account.</p>
-                </div>
-
-                @if(session('success'))
-                <div class="rise-in mt-6 flex items-start gap-2 rounded-xl border border-emerald-100 bg-mist-100 p-4 text-sm text-emerald-700" style="animation-delay:.15s">
-                    <i class="fa-solid fa-circle-check mt-0.5 text-emerald-600"></i>
-                    <span>{{ session('success') }}</span>
-                </div>
-                @endif
-
-                <form
-                    method="POST"
-                    action="{{ route('register.post') }}"
-                    @submit="loading = true"
-                    class="rise-in mt-6"
-                    style="animation-delay:.2s"
-                >
-                    @csrf
-
-                    <!-- Full Name -->
-                    <div class="mb-4">
-                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Full name</label>
-                        <div class="group relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                <i class="fa-solid fa-user"></i>
-                            </span>
-                            <input
-                                type="text"
-                                name="full_name"
-                                value="{{ old('full_name') }}"
-                                required
-                                autofocus
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                placeholder="Your full name"
-                            >
-                        </div>
-                        @error('full_name')
-                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Email -->
-                    <div class="mb-4">
-                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Email address</label>
-                        <div class="group relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                <i class="fa-solid fa-envelope"></i>
-                            </span>
-                            <input
-                                type="email"
-                                name="email"
-                                value="{{ old('email') }}"
-                                required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                placeholder="you@example.com"
-                            >
-                        </div>
-                        @error('email')
-                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Phone -->
-                    <div class="mb-4">
-                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Phone number</label>
-                        <div class="group relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                <i class="fa-solid fa-phone"></i>
-                            </span>
-                            <input
-                                type="text"
-                                name="phone"
-                                value="{{ old('phone') }}"
-                                required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                placeholder="e.g. 0712345678"
-                            >
-                        </div>
-                        @error('phone')
-                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Date of Birth -->
-                    <div class="mb-4">
-                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Date of birth</label>
-                        <div class="group relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                <i class="fa-solid fa-calendar"></i>
-                            </span>
-                            <input
-                                type="date"
-                                name="date_of_birth"
-                                value="{{ old('date_of_birth') }}"
-                                required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                            >
-                        </div>
-                        @error('date_of_birth')
-                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Password -->
-                    <div class="mb-4">
-                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Password</label>
-                        <div x-data="{ show: false }" class="group relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                <i class="fa-solid fa-lock"></i>
-                            </span>
-                            <input
-                                :type="show ? 'text' : 'password'"
-                                name="password"
-                                required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                placeholder="Min 8 characters"
-                            >
-                            <button
-                                type="button"
-                                @click="show = !show"
-                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
-                            >
-                                <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                            </button>
-                        </div>
-                        @error('password')
-                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Confirm Password -->
-                    <div class="mb-5">
-                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Confirm password</label>
-                        <div x-data="{ show: false }" class="group relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                <i class="fa-solid fa-lock"></i>
-                            </span>
-                            <input
-                                :type="show ? 'text' : 'password'"
-                                name="password_confirmation"
-                                required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                placeholder="Repeat password"
-                            >
-                            <button
-                                type="button"
-                                @click="show = !show"
-                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
-                            >
-                                <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Submit -->
-                    <button
-                        type="submit"
-                        :disabled="loading"
-                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                        <span x-show="!loading">Create account</span>
-                        <span x-show="loading" class="flex items-center gap-2">
-                            <i class="fa-solid fa-spinner fa-spin"></i> Creating account&hellip;
-                        </span>
-                    </button>
-                </form>
-
-                <p class="rise-in mt-8 text-center text-sm text-ink-600" style="animation-delay:.25s">
-                    Already have an account?
-                    <a href="{{ route('login') }}" class="font-semibold text-emerald-600 hover:text-emerald-700">Sign in here</a>
-                </p>
-
-                <p class="rise-in mt-8 text-center text-xs text-ink-400" style="animation-delay:.3s">
-                    &copy; {{ date('Y') }} TmcsSmart Church Management System. All rights reserved.
-                </p>
-            </div>
-        </main>
-    </div>
+            <p class="rise-in mt-8 text-center text-xs text-ink-400" style="animation-delay:.3s">
+                &copy; {{ date('Y') }} TmcsSmart Church Management System. All rights reserved.
+            </p>
+        </div>
+    </main>
 </body>
 </html>

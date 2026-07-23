@@ -266,9 +266,6 @@ class ProfileController extends Controller
 
         $member->update($validated);
 
-        // Mark profile as completed
-        $member->update(['profile_completed' => true]);
-
         // Automatically assign to communities based on new info
         app(GroupService::class)->autoAssignMemberToCommunities($member);
 

@@ -64,7 +64,9 @@ class AuthController extends Controller
      */
     public function showRegistrationForm()
     {
-        return view('auth.register');
+        $groups = Group::where('is_active', true)->get();
+        $categories = MemberCategory::where('is_active', true)->get();
+        return view('auth.register', compact('groups', 'categories'));
     }
 
     /**
@@ -76,17 +78,22 @@ class AuthController extends Controller
             'full_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email|unique:members,email',
             'phone' => 'required|string|max:20',
-            'date_of_birth' => 'required|date|before:today',
             'password' => 'required|string|min:8|confirmed',
+            'category_id' => 'required|exists:member_categories,id',
+            'gender' => 'required|string|in:Male,Female,Other',
+            'date_of_birth' => 'required|date',
+            'address' => 'required|string',
+            'groups' => 'nullable|array',
+            'groups.*' => 'exists:groups,id',
         ]);
 
-        // 1. Create User (Active by default - no approval needed)
+        // 1. Create User (Inactive by default for approval)
         $user = User::create([
             'name' => $request->full_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'is_active' => true, // Auto-activate
+            'is_active' => false, // Requires approval
         ]);
 
         // 2. Assign 'member' role
@@ -95,25 +102,46 @@ class AuthController extends Controller
             $user->roles()->attach($memberRole->id);
         }
 
-        // 3. Create Member Record with minimal info (to be completed later)
+        // 3. Create Member Record
+        $category = MemberCategory::find($request->category_id);
         $member = Member::create([
             'user_id' => $user->id,
             'full_name' => $request->full_name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'category_id' => $request->category_id,
+            'member_type' => $category->name,
+            'gender' => $request->gender,
             'date_of_birth' => $request->date_of_birth,
-            'member_type' => 'Regular',
+            'address' => $request->address,
             'registration_date' => now(),
-            'is_active' => true, // Auto-activate
-            'registration_number' => 'TMCS-' . str_pad(Member::count() + 1, 4, '0', STR_PAD_LEFT),
+            'is_active' => false, // Requires approval
+            'registration_number' => 'PENDING-' . strtoupper(Str::random(6)),
             'qr_code' => 'QR-' . strtoupper(Str::random(10)),
-            'profile_completed' => false, // Flag for profile completion
         ]);
 
-        // 4. Auto-login the user
-        Auth::login($user);
+        // 4. Join Groups (if selected)
+        if ($request->has('groups')) {
+            foreach ($request->groups as $groupId) {
+                $member->groups()->attach($groupId, [
+                    'join_date' => now(),
+                    'is_active' => false, // Group membership also pending approval
+                ]);
+            }
+        }
 
-        return redirect()->route('member.profile.edit')->with('success', 'Registration successful! Please complete your profile to access all features.');
+        // 5. Send credentials via SMS
+        if ($user->phone) {
+            $smsMessage = "Welcome to TMCS! Your account has been created. Email: {$user->email}, Password: {$request->password}. Please wait for administrator approval before logging in.";
+            SendSmsJob::dispatch($user->phone, $smsMessage);
+        }
+
+        // 6. Send credentials via email
+        if ($user->email) {
+            Mail::to($user->email)->queue(new PasswordResetMailable($user, $request->password, 'Your TMCS Account Credentials'));
+        }
+
+        return redirect()->route('login')->with('success', 'Registration successful! Your account is pending administrator approval. Login credentials have been sent to your email and phone.');
     }
 
     /**
