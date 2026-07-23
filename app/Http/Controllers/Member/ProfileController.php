@@ -327,12 +327,10 @@ class ProfileController extends Controller
         // Get community IDs for filtering
         $communityIds = $communities->pluck('id')->merge($ledCommunities->pluck('id'))->unique();
 
-        // Get upcoming events for member's communities
-        $upcomingEvents = \App\Models\Event::where('start_date', '>=', now())
-            ->whereHas('groups', function($query) use ($communityIds) {
-                $query->whereIn('groups.id', $communityIds);
-            })
-            ->orderBy('start_date')
+        // Get upcoming events (all events for now since events don't have group relationship)
+        $upcomingEvents = \App\Models\Event::where('event_date', '>=', now()->toDateString())
+            ->where('status', 'upcoming')
+            ->orderBy('event_date')
             ->limit(5)
             ->get();
 
