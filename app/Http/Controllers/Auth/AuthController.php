@@ -76,6 +76,7 @@ class AuthController extends Controller
             'full_name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email|unique:members,email',
             'phone' => 'required|string|max:20',
+            'date_of_birth' => 'required|date|before:today',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -100,6 +101,7 @@ class AuthController extends Controller
             'full_name' => $request->full_name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'date_of_birth' => $request->date_of_birth,
             'member_type' => 'Regular',
             'registration_date' => now(),
             'is_active' => true, // Auto-activate

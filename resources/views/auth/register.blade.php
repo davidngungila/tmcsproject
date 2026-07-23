@@ -263,6 +263,28 @@
                         @enderror
                     </div>
 
+                    <!-- Date of Birth -->
+                    <div class="mb-4">
+                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Date of birth</label>
+                        <div class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-calendar"></i>
+                            </span>
+                            <input
+                                type="date"
+                                name="date_of_birth"
+                                value="{{ old('date_of_birth') }}"
+                                required
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                            >
+                        </div>
+                        @error('date_of_birth')
+                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
                     <!-- Password -->
                     <div class="mb-4">
                         <label class="mb-1.5 block text-sm font-semibold text-pine-900">Password</label>
