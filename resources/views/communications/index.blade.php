@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Communications - TmcsSmart')
-@section('page-title', 'Communication Management')
+@section('title', 'Bulk SMS - TmcsSmart')
+@section('page-title', 'Bulk SMS Management')
 @section('breadcrumb', 'TmcsSmart / Communications')
 
 @section('content')
@@ -10,10 +10,10 @@
   <div class="stat-grid mb-6">
     <div class="stat-card green">
       <div class="stat-icon green">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
       </div>
       <div class="stat-value">{{ $totalCommunications }}</div>
-      <div class="stat-label">Total Communications</div>
+      <div class="stat-label">Total SMS</div>
       <div class="stat-change up">
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17l9-9m0 0V5m0 12h-12"/></svg>
         12% from last month
@@ -22,9 +22,9 @@
 
     <div class="stat-card gold">
       <div class="stat-icon gold">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       </div>
-      <div class="stat-value">{{ $sentSMS }}</div>
+      <div class="stat-value">{{ $sentCommunications }}</div>
       <div class="stat-label">SMS Sent</div>
       <div class="stat-change up">
         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17l9-9m0 0V5m0 12h-12"/></svg>
@@ -34,13 +34,13 @@
 
     <div class="stat-card blue">
       <div class="stat-icon blue">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
       </div>
-      <div class="stat-value">{{ $sentEmails }}</div>
-      <div class="stat-label">Emails Sent</div>
-      <div class="stat-change up">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 17l9-9m0 0V5m0 12h-12"/></svg>
-        15% from last month
+      <div class="stat-value">{{ $pendingCommunications }}</div>
+      <div class="stat-label">Pending</div>
+      <div class="stat-change down">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 7l-9 9m0 0V4m0 12h12"/></svg>
+        2 less than yesterday
       </div>
     </div>
 
@@ -60,25 +60,17 @@
   <!-- PAGE ACTIONS -->
   <div class="flex items-center justify-between mb-4">
     <div>
-      <h2 class="text-lg font-bold">Communications</h2>
-      <p class="text-sm text-muted mt-1">Manage email and SMS communications</p>
+      <h2 class="text-lg font-bold">Bulk SMS</h2>
+      <p class="text-sm text-muted mt-1">Manage bulk SMS communications</p>
     </div>
     <div class="flex gap-3">
       <a href="{{ route('message-templates.index') }}" class="btn btn-secondary">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Templates
       </a>
-      <a href="{{ route('communications.send-sms') }}" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-        Schedule SMS
-      </a>
-      <a href="{{ route('communications.send-email') }}" class="btn btn-secondary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        Schedule Email
-      </a>
       <a href="{{ route('communications.create') }}" class="btn btn-primary">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-        Schedule Message
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+        Send Bulk SMS
       </a>
     </div>
   </div>
@@ -87,13 +79,7 @@
   <div class="card mb-4">
     <div class="card-body">
       <div class="filter-row">
-        <input type="text" class="form-control search-input" placeholder="Search communications..." id="searchInput">
-        <select class="form-control filter-select" id="typeFilter">
-          <option value="">All Types</option>
-          <option value="email">Email</option>
-          <option value="sms">SMS</option>
-          <option value="both">Email & SMS</option>
-        </select>
+        <input type="text" class="form-control search-input" placeholder="Search SMS..." id="searchInput">
         <select class="form-control filter-select" id="statusFilter">
           <option value="">All Status</option>
           <option value="pending">Pending</option>
@@ -110,7 +96,7 @@
   <!-- COMMUNICATIONS TABLE -->
   <div class="card">
     <div class="card-header">
-      <div class="card-title">All Communications</div>
+      <div class="card-title">Bulk SMS History</div>
       <div class="card-subtitle">{{ $communications->count() }} total messages</div>
     </div>
     <div class="table-wrap">
@@ -138,14 +124,7 @@
               </div>
             </td>
             <td>
-              <div class="flex gap-1">
-                @if($communication->type === 'email' || $communication->type === 'both')
-                <span class="badge blue">Email</span>
-                @endif
-                @if($communication->type === 'sms' || $communication->type === 'both')
-                <span class="badge green">SMS</span>
-                @endif
-              </div>
+              <span class="badge green">SMS</span>
             </td>
             <td>
               <div style="font-size:12px;">
@@ -216,7 +195,7 @@
   <!-- COMMUNICATION CHART -->
   <div class="card mt-6">
     <div class="card-header">
-      <div class="card-title">Communication Trends</div>
+      <div class="card-title">SMS Trends</div>
       <div class="card-subtitle">Last 30 days overview</div>
     </div>
     <div class="card-body">
@@ -327,7 +306,7 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
 });
 
 // Filter functionality
-['typeFilter', 'statusFilter', 'dateFilter'].forEach(id => {
+['statusFilter', 'dateFilter'].forEach(id => {
   document.getElementById(id).addEventListener('change', function(e) {
     const value = e.target.value;
     const url = new URL(window.location);
@@ -349,14 +328,6 @@ if (ctx) {
     data: {
       labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
       datasets: [{
-        label: 'Email',
-        data: [45, 52, 38, 65],
-        borderColor: '#2563eb',
-        backgroundColor: 'rgba(37,99,235,0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4
-      }, {
         label: 'SMS',
         data: [28, 35, 42, 38],
         borderColor: '#059669',
