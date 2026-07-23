@@ -5,7 +5,7 @@
 @section('breadcrumb', 'Home / Member / Profile / Edit')
 
 @section('content')
-<div class="animate-in max-w-2xl mx-auto">
+<div class="animate-in max-w-4xl mx-auto">
   <div class="card">
     <div class="card-header border-b">
       <div class="card-title">Update Your Information</div>
@@ -31,7 +31,7 @@
           @error('photo') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
         </div>
 
-        <div class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="form-group">
             <label class="form-label">Phone Number</label>
             <input type="text" name="phone" class="form-control" value="{{ old('phone', $member->phone) }}" placeholder="e.g. 0622239304">
@@ -44,7 +44,7 @@
             @error('baptismal_name') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
           </div>
 
-          <div class="form-group">
+          <div class="form-group md:col-span-2">
             <label class="form-label">Residential Address</label>
             <textarea name="address" class="form-control" rows="3" placeholder="Enter your current residential address">{{ old('address', $member->address) }}</textarea>
             @error('address') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
