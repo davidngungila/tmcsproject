@@ -153,12 +153,12 @@
         </aside>
 
         <!-- RIGHT: Register panel -->
-        <main class="relative flex min-h-full items-center justify-center bg-white px-6 py-12 sm:px-10">
+        <main class="relative flex min-h-full items-center justify-center bg-white px-4 py-8 sm:px-6 sm:py-10">
 
             <!-- soft mesh backdrop -->
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.06),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(224,178,92,0.06),_transparent_40%)]"></div>
 
-            <div x-data="{ loading: false }" class="relative w-full max-w-sm">
+            <div x-data="{ loading: false }" class="relative w-full max-w-md">
 
                 <!-- mobile-only brand mark -->
                 <div class="mb-8 flex items-center gap-3 lg:hidden">
@@ -173,7 +173,7 @@
 
                 <div class="rise-in" style="animation-delay:.1s">
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Create account</p>
-                    <h2 class="font-display mt-2 text-3xl font-semibold text-pine-900">Register to get started</h2>
+                    <h2 class="font-display mt-2 text-2xl font-semibold text-pine-900">Register to get started</h2>
                     <p class="mt-2 text-sm text-ink-600">Enter your details to create your account.</p>
                 </div>
 
@@ -188,14 +188,14 @@
                     method="POST"
                     action="{{ route('register.post') }}"
                     @submit="loading = true"
-                    class="rise-in mt-8"
+                    class="rise-in mt-6"
                     style="animation-delay:.2s"
                 >
                     @csrf
 
                     <!-- Full Name -->
-                    <div class="mb-5">
-                        <label class="mb-2 block text-sm font-semibold text-pine-900">Full name</label>
+                    <div class="mb-4">
+                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Full name</label>
                         <div class="group relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
                                 <i class="fa-solid fa-user"></i>
@@ -206,20 +206,20 @@
                                 value="{{ old('full_name') }}"
                                 required
                                 autofocus
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="Your full name"
                             >
                         </div>
                         @error('full_name')
-                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
                     </div>
 
                     <!-- Email -->
-                    <div class="mb-5">
-                        <label class="mb-2 block text-sm font-semibold text-pine-900">Email address</label>
+                    <div class="mb-4">
+                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Email address</label>
                         <div class="group relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
                                 <i class="fa-solid fa-envelope"></i>
@@ -229,20 +229,20 @@
                                 name="email"
                                 value="{{ old('email') }}"
                                 required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="you@example.com"
                             >
                         </div>
                         @error('email')
-                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
                     </div>
 
                     <!-- Phone -->
-                    <div class="mb-5">
-                        <label class="mb-2 block text-sm font-semibold text-pine-900">Phone number</label>
+                    <div class="mb-4">
+                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Phone number</label>
                         <div class="group relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
                                 <i class="fa-solid fa-phone"></i>
@@ -252,20 +252,20 @@
                                 name="phone"
                                 value="{{ old('phone') }}"
                                 required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="e.g. 0712345678"
                             >
                         </div>
                         @error('phone')
-                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
                     </div>
 
                     <!-- Password -->
-                    <div class="mb-5">
-                        <label class="mb-2 block text-sm font-semibold text-pine-900">Password</label>
+                    <div class="mb-4">
+                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Password</label>
                         <div x-data="{ show: false }" class="group relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
                                 <i class="fa-solid fa-lock"></i>
@@ -274,7 +274,7 @@
                                 :type="show ? 'text' : 'password'"
                                 name="password"
                                 required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="Min 8 characters"
                             >
                             <button
@@ -286,15 +286,15 @@
                             </button>
                         </div>
                         @error('password')
-                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-600">
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
                     </div>
 
                     <!-- Confirm Password -->
-                    <div class="mb-7">
-                        <label class="mb-2 block text-sm font-semibold text-pine-900">Confirm password</label>
+                    <div class="mb-5">
+                        <label class="mb-1.5 block text-sm font-semibold text-pine-900">Confirm password</label>
                         <div x-data="{ show: false }" class="group relative">
                             <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
                                 <i class="fa-solid fa-lock"></i>
@@ -303,7 +303,7 @@
                                 :type="show ? 'text' : 'password'"
                                 name="password_confirmation"
                                 required
-                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-2.5 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="Repeat password"
                             >
                             <button
@@ -320,7 +320,7 @@
                     <button
                         type="submit"
                         :disabled="loading"
-                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
+                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
                     >
                         <span x-show="!loading">Create account</span>
                         <span x-show="loading" class="flex items-center gap-2">
