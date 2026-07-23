@@ -1,75 +1,18 @@
 @extends('layouts.app')
 
-@section('title', 'Schedule Message - TmcsSmart')
-@section('page-title', 'Schedule Message')
-@section('breadcrumb', 'TmcsSmart / Communications / Schedule')
+@section('title', 'Send Bulk SMS - TmcsSmart')
+@section('page-title', 'Send Bulk SMS')
+@section('breadcrumb', 'TmcsSmart / Communications / Bulk SMS')
 
 @section('content')
 <div class="animate-in">
   <form action="{{ route('communications.store') }}" method="POST">
     @csrf
+    <input type="hidden" name="type" value="SMS">
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- LEFT COLUMN: CHANNEL & CONTENT -->
+      <!-- LEFT COLUMN: CONTENT -->
       <div class="lg:col-span-8 space-y-6">
-        <!-- CHANNEL SELECTION CARD -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title flex items-center gap-2">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
-              Select Communication Channel
-            </div>
-            <div class="card-subtitle">Choose how you want to send your message</div>
-          </div>
-          <div class="card-body">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <label class="flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-green-500 hover:bg-green-50">
-                <input type="radio" name="type" value="SMS" {{ old('type', 'SMS') == 'SMS' ? 'checked' : '' }} class="hidden peer">
-                <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-3 peer-checked:bg-blue-500 transition-colors">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="peer-checked:text-white text-blue-700">
-                    <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                  </svg>
-                </div>
-                <span class="font-semibold">SMS</span>
-              </label>
-
-              <label class="flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-green-500 hover:bg-green-50">
-                <input type="radio" name="type" value="Email" {{ old('type') == 'Email' ? 'checked' : '' }} class="hidden peer">
-                <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-3 peer-checked:bg-amber-500 transition-colors">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="peer-checked:text-white text-amber-700">
-                    <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                  </svg>
-                </div>
-                <span class="font-semibold">Email</span>
-              </label>
-
-              <label class="flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-green-500 hover:bg-green-50">
-                <input type="radio" name="type" value="WhatsApp" {{ old('type') == 'WhatsApp' ? 'checked' : '' }} class="hidden peer">
-                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mb-3 peer-checked:bg-purple-500 transition-colors">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="peer-checked:text-white text-purple-700">
-                    <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                  </svg>
-                </div>
-                <span class="font-semibold">WhatsApp</span>
-              </label>
-
-              <label class="flex flex-col items-center justify-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 hover:border-green-500 hover:bg-green-50">
-                <input type="radio" name="type" value="Announcement" {{ old('type') == 'Announcement' ? 'checked' : '' }} class="hidden peer">
-                <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-3 peer-checked:bg-green-500 transition-colors">
-                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="peer-checked:text-white text-green-700">
-                    <path d="M11 5.882V19.24a1.76 1.76 0 003.417.592l2.147-6.158a1.76 1.76 0 011.545-1.101H20V5.882z"/>
-                    <path d="M11 3h-7a1 1 0 00-1 1v10a1 1 0 001 1h7"/>
-                  </svg>
-                </div>
-                <span class="font-semibold">Announcement</span>
-              </label>
-            </div>
-            @error('type') <div class="text-red text-xs mt-3">{{ $message }}</div> @enderror
-          </div>
-        </div>
-
         <!-- MESSAGE CONTENT CARD -->
         <div class="card">
           <div class="card-header flex items-center justify-between">
@@ -297,9 +240,9 @@
           <a href="{{ route('communications.index') }}" class="btn btn-secondary flex-1">Cancel</a>
           <button type="submit" class="btn btn-primary flex-1">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2">
-              <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
             </svg>
-            <span id="createSubmitText">Send Message</span>
+            <span id="createSubmitText">Send Bulk SMS</span>
           </button>
         </div>
       </div>
@@ -322,7 +265,6 @@ const memberSelect = document.getElementById('memberSelect');
 const advancedCriteria = document.getElementById('advancedCriteria');
 const templateSelect = document.getElementById('messageTemplate');
 const subjectInput = document.querySelector('input[name="subject"]');
-const communicationTypes = document.querySelectorAll('input[name="type"]');
 const charCountEl = document.getElementById('charCount');
 const smsCountEl = document.getElementById('smsCount');
 const messageArea = document.getElementById('messageArea');
@@ -386,19 +328,9 @@ function useTemplate() {
     const selectedOption = templateSelect.options[templateSelect.selectedIndex];
     const content = templateSelect.value;
     const subject = selectedOption.getAttribute('data-subject');
-    const type = selectedOption.getAttribute('data-type');
 
     quill.root.innerHTML = content;
     if (subject) subjectInput.value = subject;
-    
-    // Auto-select channel
-    if (type) {
-      communicationTypes.forEach(radio => {
-        if (radio.value.toUpperCase() === type.toUpperCase()) {
-          radio.checked = true;
-        }
-      });
-    }
     
     // Show preview
     document.getElementById('templatePreview').classList.remove('hidden');
@@ -452,10 +384,10 @@ function toggleCreateScheduleField() {
   
   if (sendOption === 'schedule') {
     document.getElementById('createScheduleField').classList.remove('hidden');
-    submitText.textContent = 'Schedule Message';
+    submitText.textContent = 'Schedule Bulk SMS';
   } else {
     document.getElementById('createScheduleField').classList.add('hidden');
-    submitText.textContent = 'Send Message';
+    submitText.textContent = 'Send Bulk SMS';
   }
 }
 </script>

@@ -32,18 +32,12 @@ class CommunicationController extends Controller
         $failedCommunications = Communication::where('status', 'Failed')->count();
         $pendingCommunications = Communication::where('status', 'Pending')->count();
         
-        // Add specific type counts for the stat cards
-        $sentSMS = Communication::where('status', 'Sent')->where('type', 'SMS')->count();
-        $sentEmails = Communication::where('status', 'Sent')->where('type', 'Email')->count();
-        
         return view('communications.index', compact(
             'communications', 
             'totalCommunications', 
             'sentCommunications', 
             'failedCommunications', 
-            'pendingCommunications',
-            'sentSMS',
-            'sentEmails'
+            'pendingCommunications'
         ));
     }
 
@@ -63,7 +57,7 @@ class CommunicationController extends Controller
         $validated = $request->validate([
             'subject' => 'required|string|max:255',
             'message' => 'required|string',
-            'type' => 'required|string', // SMS, Email, WhatsApp, Announcement
+            'type' => 'required|in:SMS', // Only SMS allowed
             'recipient_type' => 'required|string', // All, Group, Individual, Advanced
             'group_id' => 'required_if:recipient_type,Group|exists:groups,id',
             'member_id' => 'required_if:recipient_type,Individual|exists:members,id',
@@ -80,7 +74,6 @@ class CommunicationController extends Controller
 
         $query = Member::query();
         $recipients = [];
-        $emailRecipients = [];
 
         if ($validated['recipient_type'] === 'All') {
             $query->whereNotNull('phone');
@@ -92,7 +85,6 @@ class CommunicationController extends Controller
         } elseif ($validated['recipient_type'] === 'Individual') {
             $member = Member::find($request->member_id);
             $recipients = [$member->phone];
-            $emailRecipients = [$member->email];
         } elseif ($validated['recipient_type'] === 'Advanced') {
             if (isset($validated['criteria']['category_ids']) && !empty($validated['criteria']['category_ids'])) {
                 $query->whereIn('category_id', $validated['criteria']['category_ids']);
@@ -123,48 +115,41 @@ class CommunicationController extends Controller
 
         if ($validated['recipient_type'] !== 'Individual') {
             $recipients = $query->whereNotNull('phone')->pluck('phone')->toArray();
-            $emailRecipients = $query->whereNotNull('email')->pluck('email')->toArray();
         }
 
         $recipients = array_filter($recipients); // Remove nulls
-        $emailRecipients = array_filter($emailRecipients); // Remove nulls
 
-        if ($validated['type'] === 'SMS' && empty($recipients)) {
+        if (empty($recipients)) {
             return back()->with('error', 'No valid phone numbers found for the selected recipients.');
-        }
-
-        if ($validated['type'] === 'Email' && empty($emailRecipients)) {
-            return back()->with('error', 'No valid email addresses found for the selected recipients.');
         }
 
         $communicationData = [
             'subject' => $validated['subject'],
             'message' => $validated['message'],
-            'type' => strtolower($validated['type']),
+            'type' => 'sms', // Always SMS
             'recipient_type' => $validated['recipient_type'],
             'group_id' => $validated['group_id'] ?? null,
             'member_id' => $validated['member_id'] ?? null,
             'criteria' => $validated['criteria'] ?? null,
             'sent_by' => Auth::id(),
-            'recipients' => json_encode($validated['type'] === 'Email' ? $emailRecipients : $recipients),
+            'recipients' => json_encode($recipients),
         ];
 
         if ($validated['send_option'] === 'schedule' && $validated['scheduled_at']) {
             $communicationData['status'] = 'scheduled';
             $communicationData['scheduled_at'] = $validated['scheduled_at'];
-            $successMessage = 'Message scheduled successfully for ' . $validated['scheduled_at'];
+            $successMessage = 'Bulk SMS scheduled successfully for ' . $validated['scheduled_at'];
         } else {
             $communicationData['status'] = 'pending';
             $communicationData['sent_at'] = now();
-            $successMessage = 'Message queued for sending to ' . count($validated['type'] === 'Email' ? $emailRecipients : $recipients) . ' recipient(s)';
+            $successMessage = 'Bulk SMS queued for sending to ' . count($recipients) . ' recipient(s)';
         }
 
         $communication = Communication::create($communicationData);
 
         // If sending now, dispatch the job
         if ($validated['send_option'] === 'now') {
-            $finalRecipients = $validated['type'] === 'Email' ? $emailRecipients : $recipients;
-            ProcessCommunicationJob::dispatch($communication, $finalRecipients);
+            ProcessCommunicationJob::dispatch($communication, $recipients);
         }
 
         return redirect()->route('communications.index')->with('success', $successMessage);
