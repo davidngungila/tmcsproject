@@ -35,7 +35,7 @@ class FeedTanEcommerceService
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
                 'Content-Type' => 'application/json',
-            ])->timeout(180)->post($this->baseUrl . '/payments/initiate', $payload);
+            ])->timeout(30)->post($this->baseUrl . '/payments/initiate', $payload);
 
             $result = $response->json();
 
@@ -80,7 +80,7 @@ class FeedTanEcommerceService
         try {
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
-            ])->get($this->baseUrl . '/payments/status/' . $orderReference);
+            ])->timeout(15)->get($this->baseUrl . '/payments/status/' . $orderReference);
 
             $result = $response->json();
 
