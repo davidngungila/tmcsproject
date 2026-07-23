@@ -77,7 +77,7 @@ class ProfileController extends Controller
         }
 
         // Prepare payment data for FeedTan
-        $orderReference = 'TMCS' . $contribution->id . str_replace(['-', ':', ' '], '', now()->format('YmdHis'));
+        $orderReference = 'TM' . str_pad($contribution->id, 5, '0', STR_PAD_LEFT);
         
         $paymentData = [
             'amount' => $validated['amount'],
@@ -472,7 +472,7 @@ class ProfileController extends Controller
         ]);
 
         // Prepare payment data for FeedTan
-        $orderReference = 'TMCS' . $contribution->id . str_replace(['-', ':', ' '], '', now()->format('YmdHis'));
+        $orderReference = 'TM' . str_pad($contribution->id, 5, '0', STR_PAD_LEFT);
         
         $paymentData = [
             'amount' => $contribution->amount,
