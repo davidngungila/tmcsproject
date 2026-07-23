@@ -158,29 +158,7 @@
             <!-- soft mesh backdrop -->
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.06),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(224,178,92,0.06),_transparent_40%)]"></div>
 
-            <div x-data="{ 
-                loading: false,
-                step: 1,
-                fullName: '{{ old('full_name') }}',
-                email: '{{ old('email') }}',
-                phone: '{{ old('phone') }}',
-                password: '',
-                passwordConfirmation: '',
-                canProceed(step) {
-                    if (step === 2) return this.fullName && this.fullName.length > 2;
-                    if (step === 3) return this.email && this.email.includes('@');
-                    if (step === 4) return this.phone && this.phone.length > 9;
-                    if (step === 5) return this.password && this.password.length >= 8;
-                    if (step === 6) return this.passwordConfirmation && this.passwordConfirmation === this.password;
-                    return false;
-                },
-                nextStep() {
-                    if (this.step < 6) this.step++;
-                },
-                prevStep() {
-                    if (this.step > 1) this.step--;
-                }
-            }" class="relative w-full max-w-sm">
+            <div x-data="{ loading: false }" class="relative w-full max-w-sm">
 
                 <!-- mobile-only brand mark -->
                 <div class="mb-8 flex items-center gap-3 lg:hidden">
@@ -194,14 +172,6 @@
                 </div>
 
                 <div class="rise-in" style="animation-delay:.1s">
-                    <!-- Progress indicator -->
-                    <div class="mb-6 flex items-center justify-center gap-2">
-                        <template x-for="i in 5" :key="i">
-                            <div class="h-1.5 w-8 rounded-full transition-all duration-300"
-                                 :class="i <= step ? 'bg-emerald-500' : 'bg-mist-200'"></div>
-                        </template>
-                    </div>
-
                     <p class="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">Create account</p>
                     <h2 class="font-display mt-2 text-3xl font-semibold text-pine-900">Register to get started</h2>
                     <p class="mt-2 text-sm text-ink-600">Enter your details to create your account.</p>
@@ -223,223 +193,140 @@
                 >
                     @csrf
 
-                    <!-- Step 1: Full Name -->
-                    <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4">
-                        <div class="mb-5">
-                            <label class="mb-2 block text-sm font-semibold text-pine-900">Full name</label>
-                            <div class="group relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                    <i class="fa-solid fa-user"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    name="full_name"
-                                    x-model="fullName"
-                                    required
-                                    autofocus
-                                    @keyup.enter="canProceed(2) && nextStep()"
-                                    class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                    placeholder="Your full name"
-                                >
-                            </div>
-                            @error('full_name')
-                                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                    <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                                </p>
-                            @enderror
+                    <!-- Full Name -->
+                    <div class="mb-5">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Full name</label>
+                        <div class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input
+                                type="text"
+                                name="full_name"
+                                value="{{ old('full_name') }}"
+                                required
+                                autofocus
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="Your full name"
+                            >
                         </div>
-                        <button
-                            type="button"
-                            @click="nextStep()"
-                            :disabled="!canProceed(2)"
-                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                            Continue
-                        </button>
+                        @error('full_name')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
-                    <!-- Step 2: Email -->
-                    <div x-show="step === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
-                        <div class="mb-5">
-                            <label class="mb-2 block text-sm font-semibold text-pine-900">Email address</label>
-                            <div class="group relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                    <i class="fa-solid fa-envelope"></i>
-                                </span>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    x-model="email"
-                                    required
-                                    @keyup.enter="canProceed(3) && nextStep()"
-                                    class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                    placeholder="you@example.com"
-                                >
-                            </div>
-                            @error('email')
-                                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                    <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                                </p>
-                            @enderror
-                        </div>
-                        <div class="flex gap-3">
-                            <button
-                                type="button"
-                                @click="prevStep()"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-mist-200 py-3.5 font-semibold text-ink-600 transition-all hover:bg-mist-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98]"
+                    <!-- Email -->
+                    <div class="mb-5">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Email address</label>
+                        <div class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-envelope"></i>
+                            </span>
+                            <input
+                                type="email"
+                                name="email"
+                                value="{{ old('email') }}"
+                                required
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="you@example.com"
                             >
-                                Back
-                            </button>
-                            <button
-                                type="button"
-                                @click="nextStep()"
-                                :disabled="!canProceed(3)"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                Continue
-                            </button>
                         </div>
+                        @error('email')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
-                    <!-- Step 3: Phone -->
-                    <div x-show="step === 3" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
-                        <div class="mb-5">
-                            <label class="mb-2 block text-sm font-semibold text-pine-900">Phone number</label>
-                            <div class="group relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                    <i class="fa-solid fa-phone"></i>
-                                </span>
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    x-model="phone"
-                                    required
-                                    @keyup.enter="canProceed(4) && nextStep()"
-                                    class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                    placeholder="e.g. 0712345678"
-                                >
-                            </div>
-                            @error('phone')
-                                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                    <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                                </p>
-                            @enderror
-                        </div>
-                        <div class="flex gap-3">
-                            <button
-                                type="button"
-                                @click="prevStep()"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-mist-200 py-3.5 font-semibold text-ink-600 transition-all hover:bg-mist-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98]"
+                    <!-- Phone -->
+                    <div class="mb-5">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Phone number</label>
+                        <div class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-phone"></i>
+                            </span>
+                            <input
+                                type="text"
+                                name="phone"
+                                value="{{ old('phone') }}"
+                                required
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="e.g. 0712345678"
                             >
-                                Back
-                            </button>
-                            <button
-                                type="button"
-                                @click="nextStep()"
-                                :disabled="!canProceed(4)"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                Continue
-                            </button>
                         </div>
+                        @error('phone')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
-                    <!-- Step 4: Password -->
-                    <div x-show="step === 4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
-                        <div class="mb-5">
-                            <label class="mb-2 block text-sm font-semibold text-pine-900">Password</label>
-                            <div x-data="{ show: false }" class="group relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                    <i class="fa-solid fa-lock"></i>
-                                </span>
-                                <input
-                                    :type="show ? 'text' : 'password'"
-                                    name="password"
-                                    x-model="password"
-                                    required
-                                    @keyup.enter="canProceed(5) && nextStep()"
-                                    class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                    placeholder="Min 8 characters"
-                                >
-                                <button
-                                    type="button"
-                                    @click="show = !show"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
-                                >
-                                    <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                                </button>
-                            </div>
-                            @error('password')
-                                <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                                    <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
-                                </p>
-                            @enderror
-                        </div>
-                        <div class="flex gap-3">
+                    <!-- Password -->
+                    <div class="mb-5">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Password</label>
+                        <div x-data="{ show: false }" class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input
+                                :type="show ? 'text' : 'password'"
+                                name="password"
+                                required
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="Min 8 characters"
+                            >
                             <button
                                 type="button"
-                                @click="prevStep()"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-mist-200 py-3.5 font-semibold text-ink-600 transition-all hover:bg-mist-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98]"
+                                @click="show = !show"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
                             >
-                                Back
+                                <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
                             </button>
+                        </div>
+                        @error('password')
+                            <p class="mt-2 flex items-center gap-1.5 text-xs font-medium text-red-600">
+                                <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-7">
+                        <label class="mb-2 block text-sm font-semibold text-pine-900">Confirm password</label>
+                        <div x-data="{ show: false }" class="group relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
+                                <i class="fa-solid fa-lock"></i>
+                            </span>
+                            <input
+                                :type="show ? 'text' : 'password'"
+                                name="password_confirmation"
+                                required
+                                class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
+                                placeholder="Repeat password"
+                            >
                             <button
                                 type="button"
-                                @click="nextStep()"
-                                :disabled="!canProceed(5)"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
+                                @click="show = !show"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
                             >
-                                Continue
+                                <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Step 5: Confirm Password -->
-                    <div x-show="step === 5" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-4" style="display: none;">
-                        <div class="mb-5">
-                            <label class="mb-2 block text-sm font-semibold text-pine-900">Confirm password</label>
-                            <div x-data="{ show: false }" class="group relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-ink-400 transition-colors group-focus-within:text-emerald-600">
-                                    <i class="fa-solid fa-lock"></i>
-                                </span>
-                                <input
-                                    :type="show ? 'text' : 'password'"
-                                    name="password_confirmation"
-                                    x-model="passwordConfirmation"
-                                    required
-                                    @keyup.enter="canProceed(6) && $root.loading = true"
-                                    class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
-                                    placeholder="Repeat password"
-                                >
-                                <button
-                                    type="button"
-                                    @click="show = !show"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-400 transition-colors hover:text-emerald-600"
-                                >
-                                    <i :class="show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="flex gap-3">
-                            <button
-                                type="button"
-                                @click="prevStep()"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl border-2 border-mist-200 py-3.5 font-semibold text-ink-600 transition-all hover:bg-mist-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98]"
-                            >
-                                Back
-                            </button>
-                            <button
-                                type="submit"
-                                :disabled="!canProceed(6) || loading"
-                                class="flex flex-1 items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <span x-show="!loading">Create account</span>
-                                <span x-show="loading" class="flex items-center gap-2">
-                                    <i class="fa-solid fa-spinner fa-spin"></i> Creating&hellip;
-                                </span>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- Submit -->
+                    <button
+                        type="submit"
+                        :disabled="loading"
+                        class="flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                        <span x-show="!loading">Create account</span>
+                        <span x-show="loading" class="flex items-center gap-2">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Creating account&hellip;
+                        </span>
+                    </button>
                 </form>
 
                 <p class="rise-in mt-8 text-center text-sm text-ink-600" style="animation-delay:.25s">
