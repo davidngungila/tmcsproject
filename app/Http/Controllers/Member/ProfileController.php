@@ -340,12 +340,9 @@ class ProfileController extends Controller
                 $query->whereNull('expiry_date')
                     ->orWhere('expiry_date', '>=', now());
             })
-            ->where(function($query) use ($communityIds) {
+            ->where(function($query) {
                 $query->where('target_audience', 'All')
-                    ->orWhereIn('target_audience', ['Members', 'Students'])
-                    ->orWhereHas('groups', function($q) use ($communityIds) {
-                        $q->whereIn('groups.id', $communityIds);
-                    });
+                    ->orWhereIn('target_audience', ['Members', 'Students']);
             })
             ->orderBy('created_at', 'desc')
             ->limit(5)
