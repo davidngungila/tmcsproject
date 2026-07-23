@@ -44,7 +44,7 @@ class ProfileController extends Controller
         $member = $user->member;
 
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:500',
+            'amount' => 'required|numeric|min:908',
             'contribution_type' => 'required|string',
             'payment_method' => 'required|string|in:mobile_money',
             'phone_number' => 'nullable|string|min:10',
