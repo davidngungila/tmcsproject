@@ -173,6 +173,11 @@
                     if (step === 5) return this.password && this.password.length >= 8;
                     if (step === 6) return this.passwordConfirmation && this.passwordConfirmation === this.password;
                     return true;
+                },
+                autoAdvance(step, condition) {
+                    if (condition) {
+                        this.step = step;
+                    }
                 }
             }" class="relative w-full max-w-sm">
 
@@ -228,9 +233,9 @@
                                 type="text"
                                 name="full_name"
                                 x-model="fullName"
+                                @input="autoAdvance(2, canProceed(2))"
                                 required
                                 autofocus
-                                @keyup.enter="canProceed(2) ? step++ : null"
                                 class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="Your full name"
                             >
@@ -240,10 +245,6 @@
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
-                        <button type="button" @click="step++" :disabled="!canProceed(2)"
-                            class="mt-4 w-full rounded-xl bg-pine-900 py-3 font-semibold text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50">
-                            Continue
-                        </button>
                     </div>
 
                     <!-- Step 2: Email -->
@@ -257,8 +258,8 @@
                                 type="email"
                                 name="email"
                                 x-model="email"
+                                @input="autoAdvance(3, canProceed(3))"
                                 required
-                                @keyup.enter="canProceed(3) ? step++ : null"
                                 class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="you@example.com"
                             >
@@ -268,16 +269,6 @@
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
-                        <div class="mt-4 flex gap-3">
-                            <button type="button" @click="step--"
-                                class="flex-1 rounded-xl border-2 border-mist-200 py-3 font-semibold text-pine-900 transition-all hover:bg-mist-50">
-                                Back
-                            </button>
-                            <button type="button" @click="step++" :disabled="!canProceed(3)"
-                                class="flex-1 rounded-xl bg-pine-900 py-3 font-semibold text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50">
-                                Continue
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Step 3: Phone -->
@@ -291,8 +282,8 @@
                                 type="text"
                                 name="phone"
                                 x-model="phone"
+                                @input="autoAdvance(4, canProceed(4))"
                                 required
-                                @keyup.enter="canProceed(4) ? step++ : null"
                                 class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-4 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="e.g. 0712345678"
                             >
@@ -302,16 +293,6 @@
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
-                        <div class="mt-4 flex gap-3">
-                            <button type="button" @click="step--"
-                                class="flex-1 rounded-xl border-2 border-mist-200 py-3 font-semibold text-pine-900 transition-all hover:bg-mist-50">
-                                Back
-                            </button>
-                            <button type="button" @click="step++" :disabled="!canProceed(4)"
-                                class="flex-1 rounded-xl bg-pine-900 py-3 font-semibold text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50">
-                                Continue
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Step 4: Password -->
@@ -325,8 +306,8 @@
                                 :type="show ? 'text' : 'password'"
                                 name="password"
                                 x-model="password"
+                                @input="autoAdvance(5, canProceed(5))"
                                 required
-                                @keyup.enter="canProceed(5) ? step++ : null"
                                 class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="Min 8 characters"
                             >
@@ -343,16 +324,6 @@
                                 <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                             </p>
                         @enderror
-                        <div class="mt-4 flex gap-3">
-                            <button type="button" @click="step--"
-                                class="flex-1 rounded-xl border-2 border-mist-200 py-3 font-semibold text-pine-900 transition-all hover:bg-mist-50">
-                                Back
-                            </button>
-                            <button type="button" @click="step++" :disabled="!canProceed(5)"
-                                class="flex-1 rounded-xl bg-pine-900 py-3 font-semibold text-white transition-all hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50">
-                                Continue
-                            </button>
-                        </div>
                     </div>
 
                     <!-- Step 5: Confirm Password -->
@@ -366,8 +337,8 @@
                                 :type="show ? 'text' : 'password'"
                                 name="password_confirmation"
                                 x-model="passwordConfirmation"
-                                required
                                 @keyup.enter="canProceed(6) ? $el.closest('form').requestSubmit() : null"
+                                required
                                 class="w-full rounded-xl border-2 border-mist-100 bg-mist-50 py-3 pl-12 pr-12 text-pine-900 placeholder-ink-400 transition-all focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10"
                                 placeholder="Repeat password"
                             >
@@ -382,22 +353,16 @@
                         <p x-show="passwordConfirmation && passwordConfirmation !== password" class="mt-2 text-xs font-medium text-red-600">
                             Passwords do not match
                         </p>
-                        <div class="mt-4 flex gap-3">
-                            <button type="button" @click="step--"
-                                class="flex-1 rounded-xl border-2 border-mist-200 py-3 font-semibold text-pine-900 transition-all hover:bg-mist-50">
-                                Back
-                            </button>
-                            <button
-                                type="submit"
-                                :disabled="loading || !canProceed(6)"
-                                class="flex-1 flex items-center justify-center gap-2 rounded-xl bg-pine-900 py-3 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
-                            >
-                                <span x-show="!loading">Create account</span>
-                                <span x-show="loading" class="flex items-center gap-2">
-                                    <i class="fa-solid fa-spinner fa-spin"></i> Creating account&hellip;
-                                </span>
-                            </button>
-                        </div>
+                        <button
+                            type="submit"
+                            :disabled="loading || !canProceed(6)"
+                            class="mt-4 w-full flex items-center justify-center gap-2 rounded-xl bg-pine-900 py-3 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                            <span x-show="!loading">Create account</span>
+                            <span x-show="loading" class="flex items-center gap-2">
+                                <i class="fa-solid fa-spinner fa-spin"></i> Creating account&hellip;
+                            </span>
+                        </button>
                     </div>
                 </form>
 

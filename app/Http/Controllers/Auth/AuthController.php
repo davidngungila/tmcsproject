@@ -101,6 +101,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'phone' => $request->phone,
             'member_type' => 'Regular',
+            'date_of_birth' => now()->subYears(25), // Default date, will be updated in profile
             'registration_date' => now(),
             'is_active' => true, // Auto-activate
             'registration_number' => 'TMCS-' . str_pad(Member::count() + 1, 4, '0', STR_PAD_LEFT),
