@@ -8,10 +8,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\InteractsWithQueue;
 
 class CheckFeedTanPaymentStatus implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, InteractsWithQueue;
 
     public $tries = 10;
     public $backoff = [30, 60, 120, 300, 600]; // Retry intervals in seconds
