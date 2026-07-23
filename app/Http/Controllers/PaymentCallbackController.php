@@ -154,14 +154,9 @@ class PaymentCallbackController extends Controller
         $amount = number_format($contribution->amount, 0);
         $type = ucfirst(str_replace('_', ' ', $contribution->contribution_type));
         
-        // Send SMS (Queued)
-        if ($member->phone) {
-            \App\Jobs\SendSmsJob::dispatch(
-                $member->phone,
-                "Dear {$member->full_name}, your contribution of TZS {$amount} for {$type} has been confirmed. Receipt: {$contribution->receipt_number}. Thank you!"
-            );
-        }
-
+        // SMS notification disabled to prevent database lock issues
+        // TODO: Re-enable after queue system is stabilized
+        
         // Send Email with PDF (Queued)
         if ($member->email) {
             \Illuminate\Support\Facades\Mail::to($member->email)
