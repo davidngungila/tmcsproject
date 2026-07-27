@@ -192,51 +192,76 @@ document.addEventListener('DOMContentLoaded', function() {
                 const contributionId = data.contribution_id;
                 const phoneNumber = document.getElementById('phoneNumber').value;
 
-                // Show USSD sent with countdown
+                // Show USSD sent with countdown and progress stages
                 let countdown = 60;
+                let currentStage = 2; // Start at stage 2 (USSD sent)
+                
+                const stages = [
+                    { id: 1, name: 'Initiating Payment', icon: 'fa-spinner fa-spin', completed: true },
+                    { id: 2, name: 'USSD Push Sent', icon: 'fa-paper-plane', completed: true },
+                    { id: 3, name: 'Waiting for PIN', icon: 'fa-mobile-screen', completed: false },
+                    { id: 4, name: 'Verifying Payment', icon: 'fa-circle-check', completed: false },
+                    { id: 5, name: 'Payment Complete', icon: 'fa-check-double', completed: false }
+                ];
+                
+                function getStagesHtml(stage) {
+                    return stages.map(s => {
+                        const isCurrent = s.id === stage;
+                        const isCompleted = s.completed || s.id < stage;
+                        const color = isCompleted ? 'text-green-500' : (isCurrent ? 'text-blue-500' : 'text-gray-300');
+                        const bg = isCompleted ? 'bg-green-100' : (isCurrent ? 'bg-blue-100' : 'bg-gray-100');
+                        
+                        return `
+                            <div class="flex items-center gap-3 ${isCurrent ? 'opacity-100' : 'opacity-60'}">
+                                <div class="w-8 h-8 rounded-full ${bg} ${color} flex items-center justify-center">
+                                    <i class="fa-solid ${s.icon} text-sm"></i>
+                                </div>
+                                <span class="text-sm font-medium ${isCompleted ? 'text-green-700' : (isCurrent ? 'text-blue-700' : 'text-gray-500')}">${s.name}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
                 Swal.fire({
                     title: 'Payment Initiated',
                     html: `
-                        <div class="text-center">
-                            <div class="mb-4">
-                                <svg class="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
+                        <div class="text-left">
+                            <div class="mb-6 space-y-3">
+                                ${getStagesHtml(currentStage)}
                             </div>
-                            <p class="mb-4 text-lg font-semibold">USSD Push sent to ${phoneNumber}</p>
-                            <p class="mb-6 text-sm text-gray-500">Please enter your PIN on your phone to complete the payment</p>
                             
-                            <div class="mb-4">
-                                <div class="text-sm font-medium mb-2">Waiting for payment confirmation...</div>
-                                <div style="position: relative; width: 140px; height: 140px; margin: 0 auto;">
-                                    <svg class="progress-ring" width="140" height="140" style="transform: rotate(-90deg);">
-                                        <circle class="progress-ring__circle-bg" stroke="#e5e7eb" stroke-width="10" fill="transparent" r="60" cx="70" cy="70"/>
-                                        <circle class="progress-ring__circle" stroke="#059669" stroke-width="10" fill="transparent" r="60" cx="70" cy="70"
-                                            style="stroke-dasharray: 376.99; stroke-dashoffset: 376.99; transition: stroke-dashoffset 1s linear;"/>
+                            <div class="text-center mt-6 pt-6 border-t border-gray-200">
+                                <p class="mb-2 text-sm font-medium text-gray-700">USSD Push sent to ${phoneNumber}</p>
+                                <p class="mb-4 text-xs text-gray-500">Please enter your PIN on your phone to complete the payment</p>
+                                
+                                <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
+                                    <svg class="progress-ring" width="120" height="120" style="transform: rotate(-90deg);">
+                                        <circle class="progress-ring__circle-bg" stroke="#e5e7eb" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                                        <circle class="progress-ring__circle" stroke="#059669" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"
+                                            style="stroke-dasharray: 326.726; stroke-dashoffset: 326.726; transition: stroke-dashoffset 1s linear;"/>
                                     </svg>
-                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: bold; color: #059669;">
+                                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: bold; color: #059669;">
                                         ${countdown}
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <div class="text-sm text-gray-600">
-                                <div class="flex items-center justify-center gap-2 mb-2">
+                                
+                                <div class="flex items-center justify-center gap-2 mt-3">
                                     <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                    <span>Checking payment status...</span>
+                                    <span class="text-xs text-gray-600">Checking payment status...</span>
                                 </div>
-                                <p class="text-xs text-gray-400">Auto-redirecting in ${countdown} seconds</p>
+                                <p class="text-xs text-gray-400 mt-1">Auto-redirecting in ${countdown} seconds</p>
                             </div>
                         </div>
                     `,
                     icon: null,
                     showConfirmButton: false,
                     timer: null,
-                    allowOutsideClick: false
+                    allowOutsideClick: false,
+                    width: '450px'
                 });
 
                 const circle = document.querySelector('.progress-ring__circle');
-                const circumference = 376.99;
+                const circumference = 326.726;
 
                 // Countdown timer with circular progress
                 const countdownInterval = setInterval(() => {
@@ -244,37 +269,42 @@ document.addEventListener('DOMContentLoaded', function() {
                     const offset = circumference - ((60 - countdown) / 60) * circumference;
                     circle.style.strokeDashoffset = offset;
                     
+                    // Update stages based on countdown
+                    if (countdown <= 45 && currentStage === 2) {
+                        currentStage = 3;
+                        stages[2].completed = true;
+                    } else if (countdown <= 30 && currentStage === 3) {
+                        currentStage = 4;
+                        stages[3].completed = true;
+                    }
+                    
                     Swal.update({
                         html: `
-                            <div class="text-center">
-                                <div class="mb-4">
-                                    <svg class="w-16 h-16 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
+                            <div class="text-left">
+                                <div class="mb-6 space-y-3">
+                                    ${getStagesHtml(currentStage)}
                                 </div>
-                                <p class="mb-4 text-lg font-semibold">USSD Push sent to ${phoneNumber}</p>
-                                <p class="mb-6 text-sm text-gray-500">Please enter your PIN on your phone to complete the payment</p>
                                 
-                                <div class="mb-4">
-                                    <div class="text-sm font-medium mb-2">Waiting for payment confirmation...</div>
-                                    <div style="position: relative; width: 140px; height: 140px; margin: 0 auto;">
-                                        <svg class="progress-ring" width="140" height="140" style="transform: rotate(-90deg);">
-                                            <circle class="progress-ring__circle-bg" stroke="#e5e7eb" stroke-width="10" fill="transparent" r="60" cx="70" cy="70"/>
-                                            <circle class="progress-ring__circle" stroke="#059669" stroke-width="10" fill="transparent" r="60" cx="70" cy="70"
-                                                style="stroke-dasharray: 376.99; stroke-dashoffset: ${offset}; transition: stroke-dashoffset 1s linear;"/>
+                                <div class="text-center mt-6 pt-6 border-t border-gray-200">
+                                    <p class="mb-2 text-sm font-medium text-gray-700">USSD Push sent to ${phoneNumber}</p>
+                                    <p class="mb-4 text-xs text-gray-500">Please enter your PIN on your phone to complete the payment</p>
+                                    
+                                    <div style="position: relative; width: 120px; height: 120px; margin: 0 auto;">
+                                        <svg class="progress-ring" width="120" height="120" style="transform: rotate(-90deg);">
+                                            <circle class="progress-ring__circle-bg" stroke="#e5e7eb" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
+                                            <circle class="progress-ring__circle" stroke="#059669" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"
+                                                style="stroke-dasharray: 326.726; stroke-dashoffset: ${offset}; transition: stroke-dashoffset 1s linear;"/>
                                         </svg>
-                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: bold; color: #059669;">
+                                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 28px; font-weight: bold; color: #059669;">
                                             ${countdown}
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="text-sm text-gray-600">
-                                    <div class="flex items-center justify-center gap-2 mb-2">
+                                    
+                                    <div class="flex items-center justify-center gap-2 mt-3">
                                         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                        <span>Checking payment status...</span>
+                                        <span class="text-xs text-gray-600">Checking payment status...</span>
                                     </div>
-                                    <p class="text-xs text-gray-400">Auto-redirecting in ${countdown} seconds</p>
+                                    <p class="text-xs text-gray-400 mt-1">Auto-redirecting in ${countdown} seconds</p>
                                 </div>
                             </div>
                         `
@@ -283,11 +313,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
                         clearInterval(pollingInterval);
+                        currentStage = 5;
+                        stages[4].completed = true;
+                        
                         Swal.fire({
                             title: 'Payment Pending',
-                            text: 'Your payment is being processed. You can check the status in your payment history.',
+                            html: `
+                                <div class="text-left">
+                                    <div class="mb-6 space-y-3">
+                                        ${getStagesHtml(currentStage)}
+                                    </div>
+                                    <p class="text-sm text-gray-600 text-center mt-4">Your payment is being processed. You can check the status in your payment history.</p>
+                                </div>
+                            `,
                             icon: 'info',
-                            confirmButtonColor: '#059669'
+                            confirmButtonColor: '#059669',
+                            width: '450px'
                         }).then(() => {
                             window.location.href = "{{ route('member.contributions.index') }}";
                         });
@@ -302,13 +343,24 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (data.is_verified) {
                             clearInterval(countdownInterval);
                             clearInterval(pollingInterval);
+                            currentStage = 5;
+                            stages[4].completed = true;
+                            
                             Swal.fire({
                                 title: 'Payment Successful!',
-                                text: 'Thank you for your contribution. God bless you!',
+                                html: `
+                                    <div class="text-left">
+                                        <div class="mb-6 space-y-3">
+                                            ${getStagesHtml(currentStage)}
+                                        </div>
+                                        <p class="text-sm text-gray-600 text-center mt-4">Thank you for your contribution. God bless you!</p>
+                                    </div>
+                                `,
                                 icon: 'success',
                                 confirmButtonColor: '#059669',
                                 timer: 2000,
-                                showConfirmButton: false
+                                showConfirmButton: false,
+                                width: '450px'
                             }).then(() => {
                                 window.location.href = "{{ route('member.contributions.show', ['contribution' => ':id']) }}".replace(':id', contributionId);
                             });
