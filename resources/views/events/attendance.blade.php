@@ -34,6 +34,61 @@
         </div>
     </div>
 
+    <!-- Events List -->
+    <div class="card mb-6">
+        <div class="card-header">
+            <div class="card-title">Events</div>
+            <div class="card-subtitle">Manage event attendance</div>
+        </div>
+        <div class="card-body">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event Details</th>
+                            <th>Date & Time</th>
+                            <th>Venue</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($events as $event)
+                        <tr>
+                            <td>
+                                <div class="font-semibold">{{ $event->event_name }}</div>
+                                <div class="text-xs text-muted">{{ $event->description ?? '' }}</div>
+                            </td>
+                            <td>
+                                <div>{{ $event->event_date->format('M j, Y') }}</div>
+                                <div class="text-xs text-muted">{{ $event->event_time->format('g:i A') }}</div>
+                            </td>
+                            <td>{{ $event->venue }}</td>
+                            <td>
+                                <span class="badge {{ $event->status == 'upcoming' ? 'blue' : ($event->status == 'completed' ? 'green' : 'red') }}">
+                                    {{ ucfirst($event->status) }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="flex gap-2">
+                                    <a href="{{ route('events.show', $event->id) }}" class="btn btn-secondary btn-sm">View</a>
+                                    <a href="{{ route('events.attendance') }}" class="btn btn-primary btn-sm">Attendance</a>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-muted">
+                                No events found
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Attendance Records -->
     <div class="card">
         <div class="card-header">
