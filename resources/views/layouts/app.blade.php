@@ -962,9 +962,9 @@
             <svg class="dropdown-arrow w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           <div class="nav-dropdown {{ request()->is('events*') ? 'show' : '' }}">
-            <a href="{{ route('events.index') }}" class="dropdown-item {{ request()->is('events') ? 'active' : '' }}">Calendar</a>
+            <a href="{{ route('events.index') }}" class="dropdown-item {{ request()->is('events') ? 'active' : '' }}">Event Tracking</a>
             <a href="{{ route('events.create') }}" class="dropdown-item {{ request()->is('events/create') ? 'active' : '' }}">Plan Event</a>
-            <a href="{{ route('events.attendance') }}" class="dropdown-item {{ request()->is('events/attendance') ? 'active' : '' }}">Attendance Tracking</a>
+            <a href="{{ route('events.attendance') }}" class="dropdown-item {{ request()->is('events/attendance') ? 'active' : '' }}">Attendance Records</a>
           </div>
         </div>
         @endif
