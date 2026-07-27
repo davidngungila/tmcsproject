@@ -26,11 +26,9 @@
             <label class="form-label">Type *</label>
             <select name="type" class="form-control" required>
               <option value="">Select Type</option>
-              <option value="General" {{ old('type') == 'General' ? 'selected' : '' }}>General</option>
-              <option value="Event" {{ old('type') == 'Event' ? 'selected' : '' }}>Event</option>
-              <option value="Urgent" {{ old('type') == 'Urgent' ? 'selected' : '' }}>Urgent</option>
-              <option value="Service" {{ old('type') == 'Service' ? 'selected' : '' }}>Service</option>
-              <option value="Meeting" {{ old('type') == 'Meeting' ? 'selected' : '' }}>Meeting</option>
+              <option value="general" {{ old('type') == 'general' ? 'selected' : '' }}>General</option>
+              <option value="event" {{ old('type') == 'event' ? 'selected' : '' }}>Event</option>
+              <option value="urgent" {{ old('type') == 'urgent' ? 'selected' : '' }}>Urgent</option>
             </select>
             @error('type') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
           </div>
@@ -38,11 +36,10 @@
             <label class="form-label">Target Audience *</label>
             <select name="target_audience" class="form-control" required>
               <option value="">Select Audience</option>
-              <option value="All" {{ old('target_audience') == 'All' ? 'selected' : '' }}>All Members</option>
-              <option value="Members" {{ old('target_audience') == 'Members' ? 'selected' : '' }}>Members Only</option>
-              <option value="Staff" {{ old('target_audience') == 'Staff' ? 'selected' : '' }}>Staff Only</option>
-              <option value="Leaders" {{ old('target_audience') == 'Leaders' ? 'selected' : '' }}>Leaders Only</option>
-              <option value="Students" {{ old('target_audience') == 'Students' ? 'selected' : '' }}>Students Only</option>
+              <option value="all" {{ old('target_audience') == 'all' ? 'selected' : '' }}>All Members</option>
+              <option value="members" {{ old('target_audience') == 'members' ? 'selected' : '' }}>Members Only</option>
+              <option value="staff" {{ old('target_audience') == 'staff' ? 'selected' : '' }}>Staff Only</option>
+              <option value="leadership" {{ old('target_audience') == 'leadership' ? 'selected' : '' }}>Leadership Only</option>
             </select>
             @error('target_audience') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
           </div>
