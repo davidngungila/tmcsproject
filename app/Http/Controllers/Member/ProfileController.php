@@ -246,7 +246,11 @@ class ProfileController extends Controller
         }
 
         $validated = $request->validate([
+            'full_name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'date_of_birth' => 'nullable|date',
+            'gender' => 'nullable|in:male,female',
             'address' => 'nullable|string',
             'baptismal_name' => 'nullable|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
@@ -265,6 +269,11 @@ class ProfileController extends Controller
         }
 
         $member->update($validated);
+
+        // Update user email if changed
+        if (isset($validated['email']) && $validated['email'] !== $user->email) {
+            $user->update(['email' => $validated['email']]);
+        }
 
         // Automatically assign to communities based on new info
         app(GroupService::class)->autoAssignMemberToCommunities($member);

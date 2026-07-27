@@ -94,7 +94,7 @@
         <div class="relative w-full max-w-3xl">
             <div class="rise-in overflow-hidden rounded-2xl border border-emerald-100 bg-white shadow-lg shadow-pine-900/5" style="animation-delay:.2s">
                 <div class="p-6 sm:p-10">
-                    <form method="POST" action="{{ route('register.post') }}" x-data="{ loading: false, progressStep: 0 }" @submit="loading = true; progressStep = 1; $nextTick(() => { setTimeout(() => progressStep = 2, 800); setTimeout(() => progressStep = 3, 1600); setTimeout(() => progressStep = 4, 2400); setTimeout(() => progressStep = 5, 3200); setTimeout(() => progressStep = 6, 4000); setTimeout(() => progressStep = 7, 4800); });">
+                    <form method="POST" action="{{ route('register.post') }}" x-data="{ loading: false }" @submit="loading = true">
                         @csrf
 
                         <!-- Section: Personal details -->
@@ -278,8 +278,7 @@
                             class="mt-9 flex w-full items-center justify-center gap-2 rounded-xl bg-pine-900 py-3.5 font-semibold text-white shadow-lg shadow-pine-900/10 transition-all hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/20 focus:outline-none focus:ring-4 focus:ring-emerald-500/20 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-70">
                             <span x-show="!loading">Register my account</span>
                             <span x-show="loading" class="flex items-center gap-2">
-                                <i class="fa-solid fa-spinner fa-spin"></i> 
-                                <span x-text="getProgressText(progressStep)"></span>
+                                <i class="fa-solid fa-spinner fa-spin"></i> Creating account&hellip;
                             </span>
                         </button>
                     </form>
@@ -296,69 +295,7 @@
             <p class="rise-in mt-8 text-center text-xs text-ink-400" style="animation-delay:.3s">
                 &copy; {{ date('Y') }} TmcsSmart Church Management System. All rights reserved.
             </p>
-
-            <!-- Progress Modal -->
-            <div x-show="loading" x-transition.opacity.duration.300ms class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-                    <div class="text-center">
-                        <div class="mb-6">
-                            <div class="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center">
-                                <i class="fa-solid fa-user-plus text-3xl text-emerald-600"></i>
-                            </div>
-                        </div>
-                        <h3 class="text-xl font-semibold text-pine-900 mb-2">Creating your account...</h3>
-                        <p class="text-sm text-ink-600 mb-6" x-text="getProgressText(progressStep)"></p>
-                        
-                        <!-- Progress Steps -->
-                        <div class="space-y-3">
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 1 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 1 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Registering...</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 2 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 2 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Creating user account...</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 3 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 3 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Setting up profile...</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 4 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 4 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Joining communities...</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 5 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 5 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Sending credentials...</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 6 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 6 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Almost there...</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-sm" :class="progressStep >= 7 ? 'text-emerald-600' : 'text-ink-400'">
-                                <i :class="progressStep >= 7 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
-                                <span>Redirecting to login...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
-
-    <script>
-        function getProgressText(step) {
-            const texts = [
-                'Registering...',
-                'Creating user account...',
-                'Setting up profile...',
-                'Joining communities...',
-                'Sending credentials...',
-                'Almost there...',
-                'Redirecting to login...'
-            ];
-            return texts[step] || 'Registering...';
-        }
-    </script>
 </body>
 </html>
