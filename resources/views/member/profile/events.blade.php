@@ -22,6 +22,11 @@
     <div class="card-body p-0">
       @php
         $upcoming = \App\Models\Event::where('event_date', '>=', now())->orderBy('event_date')->get();
+        $member = auth()->user()->member;
+        $registeredEventIds = $member ? \App\Models\EventAttendance::where('member_id', $member->id)
+            ->where('status', 'registered')
+            ->pluck('event_id')
+            ->toArray() : [];
       @endphp
       <div class="divide-y divide-gray-50">
         @forelse($upcoming as $event)
@@ -47,10 +52,17 @@
               </div>
             </div>
             <div class="hidden md:block">
-              <form action="{{ route('events.attendance.store', $event->id) }}" method="POST" class="inline">
-                @csrf
-                <button type="submit" class="btn btn-primary btn-sm rounded-xl px-6">I'm Attending</button>
-              </form>
+              @if(in_array($event->id, $registeredEventIds))
+                <div class="flex items-center gap-2 text-green-600">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span class="text-sm font-semibold">Welcome to event!</span>
+                </div>
+              @else
+                <form action="{{ route('events.attendance.store', $event->id) }}" method="POST" class="inline">
+                  @csrf
+                  <button type="submit" class="btn btn-primary btn-sm rounded-xl px-6">I'm Attending</button>
+                </form>
+              @endif
             </div>
           </div>
         @empty
