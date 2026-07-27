@@ -174,6 +174,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/members/add', [GroupOperationController::class, 'addMember'])->name('members.add');
         Route::delete('/members/{member}/remove', [GroupOperationController::class, 'removeMember'])->name('members.remove');
         Route::get('/meeting', [GroupOperationController::class, 'meeting'])->name('meeting');
+        Route::get('/contributions', [GroupOperationController::class, 'contributions'])->name('contributions');
         Route::post('/contributions', [GroupOperationController::class, 'storeContribution'])->name('contributions.store');
         Route::post('/attendance', [GroupOperationController::class, 'storeAttendance'])->name('attendance.store');
         Route::get('/meeting/{meeting}', [GroupOperationController::class, 'showMeeting'])->name('meeting.show');
