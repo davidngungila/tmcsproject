@@ -43,6 +43,7 @@
       
       <div class="flex gap-3 mt-6 pt-6 border-t">
         <a href="{{ route('events.index') }}" class="btn btn-secondary">Back to Events</a>
+        <a href="{{ route('events.attendance') }}" class="btn btn-secondary">Attendance Records</a>
         <a href="{{ route('events.edit', $event->id) }}" class="btn btn-primary">Edit Event</a>
       </div>
     </div>

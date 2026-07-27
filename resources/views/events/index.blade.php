@@ -49,6 +49,10 @@
       <button onclick="switchView('list')" id="listToggle" class="px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all text-gray-400">List View</button>
     </div>
     <div class="flex gap-2">
+      <a href="{{ route('events.attendance') }}" class="btn btn-secondary border-none px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="mr-2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Attendance Records
+      </a>
       <a href="{{ route('events.create') }}" class="btn btn-primary bg-green-600 shadow-lg shadow-green-100 border-none px-6 py-3 rounded-xl font-black uppercase tracking-widest text-[10px]">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24" class="mr-2"><path d="M12 4v16m8-8H4"/></svg>
         Schedule New Event
