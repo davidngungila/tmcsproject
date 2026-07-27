@@ -255,10 +255,7 @@
           <div>
             <label class="block text-sm font-medium mb-1">Contribution Type *</label>
             <select name="contribution_type" class="w-full border rounded px-3 py-2" required>
-              <option value="">Select Type</option>
-              @foreach(\App\Models\ContributionType::where('is_active', true)->get() as $type)
-              <option value="{{ $type->name }}">{{ $type->name }}</option>
-              @endforeach
+              <option value="Event Contribution" selected>Event Contribution</option>
             </select>
           </div>
           <div>

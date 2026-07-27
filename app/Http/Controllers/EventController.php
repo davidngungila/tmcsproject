@@ -190,6 +190,18 @@ class EventController extends Controller
             'notes' => 'nullable|string',
         ]);
 
+        // Check if member already contributed to this event
+        $existingContribution = \App\Models\Contribution::where('member_id', $validated['member_id'])
+            ->where('event_id', $event->id)
+            ->first();
+
+        if ($existingContribution) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'This member has already contributed to this event'
+            ]);
+        }
+
         $receiptNumber = 'RCP-' . date('Y') . '-' . str_pad(\App\Models\Contribution::count() + 1, 4, '0', STR_PAD_LEFT);
         
         $contributionData = [
