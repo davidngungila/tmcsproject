@@ -100,7 +100,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'phone' => $request->phone,
-            'is_active' => false, // Requires approval
+            'is_active' => true, // Auto-approved
         ]);
 
         // 2. Assign 'member' role
@@ -122,8 +122,8 @@ class AuthController extends Controller
             'date_of_birth' => $request->date_of_birth,
             'address' => $request->address,
             'registration_date' => now(),
-            'is_active' => false, // Requires approval
-            'registration_number' => 'PENDING-' . strtoupper(Str::random(6)),
+            'is_active' => true, // Auto-approved
+            'registration_number' => 'TMCS-' . date('Y') . '-' . str_pad(Member::where('is_active', true)->count() + 1, 3, '0', STR_PAD_LEFT),
             'qr_code' => 'QR-' . strtoupper(Str::random(10)),
         ]);
 
@@ -132,14 +132,14 @@ class AuthController extends Controller
             foreach ($request->groups as $groupId) {
                 $member->groups()->attach($groupId, [
                     'join_date' => now(),
-                    'is_active' => false, // Group membership also pending approval
+                    'is_active' => true, // Auto-approve group memberships
                 ]);
             }
         }
 
         // 5. Send credentials via SMS (Immediate)
         if ($user->phone) {
-            $smsMessage = "Welcome to TMCS! Your account has been created. Email: {$user->email}, Password: {$request->password}. Please wait for administrator approval before logging in.";
+            $smsMessage = "Welcome to TMCS! Your account has been created and approved. Email: {$user->email}, Password: {$request->password}. Your ID is {$member->registration_number}. You can now login to your portal.";
             $this->messagingService->sendSms($user->phone, $smsMessage);
         }
 
@@ -148,7 +148,7 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new PasswordResetMailable($user, $request->password, 'Your TMCS Account Credentials'));
         }
 
-        return redirect()->route('login')->with('success', 'Registration successful! Your account is pending administrator approval. Login credentials have been sent to your email and phone.');
+        return redirect()->route('login')->with('success', 'Registration successful! Your account has been approved automatically. Login credentials have been sent to your email and phone.');
     }
 
     /**
