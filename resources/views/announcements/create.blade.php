@@ -12,7 +12,7 @@
       <div class="card-subtitle">Create a new church announcement</div>
     </div>
     <div class="card-body">
-      <form action="{{ route('announcements.store') }}" method="POST" class="space-y-4" id="announcementForm">
+      <form action="{{ route('announcements.store') }}" method="POST">
         @csrf
         
         <div class="form-group">
@@ -69,9 +69,8 @@
 
         <div class="flex gap-3 pt-4">
           <a href="{{ route('announcements.index') }}" class="btn btn-secondary flex-1 text-center">Cancel</a>
-          <button type="submit" class="btn btn-primary flex-1" id="submitBtn">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" id="submitIcon"><path d="M5 13l4 4L19 7"/></svg>
-            <span id="submitText">Create Announcement</span>
+          <button type="submit" class="btn btn-primary flex-1">
+            Create Announcement
           </button>
         </div>
       </form>
