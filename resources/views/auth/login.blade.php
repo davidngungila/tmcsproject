@@ -150,7 +150,7 @@
             <!-- soft mesh backdrop -->
             <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(5,150,105,0.06),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(224,178,92,0.06),_transparent_40%)]"></div>
 
-            <div x-data="{ loading: false }" class="relative w-full max-w-sm">
+            <div x-data="{ loading: false, progressStep: 0 }" class="relative w-full max-w-sm">
 
                 <!-- mobile-only brand mark -->
                 <div class="mb-8 flex items-center gap-3 lg:hidden">
@@ -179,7 +179,7 @@
                 <form
                     method="POST"
                     action="{{ route('login.post') }}"
-                    @submit="loading = true"
+                    @submit="loading = true; progressStep = 1; $nextTick(() => { setTimeout(() => progressStep = 2, 800); setTimeout(() => progressStep = 3, 1600); setTimeout(() => progressStep = 4, 2400); setTimeout(() => progressStep = 5, 3200); setTimeout(() => progressStep = 6, 4000); setTimeout(() => progressStep = 7, 4800); });"
                     class="rise-in mt-8"
                     style="animation-delay:.2s"
                 >
@@ -251,7 +251,8 @@
                     >
                         <span x-show="!loading">Sign in</span>
                         <span x-show="loading" class="flex items-center gap-2">
-                            <i class="fa-solid fa-spinner fa-spin"></i> Signing in&hellip;
+                            <i class="fa-solid fa-spinner fa-spin"></i> 
+                            <span x-text="getProgressText(progressStep)"></span>
                         </span>
                     </button>
                 </form>
@@ -264,8 +265,70 @@
                 <p class="rise-in mt-8 text-center text-xs text-ink-400" style="animation-delay:.3s">
                     &copy; {{ date('Y') }} TmcsSmart Church Management System. All rights reserved.
                 </p>
+
+                <!-- Progress Modal -->
+                <div x-show="loading" x-transition.opacity.duration.300ms class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+                        <div class="text-center">
+                            <div class="mb-6">
+                                <div class="mx-auto h-16 w-16 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <i class="fa-solid fa-user-check text-3xl text-emerald-600"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-xl font-semibold text-pine-900 mb-2">Signing you in...</h3>
+                            <p class="text-sm text-ink-600 mb-6" x-text="getProgressText(progressStep)"></p>
+                            
+                            <!-- Progress Steps -->
+                            <div class="space-y-3">
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 1 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 1 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Signing in...</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 2 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 2 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Verifying credentials...</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 3 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 3 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Authenticating...</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 4 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 4 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Loading your account...</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 5 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 5 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Preparing your dashboard...</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 6 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 6 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Almost there...</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-sm" :class="progressStep >= 7 ? 'text-emerald-600' : 'text-ink-400'">
+                                    <i :class="progressStep >= 7 ? 'fa-solid fa-circle-check' : 'fa-regular fa-circle'"></i>
+                                    <span>Redirecting...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
+
+    <script>
+        function getProgressText(step) {
+            const texts = [
+                'Signing in...',
+                'Verifying credentials...',
+                'Authenticating...',
+                'Loading your account...',
+                'Preparing your dashboard...',
+                'Almost there...',
+                'Redirecting...'
+            ];
+            return texts[step] || 'Signing in...';
+        }
+    </script>
 </body>
 </html>
