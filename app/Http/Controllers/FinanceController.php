@@ -342,15 +342,34 @@ class FinanceController extends Controller
         
         // 1. Send SMS (Immediate)
         if ($member->phone) {
-            Log::info("Sending Contribution SMS for member: {$member->full_name} ({$member->phone})");
-            $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
-            $this->messagingService->sendSms($member->phone, $smsMessage);
+            try {
+                Log::info("Sending Contribution SMS for member: {$member->full_name} ({$member->phone})");
+                $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
+                $result = $this->messagingService->sendSms($member->phone, $smsMessage);
+                
+                if ($result['status'] === 'success') {
+                    Log::info("Contribution SMS sent successfully to: {$member->phone}");
+                } else {
+                    Log::error("Contribution SMS failed to send: " . ($result['message'] ?? 'Unknown error'));
+                }
+            } catch (\Exception $e) {
+                Log::error("Exception sending contribution SMS: " . $e->getMessage());
+            }
+        } else {
+            Log::warning("Member has no phone number, SMS not sent for contribution: {$contribution->receipt_number}");
         }
 
         // 2. Send Email with PDF attachment (Immediate)
         if ($member->email) {
-            // The mailable sends immediately and generates the PDF internally in its attachments() method
-            Mail::to($member->email)->send(new ContributionReceiptMailable($contribution));
+            try {
+                // The mailable sends immediately and generates the PDF internally in its attachments() method
+                Mail::to($member->email)->send(new ContributionReceiptMailable($contribution));
+                Log::info("Contribution email sent successfully to: {$member->email}");
+            } catch (\Exception $e) {
+                Log::error("Exception sending contribution email: " . $e->getMessage());
+            }
+        } else {
+            Log::warning("Member has no email address, email not sent for contribution: {$contribution->receipt_number}");
         }
     }
 
