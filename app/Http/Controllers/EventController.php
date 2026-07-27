@@ -77,7 +77,12 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        return view('events.show', compact('event'));
+        $event->load('expenses', 'contributions.member');
+        $totalExpenses = $event->expenses->sum('amount');
+        $totalContributions = $event->contributions->sum('amount');
+        $balance = $totalContributions - $totalExpenses;
+
+        return view('events.show', compact('event', 'totalExpenses', 'totalContributions', 'balance'));
     }
 
     public function edit(Event $event)

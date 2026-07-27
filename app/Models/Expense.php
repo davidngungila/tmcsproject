@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Expense extends Model
 {
@@ -17,6 +18,7 @@ class Expense extends Model
         'attachment',
         'recorded_by',
         'status',
+        'event_id',
     ];
 
     protected $casts = [
@@ -24,8 +26,13 @@ class Expense extends Model
         'amount' => 'decimal:2',
     ];
 
-    public function recorder()
+    public function recorder(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recorded_by');
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 }

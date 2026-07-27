@@ -27,6 +27,7 @@ class Contribution extends Model
         'recorded_by',
         'verified_by',
         'verified_at',
+        'event_id',
     ];
 
     protected $casts = [
@@ -66,5 +67,13 @@ class Contribution extends Model
     public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /**
+     * Get the event this contribution is for.
+     */
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 }

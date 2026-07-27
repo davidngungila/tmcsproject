@@ -50,4 +50,20 @@ class Event extends Model
     {
         return $this->hasMany(EventAttendance::class);
     }
+
+    /**
+     * Get the event expenses.
+     */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
+    }
+
+    /**
+     * Get the event contributions.
+     */
+    public function contributions(): HasMany
+    {
+        return $this->hasMany(Contribution::class);
+    }
 }
