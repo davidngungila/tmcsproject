@@ -80,6 +80,9 @@
     <div class="card-header">
       <div class="card-title">Event Expenses</div>
       <div class="card-subtitle">Manage expenses for this event</div>
+      <a href="{{ route('expenses.create', ['event_id' => $event->id]) }}" class="btn btn-primary btn-sm">
+        + Record Expense
+      </a>
     </div>
     <div class="card-body">
       <div class="table-wrap">
@@ -130,6 +133,9 @@
     <div class="card-header">
       <div class="card-title">Event Contributions</div>
       <div class="card-subtitle">Manage contributions for this event</div>
+      <a href="{{ route('finance.create', ['event_id' => $event->id]) }}" class="btn btn-primary btn-sm">
+        + Record Contribution
+      </a>
     </div>
     <div class="card-body">
       <div class="table-wrap">

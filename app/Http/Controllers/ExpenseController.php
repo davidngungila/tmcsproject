@@ -50,9 +50,10 @@ class ExpenseController extends Controller
         return view('finance.expenses.index', compact('expenses', 'totalExpenses', 'chartData', 'year'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return view('finance.expenses.create');
+        $eventId = $request->get('event_id');
+        return view('finance.expenses.create', compact('eventId'));
     }
 
     public function store(Request $request)
@@ -65,6 +66,7 @@ class ExpenseController extends Controller
             'payment_method' => 'required|string',
             'reference_number' => 'nullable|string',
             'attachment' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'event_id' => 'nullable|exists:events,id',
         ]);
 
         $validated['voucher_number'] = 'EXP-' . date('Ymd') . '-' . str_pad(Expense::count() + 1, 4, '0', STR_PAD_LEFT);

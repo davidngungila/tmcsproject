@@ -14,6 +14,9 @@
     <div class="card-body">
       <form action="{{ route('expenses.store') }}" method="POST" enctype="multipart/form-data" class="space-y-4" id="expenseForm">
         @csrf
+        @if(isset($eventId))
+        <input type="hidden" name="event_id" value="{{ $eventId }}">
+        @endif
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="form-group">
             <label class="form-label">Category *</label>

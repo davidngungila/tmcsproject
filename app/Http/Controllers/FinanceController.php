@@ -149,11 +149,12 @@ class FinanceController extends Controller
         ));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $members = Member::where('is_active', true)->get();
         $contributionTypes = ContributionType::where('is_active', true)->get();
-        return view('finance.create', compact('members', 'contributionTypes'));
+        $eventId = $request->get('event_id');
+        return view('finance.create', compact('members', 'contributionTypes', 'eventId'));
     }
 
     public function store(Request $request)
@@ -165,6 +166,7 @@ class FinanceController extends Controller
             'contribution_date' => 'required|date',
             'payment_method' => 'required|string', // cash, mobile_money, card, dynamic-qr, feedtan
             'notes' => 'nullable|string',
+            'event_id' => 'nullable|exists:events,id',
         ]);
 
         $member = Member::find($validated['member_id']);
@@ -182,6 +184,7 @@ class FinanceController extends Controller
             'is_verified' => $validated['payment_method'] === 'cash',
             'verified_at' => $validated['payment_method'] === 'cash' ? now() : null,
             'verified_by' => $validated['payment_method'] === 'cash' ? Auth::id() : null,
+            'event_id' => $validated['event_id'] ?? null,
         ];
 
         DB::beginTransaction();

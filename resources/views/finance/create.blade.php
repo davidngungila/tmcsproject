@@ -8,6 +8,9 @@
 <div class="animate-in">
   <form action="{{ route('finance.store') }}" method="POST">
     @csrf
+    @if(isset($eventId))
+    <input type="hidden" name="event_id" value="{{ $eventId }}">
+    @endif
 
     <!-- CONTRIBUTION DETAILS -->
     <div class="card mb-4">
