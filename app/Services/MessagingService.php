@@ -12,7 +12,9 @@ class MessagingService
 
     public function __construct()
     {
-        $this->config = ApiConfig::find(1);
+        $this->config = ApiConfig::where('provider_type', 'SMS')
+            ->where('is_active', true)
+            ->first();
     }
 
     /**
