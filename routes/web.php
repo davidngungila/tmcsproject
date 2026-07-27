@@ -199,6 +199,7 @@ Route::middleware('auth')->group(function () {
 
     // Events
     Route::get('/events/attendance', [EventController::class, 'attendance'])->name('events.attendance');
+    Route::put('/events/attendance/{attendance}', [EventController::class, 'updateAttendance'])->name('events.attendance.update');
     Route::resource('events', EventController::class);
 
     // Announcements

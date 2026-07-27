@@ -117,7 +117,37 @@ class EventController extends Controller
 
     public function attendance()
     {
-        return view('events.attendance');
+        $events = Event::with('attendances.member')->orderBy('event_date', 'desc')->get();
+        $attendances = EventAttendance::with('event', 'member')->latest()->paginate(20);
+        
+        $totalAttendances = EventAttendance::count();
+        $attendedCount = EventAttendance::where('status', 'attended')->count();
+        $absentCount = EventAttendance::where('status', 'absent')->count();
+        $pendingCount = EventAttendance::where('status', 'pending')->count();
+
+        return view('events.attendance', compact(
+            'events',
+            'attendances',
+            'totalAttendances',
+            'attendedCount',
+            'absentCount',
+            'pendingCount'
+        ));
+    }
+
+    public function updateAttendance(Request $request, EventAttendance $attendance)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,attended,absent'
+        ]);
+
+        $attendance->update([
+            'status' => $validated['status'],
+            'checked_in_at' => $validated['status'] == 'attended' ? now() : null,
+            'checked_in_by' => $validated['status'] == 'attended' ? Auth::id() : null
+        ]);
+
+        return redirect()->route('events.attendance')->with('success', 'Attendance updated successfully');
     }
 
     private function getEventStatusColor($status)
