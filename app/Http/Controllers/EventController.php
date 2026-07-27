@@ -75,6 +75,40 @@ class EventController extends Controller
         return redirect()->route('events.index')->with('success', 'Event planned successfully');
     }
 
+    public function show(Event $event)
+    {
+        return view('events.show', compact('event'));
+    }
+
+    public function edit(Event $event)
+    {
+        return view('events.edit', compact('event'));
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'location' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'event_type' => 'nullable|string',
+        ]);
+
+        $startDateTime = new \DateTime($validated['start_date']);
+
+        $event->update([
+            'event_name' => $validated['title'],
+            'description' => $validated['description'],
+            'venue' => $validated['location'],
+            'event_date' => $startDateTime->format('Y-m-d'),
+            'event_time' => $startDateTime->format('H:i:s'),
+        ]);
+
+        return redirect()->route('events.index')->with('success', 'Event updated successfully');
+    }
+
     public function destroy(Event $event)
     {
         $event->delete();
