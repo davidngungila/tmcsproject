@@ -42,7 +42,7 @@ class AnnouncementController extends Controller
             'is_active' => 'boolean'
         ]);
 
-        Announcement::create([
+        $announcement = Announcement::create([
             'title' => $validated['title'],
             'content' => $validated['content'],
             'type' => $validated['type'],
@@ -52,7 +52,30 @@ class AnnouncementController extends Controller
             'created_by' => Auth::id()
         ]);
 
-        return redirect()->route('announcements.index')->with('success', 'Announcement created successfully');
+        // Assign announcement to users based on target audience
+        $users = \App\Models\User::query();
+        
+        if ($validated['target_audience'] === 'members') {
+            $users->whereHas('member');
+        } elseif ($validated['target_audience'] === 'staff') {
+            $users->whereHas('roles', function($q) {
+                $q->where('name', 'staff');
+            });
+        } elseif ($validated['target_audience'] === 'leadership') {
+            $users->whereHas('roles', function($q) {
+                $q->whereIn('name', ['admin', 'pastor', 'leadership']);
+            });
+        }
+        // 'all' includes all users, no filtering needed
+
+        $targetUsers = $users->where('is_active', true)->get();
+        
+        // Attach announcement to target users
+        foreach ($targetUsers as $user) {
+            $announcement->users()->attach($user->id);
+        }
+
+        return redirect()->route('announcements.index')->with('success', 'Announcement created and sent to ' . $targetUsers->count() . ' users');
     }
 
     public function show(Announcement $announcement)
@@ -92,5 +115,26 @@ class AnnouncementController extends Controller
     {
         $announcement->delete();
         return redirect()->route('announcements.index')->with('success', 'Announcement deleted successfully');
+    }
+
+    public function markAsRead(Request $request, Announcement $announcement)
+    {
+        $user = auth()->user();
+        
+        if (!$user->announcements()->where('announcement_id', $announcement->id)->exists()) {
+            return response()->json(['success' => false, 'message' => 'Announcement not assigned to user'], 403);
+        }
+
+        $user->announcements()->updateExistingPivot($announcement->id, ['read_at' => now()]);
+
+        return response()->json(['success' => true, 'message' => 'Announcement marked as read']);
+    }
+
+    public function markAllAsRead(Request $request)
+    {
+        $user = auth()->user();
+        $user->unreadAnnouncements()->updateExistingPivot($user->unreadAnnouncements->pluck('id')->toArray(), ['read_at' => now()]);
+
+        return response()->json(['success' => true, 'message' => 'All announcements marked as read']);
     }
 }

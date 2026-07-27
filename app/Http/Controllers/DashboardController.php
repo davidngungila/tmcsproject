@@ -111,14 +111,12 @@ class DashboardController extends Controller
                 ->get();
 
             // --- ANNOUNCEMENTS ---
-            $announcements = \App\Models\Communication::where(function($query) use ($member) {
-                    $query->where('recipient_type', 'all')
-                        ->orWhere(function($q) use ($member) {
-                            $q->where('recipient_type', 'group')
-                              ->whereIn('group_id', $member->groups->pluck('id'));
-                        });
+            $announcements = auth()->user()->unreadAnnouncements()
+                ->where('is_active', true)
+                ->where(function($query) {
+                    $query->whereNull('expiry_date')
+                        ->orWhere('expiry_date', '>=', now());
                 })
-                ->where('status', 'sent')
                 ->latest()
                 ->limit(5)
                 ->get();

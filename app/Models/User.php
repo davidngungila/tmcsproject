@@ -103,6 +103,24 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the announcements for this user.
+     */
+    public function announcements()
+    {
+        return $this->belongsToMany(Announcement::class, 'user_announcement')
+                    ->withPivot('read_at')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get unread announcements for this user.
+     */
+    public function unreadAnnouncements()
+    {
+        return $this->announcements()->whereNull('read_at');
+    }
+
+    /**
      * Get the contributions recorded by the user.
      */
     public function contributions()

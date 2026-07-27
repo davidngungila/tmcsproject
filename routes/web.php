@@ -203,6 +203,8 @@ Route::middleware('auth')->group(function () {
 
     // Announcements
     Route::resource('announcements', AnnouncementController::class);
+    Route::post('/announcements/{announcement}/mark-read', [AnnouncementController::class, 'markAsRead'])->name('announcements.mark-read');
+    Route::post('/announcements/mark-all-read', [AnnouncementController::class, 'markAllAsRead'])->name('announcements.mark-all-read');
 
     // Assets
     Route::get('/assets/maintenance', [AssetController::class, 'maintenance'])->name('assets.maintenance');

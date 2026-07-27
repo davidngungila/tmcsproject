@@ -15,7 +15,7 @@
             </div>
             <div>
                 <div class="text-[10px] font-black uppercase tracking-widest opacity-60">Latest Announcement</div>
-                <div class="text-sm font-bold">{{ $announcements->first()->subject }}</div>
+                <div class="text-sm font-bold">{{ $announcements->first()->title }}</div>
             </div>
         </div>
         <div class="flex items-center gap-2">
@@ -39,17 +39,17 @@
                     @foreach($announcements as $ann)
                     <div class="p-6 hover:bg-gray-50 transition-colors">
                         <div class="flex justify-between items-start mb-2">
-                            <span class="badge {{ $ann->recipient_type == 'all' ? 'gold' : 'green' }} text-[9px] uppercase font-black">{{ $ann->recipient_type == 'all' ? 'General' : ($ann->group->name ?? 'Community') }}</span>
+                            <span class="badge {{ $ann->type == 'urgent' ? 'red' : ($ann->type == 'event' ? 'gold' : 'green') }} text-[9px] uppercase font-black">{{ ucfirst($ann->type) }}</span>
                             <span class="text-[10px] text-muted font-bold">{{ $ann->created_at->format('M d, H:i') }}</span>
                         </div>
-                        <h4 class="font-black text-gray-800 mb-2">{{ $ann->subject }}</h4>
-                        <p class="text-sm text-gray-600 leading-relaxed">{{ $ann->message }}</p>
+                        <h4 class="font-black text-gray-800 mb-2">{{ $ann->title }}</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed">{{ $ann->content }}</p>
                     </div>
                     @endforeach
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary w-full py-3 font-black uppercase tracking-widest text-xs" onclick="closeModal('announcementModal')">I've Read Everything</button>
+                <button class="btn btn-primary w-full py-3 font-black uppercase tracking-widest text-xs" onclick="markAllAsRead()">I've Read Everything</button>
             </div>
         </div>
     </div>
@@ -454,5 +454,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+function markAllAsRead() {
+    fetch('{{ route("announcements.mark-all-read") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeModal('announcementModal');
+            location.reload();
+        }
+    });
+}
 </script>
 @endpush
