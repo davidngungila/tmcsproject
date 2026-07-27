@@ -128,7 +128,7 @@ class EventController extends Controller
         $totalAttendances = EventAttendance::count();
         $attendedCount = EventAttendance::where('status', 'attended')->count();
         $absentCount = EventAttendance::where('status', 'absent')->count();
-        $pendingCount = EventAttendance::where('status', 'pending')->count();
+        $pendingCount = EventAttendance::where('status', 'registered')->count();
 
         return view('events.attendance', compact(
             'events',
@@ -143,7 +143,7 @@ class EventController extends Controller
     public function updateAttendance(Request $request, EventAttendance $attendance)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pending,attended,absent'
+            'status' => 'required|in:registered,attended,absent'
         ]);
 
         $attendance->update([
@@ -175,7 +175,7 @@ class EventController extends Controller
         EventAttendance::create([
             'event_id' => $event->id,
             'member_id' => $member->id,
-            'status' => 'pending',
+            'status' => 'registered',
             'registered_at' => now(),
         ]);
 
