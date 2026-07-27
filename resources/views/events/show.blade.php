@@ -179,13 +179,13 @@
 
 <!-- Expense Modal -->
 <div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" style="display: none;">
-  <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
     <div class="p-6">
       <h3 class="text-lg font-semibold mb-4">Record Expense</h3>
       <form id="expenseForm">
         @csrf
         <input type="hidden" name="event_id" value="{{ $event->id }}">
-        <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1">Category *</label>
             <select name="category" class="w-full border rounded px-3 py-2" required>
@@ -198,10 +198,6 @@
               <option value="Office">Office Supplies</option>
               <option value="Other">Other Expenses</option>
             </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Description *</label>
-            <input type="text" name="description" class="w-full border rounded px-3 py-2" required>
           </div>
           <div>
             <label class="block text-sm font-medium mb-1">Amount (TZS) *</label>
@@ -220,7 +216,11 @@
               <option value="Card">Card</option>
             </select>
           </div>
-          <div>
+          <div class="col-span-2">
+            <label class="block text-sm font-medium mb-1">Description *</label>
+            <input type="text" name="description" class="w-full border rounded px-3 py-2" required>
+          </div>
+          <div class="col-span-2">
             <label class="block text-sm font-medium mb-1">Reference Number</label>
             <input type="text" name="reference_number" class="w-full border rounded px-3 py-2">
           </div>
@@ -236,13 +236,13 @@
 
 <!-- Contribution Modal -->
 <div id="contributionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" style="display: none;">
-  <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+  <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4">
     <div class="p-6">
       <h3 class="text-lg font-semibold mb-4">Record Contribution</h3>
       <form id="contributionForm">
         @csrf
         <input type="hidden" name="event_id" value="{{ $event->id }}">
-        <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium mb-1">Member *</label>
             <select name="member_id" class="w-full border rounded px-3 py-2" required>
@@ -278,7 +278,7 @@
               <option value="bank_transfer">Bank Transfer</option>
             </select>
           </div>
-          <div>
+          <div class="col-span-2">
             <label class="block text-sm font-medium mb-1">Notes</label>
             <textarea name="notes" class="w-full border rounded px-3 py-2" rows="2"></textarea>
           </div>
