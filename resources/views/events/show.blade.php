@@ -178,7 +178,7 @@
 </div>
 
 <!-- Expense Modal -->
-<div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+<div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" style="display: none;">
   <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
     <div class="p-6">
       <h3 class="text-lg font-semibold mb-4">Record Expense</h3>
@@ -235,7 +235,7 @@
 </div>
 
 <!-- Contribution Modal -->
-<div id="contributionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+<div id="contributionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" style="display: none;">
   <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
     <div class="p-6">
       <h3 class="text-lg font-semibold mb-4">Record Contribution</h3>
@@ -295,19 +295,19 @@
 @push('scripts')
 <script>
 function openExpenseModal() {
-  document.getElementById('expenseModal').classList.remove('hidden');
+  document.getElementById('expenseModal').style.display = 'flex';
 }
 
 function closeExpenseModal() {
-  document.getElementById('expenseModal').classList.add('hidden');
+  document.getElementById('expenseModal').style.display = 'none';
 }
 
 function openContributionModal() {
-  document.getElementById('contributionModal').classList.remove('hidden');
+  document.getElementById('contributionModal').style.display = 'flex';
 }
 
 function closeContributionModal() {
-  document.getElementById('contributionModal').classList.add('hidden');
+  document.getElementById('contributionModal').style.display = 'none';
 }
 
 // Expense form submission
