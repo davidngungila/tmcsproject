@@ -185,60 +185,69 @@
 
 @push('scripts')
 <script>
-const smsForm = document.getElementById('smsForm');
-const formActionInput = document.getElementById('formActionInput');
-const messageBody = document.getElementById('messageBody');
-const sendBtn = document.getElementById('sendBtn');
-const sendBtnText = document.getElementById('sendBtnText');
-const cancelBtn = document.getElementById('cancelBtn');
-const sendingModal = document.getElementById('sendingModal');
-const progressBar = document.getElementById('progressBar');
-const progressText = document.getElementById('progressText');
-const sendingStatus = document.getElementById('sendingStatus');
-const closeSendingModal = document.getElementById('closeSendingModal');
-
-function updateCharCount() {
-  const text = messageBody.value;
-  const chars = text.length;
-  const parts = Math.max(1, Math.ceil(chars / 160));
-
-  document.getElementById('charCount').textContent = chars;
-  document.getElementById('smsParts').textContent = parts;
-}
-
-function toggleRecipientFields() {
-  const selectedValue = document.querySelector('input[name="recipient_option"]:checked')?.value;
-  document.getElementById('cellGroupSelect').classList.add('hidden');
-  document.getElementById('customMemberSelect').classList.add('hidden');
-
-  if (selectedValue === 'cell_group') {
-    document.getElementById('cellGroupSelect').classList.remove('hidden');
-  } else if (selectedValue === 'custom') {
-    document.getElementById('customMemberSelect').classList.remove('hidden');
-  }
-}
-
-function showSendingModal(totalRecipients) {
-  sendingModal.style.display = 'flex';
-  progressBar.style.width = '0%';
-  progressText.textContent = `0 / ${totalRecipients}`;
-  sendingStatus.textContent = 'Initializing...';
-  closeSendingModal.classList.add('hidden');
-}
-
-function updateSendingProgress(current, total) {
-  const percentage = (current / total) * 100;
-  progressBar.style.width = `${percentage}%`;
-  progressText.textContent = `${current} / ${total}`;
-  sendingStatus.textContent = `Sending to recipient ${current} of ${total}...`;
-}
-
-function hideSendingModal() {
-  closeSendingModal.classList.remove('hidden');
-  sendingStatus.textContent = 'Sending completed!';
-}
-
 document.addEventListener('DOMContentLoaded', function() {
+  const smsForm = document.getElementById('smsForm');
+  const formActionInput = document.getElementById('formActionInput');
+  const messageBody = document.getElementById('messageBody');
+  const sendBtn = document.getElementById('sendBtn');
+  const sendBtnText = document.getElementById('sendBtnText');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const sendingModal = document.getElementById('sendingModal');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  const sendingStatus = document.getElementById('sendingStatus');
+  const closeSendingModal = document.getElementById('closeSendingModal');
+
+  function updateCharCount() {
+    if (!messageBody) return;
+    const text = messageBody.value;
+    const chars = text.length;
+    const parts = Math.max(1, Math.ceil(chars / 160));
+
+    const charCountEl = document.getElementById('charCount');
+    const smsPartsEl = document.getElementById('smsParts');
+    if (charCountEl) charCountEl.textContent = chars;
+    if (smsPartsEl) smsPartsEl.textContent = parts;
+  }
+
+  function toggleRecipientFields() {
+    const selectedValue = document.querySelector('input[name="recipient_option"]:checked')?.value;
+    const cellGroupSelect = document.getElementById('cellGroupSelect');
+    const customMemberSelect = document.getElementById('customMemberSelect');
+    
+    if (cellGroupSelect) cellGroupSelect.classList.add('hidden');
+    if (customMemberSelect) customMemberSelect.classList.add('hidden');
+
+    if (selectedValue === 'cell_group' && cellGroupSelect) {
+      cellGroupSelect.classList.remove('hidden');
+    } else if (selectedValue === 'custom' && customMemberSelect) {
+      customMemberSelect.classList.remove('hidden');
+    }
+  }
+
+  function showSendingModal(totalRecipients) {
+    if (!sendingModal || !progressBar || !progressText || !sendingStatus || !closeSendingModal) return;
+    sendingModal.style.display = 'flex';
+    progressBar.style.width = '0%';
+    progressText.textContent = `0 / ${totalRecipients}`;
+    sendingStatus.textContent = 'Initializing...';
+    closeSendingModal.classList.add('hidden');
+  }
+
+  function updateSendingProgress(current, total) {
+    if (!progressBar || !progressText || !sendingStatus) return;
+    const percentage = (current / total) * 100;
+    progressBar.style.width = `${percentage}%`;
+    progressText.textContent = `${current} / ${total}`;
+    sendingStatus.textContent = `Sending to recipient ${current} of ${total}...`;
+  }
+
+  function hideSendingModal() {
+    if (!closeSendingModal || !sendingStatus) return;
+    closeSendingModal.classList.remove('hidden');
+    sendingStatus.textContent = 'Sending completed!';
+  }
+
   updateCharCount();
   toggleRecipientFields();
 
@@ -269,108 +278,122 @@ document.addEventListener('DOMContentLoaded', function() {
       confirmButtonColor: '#059669'
     });
   @endif
-});
 
-messageBody.addEventListener('input', updateCharCount);
+  if (messageBody) {
+    messageBody.addEventListener('input', updateCharCount);
+  }
 
-document.querySelectorAll('input[name="recipient_option"]').forEach(radio => {
-  radio.addEventListener('change', toggleRecipientFields);
-});
+  document.querySelectorAll('input[name="recipient_option"]').forEach(radio => {
+    radio.addEventListener('change', toggleRecipientFields);
+  });
 
-sendBtn.addEventListener('click', function() {
-  formActionInput.value = 'send';
+  if (sendBtn) {
+    sendBtn.addEventListener('click', function() {
+      if (formActionInput) formActionInput.value = 'send';
 
-  Swal.fire({
-    title: 'Send SMS now?',
-    text: 'This will send the message to filtered recipients sequentially.',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, send SMS',
-    cancelButtonText: 'Review Again',
-    confirmButtonColor: '#059669',
-    cancelButtonColor: '#6b7280'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      sendBtn.disabled = true;
-      sendBtnText.textContent = 'Sending...';
-      
-      // Get form data
-      const formData = new FormData(smsForm);
-      
-      // Show sending modal
-      showSendingModal(10); // Will be updated with actual count
-      
-      // Submit form via AJAX for progress tracking
-      fetch('{{ route('communications.store') }}', {
-        method: 'POST',
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-          'Accept': 'application/json'
-        },
-        body: formData
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          hideSendingModal();
-          Swal.fire({
-            title: 'Success!',
-            text: 'SMS sent successfully to all recipients',
-            icon: 'success',
-            confirmButtonColor: '#059669'
-          }).then(() => {
-            window.location.href = '{{ route('communications.index') }}';
-          });
-        } else {
-          sendingModal.style.display = 'none';
-          sendBtn.disabled = false;
-          sendBtnText.textContent = 'Send SMS';
-          Swal.fire({
-            title: 'Error',
-            text: data.message || 'Failed to send SMS',
-            icon: 'error',
-            confirmButtonColor: '#059669'
+      Swal.fire({
+        title: 'Send SMS now?',
+        text: 'This will send the message to filtered recipients sequentially.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, send SMS',
+        cancelButtonText: 'Review Again',
+        confirmButtonColor: '#059669',
+        cancelButtonColor: '#6b7280'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (sendBtn) sendBtn.disabled = true;
+          if (sendBtnText) sendBtnText.textContent = 'Sending...';
+          
+          if (!smsForm) {
+            Swal.fire({
+              title: 'Error',
+              text: 'Form not found',
+              icon: 'error',
+              confirmButtonColor: '#059669'
+            });
+            return;
+          }
+          
+          const formData = new FormData(smsForm);
+          showSendingModal(10);
+          
+          fetch('{{ route('communications.store') }}', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+              'Accept': 'application/json'
+            },
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              hideSendingModal();
+              Swal.fire({
+                title: 'Success!',
+                text: 'SMS sent successfully to all recipients',
+                icon: 'success',
+                confirmButtonColor: '#059669'
+              }).then(() => {
+                window.location.href = '{{ route('communications.index') }}';
+              });
+            } else {
+              if (sendingModal) sendingModal.style.display = 'none';
+              if (sendBtn) sendBtn.disabled = false;
+              if (sendBtnText) sendBtnText.textContent = 'Send SMS';
+              Swal.fire({
+                title: 'Error',
+                text: data.message || 'Failed to send SMS',
+                icon: 'error',
+                confirmButtonColor: '#059669'
+              });
+            }
+          })
+          .catch(error => {
+            if (sendingModal) sendingModal.style.display = 'none';
+            if (sendBtn) sendBtn.disabled = false;
+            if (sendBtnText) sendBtnText.textContent = 'Send SMS';
+            Swal.fire({
+              title: 'Error',
+              text: 'An error occurred while sending',
+              icon: 'error',
+              confirmButtonColor: '#059669'
+            });
           });
         }
-      })
-      .catch(error => {
-        sendingModal.style.display = 'none';
-        sendBtn.disabled = false;
-        sendBtnText.textContent = 'Send SMS';
-        Swal.fire({
-          title: 'Error',
-          text: 'An error occurred while sending',
-          icon: 'error',
-          confirmButtonColor: '#059669'
-        });
       });
-    }
-  });
-});
+    });
+  }
 
-cancelBtn.addEventListener('click', function() {
-  const cancelUrl = this.dataset.cancelUrl;
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      const cancelUrl = this.dataset.cancelUrl;
 
-  Swal.fire({
-    title: 'Discard changes?',
-    text: 'Unsaved edits on this SMS form will be lost.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Yes, leave page',
-    cancelButtonText: 'Stay Here',
-    confirmButtonColor: '#dc2626',
-    cancelButtonColor: '#6b7280'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      window.location.href = cancelUrl;
-    }
-  });
-});
+      Swal.fire({
+        title: 'Discard changes?',
+        text: 'Unsaved edits on this SMS form will be lost.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, leave page',
+        cancelButtonText: 'Stay Here',
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = cancelUrl;
+        }
+      });
+    });
+  }
 
-closeSendingModal.addEventListener('click', function() {
-  sendingModal.style.display = 'none';
-  sendBtn.disabled = false;
-  sendBtnText.textContent = 'Send SMS';
+  if (closeSendingModal) {
+    closeSendingModal.addEventListener('click', function() {
+      if (sendingModal) sendingModal.style.display = 'none';
+      if (sendBtn) sendBtn.disabled = false;
+      if (sendBtnText) sendBtnText.textContent = 'Send SMS';
+    });
+  }
 });
 </script>
 @endpush
