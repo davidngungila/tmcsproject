@@ -108,7 +108,27 @@ class AnnouncementController extends Controller
             'is_active' => $request->has('is_active')
         ]);
 
-        return redirect()->route('announcements.index')->with('success', 'Announcement updated successfully');
+        // Reassign announcement to users based on target audience
+        $users = \App\Models\User::query();
+        
+        if ($validated['target_audience'] === 'members') {
+            $users->whereHas('member');
+        } elseif ($validated['target_audience'] === 'staff') {
+            $users->whereHas('roles', function($q) {
+                $q->where('name', 'staff');
+            });
+        } elseif ($validated['target_audience'] === 'leadership') {
+            $users->whereHas('roles', function($q) {
+                $q->whereIn('name', ['admin', 'pastor', 'leadership']);
+            });
+        }
+
+        $targetUsers = $users->where('is_active', true)->get();
+        
+        // Sync announcement to target users (remove old assignments, add new ones)
+        $announcement->users()->sync($targetUsers->pluck('id'));
+
+        return redirect()->route('announcements.index')->with('success', 'Announcement updated and sent to ' . $targetUsers->count() . ' users');
     }
 
     public function destroy(Announcement $announcement)
