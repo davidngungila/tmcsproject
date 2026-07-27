@@ -314,6 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const formData = new FormData(this);
       const csrfToken = document.querySelector('meta[name="csrf-token"]');
+      const submitBtn = this.querySelector('button[type="submit"]');
       
       if (!csrfToken) {
         Swal.fire({
@@ -323,6 +324,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         return;
       }
+      
+      // Disable submit button to prevent double submission
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
       
       fetch('{{ route('events.store-expense', $event->id) }}', {
         method: 'POST',
@@ -350,6 +355,8 @@ document.addEventListener('DOMContentLoaded', function() {
             text: data.message || 'Failed to record expense',
             icon: 'error'
           });
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Save Expense';
         }
       })
       .catch(error => {
@@ -358,6 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
           text: 'An error occurred',
           icon: 'error'
         });
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Expense';
       });
     });
   }
@@ -369,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       const formData = new FormData(this);
       const csrfToken = document.querySelector('meta[name="csrf-token"]');
+      const submitBtn = this.querySelector('button[type="submit"]');
       
       if (!csrfToken) {
         Swal.fire({
@@ -378,6 +388,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         return;
       }
+      
+      // Disable submit button to prevent double submission
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
       
       fetch('{{ route('events.store-contribution', $event->id) }}', {
         method: 'POST',
@@ -405,6 +419,8 @@ document.addEventListener('DOMContentLoaded', function() {
             text: data.message || 'Failed to record contribution',
             icon: 'error'
           });
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Save Contribution';
         }
       })
       .catch(error => {
@@ -413,6 +429,8 @@ document.addEventListener('DOMContentLoaded', function() {
           text: 'An error occurred',
           icon: 'error'
         });
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Contribution';
       });
     });
   }
