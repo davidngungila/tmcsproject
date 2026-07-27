@@ -137,7 +137,7 @@
                 @endif
               </div>
               <div style="font-size:11px;color:var(--text-muted);">
-                {{ $communication->recipients_count ?? count(json_decode($communication->recipients ?? '[]')) }} recipients
+                {{ $communication->recipients_count ?? count((array) json_decode($communication->recipients ?? '[]', true)) }} recipients
               </div>
             </td>
             <td>
