@@ -15,7 +15,6 @@ use App\Services\MessagingService;
 use App\Mail\ContributionReceiptMailable;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Jobs\SendSmsJob;
 
 use App\Models\Expense;
 use App\Models\ContributionType;
@@ -341,11 +340,11 @@ class FinanceController extends Controller
         $amount = number_format($contribution->amount, 0);
         $type = ucfirst(str_replace('_', ' ', $contribution->contribution_type));
         
-        // 1. Send SMS (Queued)
+        // 1. Send SMS (Immediate)
         if ($member->phone) {
-            Log::info("Dispatching Contribution SMS for member: {$member->full_name} ({$member->phone})");
+            Log::info("Sending Contribution SMS for member: {$member->full_name} ({$member->phone})");
             $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type}. Receipt: {$contribution->receipt_number}. God bless you!";
-            SendSmsJob::dispatch($member->phone, $smsMessage);
+            $this->messagingService->sendSms($member->phone, $smsMessage);
         }
 
         // 2. Send Email with PDF attachment (Immediate)
