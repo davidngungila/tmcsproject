@@ -66,6 +66,7 @@ class MessagingService
 
             if ($response->successful()) {
                 Log::info("SMS Sent Successfully to: " . implode(', ', $formattedRecipients));
+                Log::info("SMS Gateway Response: " . json_encode($response->json()));
                 return [
                     'status' => 'success',
                     'data' => $response->json(),
