@@ -75,9 +75,9 @@
     <div class="card-header">
       <div class="card-title">Event Expenses</div>
       <div class="card-subtitle">Manage expenses for this event</div>
-      <a href="{{ route('expenses.create', ['event_id' => $event->id]) }}" class="btn btn-primary btn-sm">
+      <button onclick="openExpenseModal()" class="btn btn-primary btn-sm">
         + Record Expense
-      </a>
+      </button>
     </div>
     <div class="card-body">
       <div class="table-wrap">
@@ -128,9 +128,9 @@
     <div class="card-header">
       <div class="card-title">Event Contributions</div>
       <div class="card-subtitle">Manage contributions for this event</div>
-      <a href="{{ route('finance.create', ['event_id' => $event->id]) }}" class="btn btn-primary btn-sm">
+      <button onclick="openContributionModal()" class="btn btn-primary btn-sm">
         + Record Contribution
-      </a>
+      </button>
     </div>
     <div class="card-body">
       <div class="table-wrap">
@@ -176,4 +176,223 @@
     </div>
   </div>
 </div>
+
+<!-- Expense Modal -->
+<div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+    <div class="p-6">
+      <h3 class="text-lg font-semibold mb-4">Record Expense</h3>
+      <form id="expenseForm">
+        @csrf
+        <input type="hidden" name="event_id" value="{{ $event->id }}">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Category *</label>
+            <select name="category" class="w-full border rounded px-3 py-2" required>
+              <option value="">Select Category</option>
+              <option value="Utilities">Utilities (Electricity/Water)</option>
+              <option value="Salaries">Salaries & Allowances</option>
+              <option value="Maintenance">Maintenance & Repairs</option>
+              <option value="Charity">Charity & Donations</option>
+              <option value="Events">Events & Liturgy</option>
+              <option value="Office">Office Supplies</option>
+              <option value="Other">Other Expenses</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Description *</label>
+            <input type="text" name="description" class="w-full border rounded px-3 py-2" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Amount (TZS) *</label>
+            <input type="number" name="amount" class="w-full border rounded px-3 py-2" step="0.01" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Expense Date *</label>
+            <input type="date" name="expense_date" class="w-full border rounded px-3 py-2" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Payment Method *</label>
+            <select name="payment_method" class="w-full border rounded px-3 py-2" required>
+              <option value="Cash">Cash</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Mobile Money">Mobile Money</option>
+              <option value="Card">Card</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Reference Number</label>
+            <input type="text" name="reference_number" class="w-full border rounded px-3 py-2">
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button type="button" onclick="closeExpenseModal()" class="flex-1 px-4 py-2 border rounded">Cancel</button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded">Save Expense</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Contribution Modal -->
+<div id="contributionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+    <div class="p-6">
+      <h3 class="text-lg font-semibold mb-4">Record Contribution</h3>
+      <form id="contributionForm">
+        @csrf
+        <input type="hidden" name="event_id" value="{{ $event->id }}">
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Member *</label>
+            <select name="member_id" class="w-full border rounded px-3 py-2" required>
+              <option value="">Select Member</option>
+              @foreach(\App\Models\Member::where('is_active', true)->get() as $member)
+              <option value="{{ $member->id }}">{{ $member->full_name }} - {{ $member->registration_number }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Contribution Type *</label>
+            <select name="contribution_type" class="w-full border rounded px-3 py-2" required>
+              <option value="">Select Type</option>
+              @foreach(\App\Models\ContributionType::where('is_active', true)->get() as $type)
+              <option value="{{ $type->name }}">{{ $type->name }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Amount (TZS) *</label>
+            <input type="number" name="amount" class="w-full border rounded px-3 py-2" step="0.01" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Contribution Date *</label>
+            <input type="date" name="contribution_date" class="w-full border rounded px-3 py-2" required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Payment Method *</label>
+            <select name="payment_method" class="w-full border rounded px-3 py-2" required>
+              <option value="cash">Cash</option>
+              <option value="mobile_money">Mobile Money</option>
+              <option value="card">Card</option>
+              <option value="bank_transfer">Bank Transfer</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Notes</label>
+            <textarea name="notes" class="w-full border rounded px-3 py-2" rows="2"></textarea>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button type="button" onclick="closeContributionModal()" class="flex-1 px-4 py-2 border rounded">Cancel</button>
+          <button type="submit" class="flex-1 px-4 py-2 bg-green-600 text-white rounded">Save Contribution</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+function openExpenseModal() {
+  document.getElementById('expenseModal').classList.remove('hidden');
+}
+
+function closeExpenseModal() {
+  document.getElementById('expenseModal').classList.add('hidden');
+}
+
+function openContributionModal() {
+  document.getElementById('contributionModal').classList.remove('hidden');
+}
+
+function closeContributionModal() {
+  document.getElementById('contributionModal').classList.add('hidden');
+}
+
+// Expense form submission
+document.getElementById('expenseForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  
+  fetch('{{ route('events.store-expense', $event->id) }}', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json'
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Expense recorded successfully',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        location.reload();
+      });
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: data.message || 'Failed to record expense',
+        icon: 'error'
+      });
+    }
+  })
+  .catch(error => {
+    Swal.fire({
+      title: 'Error!',
+      text: 'An error occurred',
+      icon: 'error'
+    });
+  });
+});
+
+// Contribution form submission
+document.getElementById('contributionForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const formData = new FormData(this);
+  
+  fetch('{{ route('events.store-contribution', $event->id) }}', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+      'Accept': 'application/json'
+    },
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Contribution recorded successfully',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        location.reload();
+      });
+    } else {
+      Swal.fire({
+        title: 'Error!',
+        text: data.message || 'Failed to record contribution',
+        icon: 'error'
+      });
+    }
+  })
+  .catch(error => {
+    Swal.fire({
+      title: 'Error!',
+      text: 'An error occurred',
+      icon: 'error'
+    });
+  });
+});
+</script>
+@endpush
 @endsection

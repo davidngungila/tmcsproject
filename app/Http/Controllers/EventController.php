@@ -155,6 +155,66 @@ class EventController extends Controller
         return redirect()->route('events.attendance')->with('success', 'Attendance updated successfully');
     }
 
+    public function storeExpense(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'category' => 'required|string',
+            'description' => 'required|string|max:255',
+            'amount' => 'required|numeric|min:0',
+            'expense_date' => 'required|date',
+            'payment_method' => 'required|string',
+            'reference_number' => 'nullable|string',
+        ]);
+
+        $validated['voucher_number'] = 'EXP-' . date('Ymd') . '-' . str_pad(\App\Models\Expense::count() + 1, 4, '0', STR_PAD_LEFT);
+        $validated['recorded_by'] = Auth::id();
+        $validated['status'] = 'Pending';
+        $validated['event_id'] = $event->id;
+
+        try {
+            \App\Models\Expense::create($validated);
+            return response()->json(['success' => true, 'message' => 'Expense recorded successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to record expense: ' . $e->getMessage()]);
+        }
+    }
+
+    public function storeContribution(Request $request, Event $event)
+    {
+        $validated = $request->validate([
+            'member_id' => 'required|exists:members,id',
+            'contribution_type' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+            'contribution_date' => 'required|date',
+            'payment_method' => 'required|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $receiptNumber = 'RCP-' . date('Y') . '-' . str_pad(\App\Models\Contribution::count() + 1, 4, '0', STR_PAD_LEFT);
+        
+        $contributionData = [
+            'member_id' => $validated['member_id'],
+            'contribution_type' => $validated['contribution_type'],
+            'amount' => $validated['amount'],
+            'contribution_date' => $validated['contribution_date'],
+            'payment_method' => $validated['payment_method'],
+            'notes' => $validated['notes'],
+            'receipt_number' => $receiptNumber,
+            'recorded_by' => Auth::id(),
+            'is_verified' => $validated['payment_method'] === 'cash',
+            'verified_at' => $validated['payment_method'] === 'cash' ? now() : null,
+            'verified_by' => $validated['payment_method'] === 'cash' ? Auth::id() : null,
+            'event_id' => $event->id,
+        ];
+
+        try {
+            \App\Models\Contribution::create($contributionData);
+            return response()->json(['success' => true, 'message' => 'Contribution recorded successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to record contribution: ' . $e->getMessage()]);
+        }
+    }
+
     private function getEventStatusColor($status)
     {
         $colors = [
