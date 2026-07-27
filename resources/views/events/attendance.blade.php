@@ -83,7 +83,7 @@
                             </td>
                             <td>
                                 <div class="flex gap-2">
-                                    <form action="{{ route('events.attendance.update', $attendance->id) }}" method="POST" class="inline">
+                                    <form action="{{ route('events.attendance.update', $attendance) }}" method="POST" class="inline">
                                         @method('PUT')
                                         @csrf
                                         <select name="status" onchange="this.form.submit()" class="form-control text-xs py-1 px-2">
