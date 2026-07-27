@@ -163,9 +163,9 @@
             </td>
             <td>
               <div class="flex gap-1">
-                <button class="btn btn-ghost btn-sm" onclick="viewCommunication({{ $communication->id }})" title="View">
+                <a href="{{ route('communications.show', $communication->id) }}" class="btn btn-ghost btn-sm" title="View">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                </button>
+                </a>
                 @if(auth()->user()->hasPermission('communications.resend') && $communication->status === 'failed')
                 <button class="btn btn-ghost btn-sm" onclick="resendCommunication({{ $communication->id }})" title="Resend">
                   <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -207,22 +207,6 @@
     </div>
   </div>
 </div>
-
-<!-- VIEW COMMUNICATION MODAL -->
-<div class="modal-overlay" id="viewCommunicationModal">
-  <div class="modal" style="width: 700px;">
-    <div class="modal-header">
-      <div><div class="card-title">Communication Details</div><div class="card-subtitle">Complete message information</div></div>
-      <div class="modal-close" onclick="closeModal('viewCommunicationModal')">✕</div>
-    </div>
-    <div class="modal-body" id="communicationDetails">
-      <!-- Content will be loaded dynamically -->
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal('viewCommunicationModal')">Close</button>
-    </div>
-  </div>
-</div>
 @endsection
 
 @push('scripts')
@@ -236,15 +220,6 @@ function getCommunicationStatusColor(status) {
     'scheduled': 'blue'
   };
   return colors[status] || 'blue';
-}
-
-function viewCommunication(communicationId) {
-  fetch(`/communications/${communicationId}/show`)
-    .then(response => response.text())
-    .then(html => {
-      document.getElementById('communicationDetails').innerHTML = html;
-      document.getElementById('viewCommunicationModal').classList.add('open');
-    });
 }
 
 function resendCommunication(communicationId) {
