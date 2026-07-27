@@ -117,7 +117,7 @@ class EventController extends Controller
 
     public function attendance()
     {
-        $events = Event::with('attendances.member')->orderBy('event_date', 'desc')->get();
+        $events = Event::with('attendance.member')->orderBy('event_date', 'desc')->get();
         $attendances = EventAttendance::with('event', 'member')->latest()->paginate(20);
         
         $totalAttendances = EventAttendance::count();
