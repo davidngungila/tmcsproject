@@ -33,6 +33,8 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
+        \Log::info('Announcement store method called', ['request' => $request->all()]);
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -41,6 +43,8 @@ class AnnouncementController extends Controller
             'expiry_date' => 'nullable|date|after:today',
             'is_active' => 'boolean'
         ]);
+
+        \Log::info('Validation passed', ['validated' => $validated]);
 
         $announcement = Announcement::create([
             'title' => $validated['title'],
@@ -51,6 +55,8 @@ class AnnouncementController extends Controller
             'is_active' => $request->has('is_active'),
             'created_by' => Auth::id()
         ]);
+
+        \Log::info('Announcement created', ['announcement_id' => $announcement->id]);
 
         // Assign announcement to users based on target audience
         $users = \App\Models\User::query();
@@ -70,10 +76,14 @@ class AnnouncementController extends Controller
 
         $targetUsers = $users->where('is_active', true)->get();
         
+        \Log::info('Target users found', ['count' => $targetUsers->count()]);
+        
         // Attach announcement to target users
         foreach ($targetUsers as $user) {
             $announcement->users()->attach($user->id);
         }
+
+        \Log::info('Announcement assigned to users');
 
         return redirect()->route('announcements.index')->with('success', 'Announcement created and sent to ' . $targetUsers->count() . ' users');
     }
