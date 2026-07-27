@@ -311,87 +311,115 @@ function closeContributionModal() {
 }
 
 // Expense form submission
-document.getElementById('expenseForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-  
-  fetch('{{ route('events.store-expense', $event->id) }}', {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      'Accept': 'application/json'
-    },
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'Expense recorded successfully',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      }).then(() => {
-        location.reload();
+document.addEventListener('DOMContentLoaded', function() {
+  const expenseForm = document.getElementById('expenseForm');
+  if (expenseForm) {
+    expenseForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const csrfToken = document.querySelector('meta[name="csrf-token"]');
+      
+      if (!csrfToken) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'CSRF token not found',
+          icon: 'error'
+        });
+        return;
+      }
+      
+      fetch('{{ route('events.store-expense', $event->id) }}', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+          'Accept': 'application/json'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Expense recorded successfully',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: data.message || 'Failed to record expense',
+            icon: 'error'
+          });
+        }
+      })
+      .catch(error => {
+        Swal.fire({
+          title: 'Error!',
+          text: 'An error occurred',
+          icon: 'error'
+        });
       });
-    } else {
-      Swal.fire({
-        title: 'Error!',
-        text: data.message || 'Failed to record expense',
-        icon: 'error'
-      });
-    }
-  })
-  .catch(error => {
-    Swal.fire({
-      title: 'Error!',
-      text: 'An error occurred',
-      icon: 'error'
     });
-  });
-});
+  }
 
-// Contribution form submission
-document.getElementById('contributionForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const formData = new FormData(this);
-  
-  fetch('{{ route('events.store-contribution', $event->id) }}', {
-    method: 'POST',
-    headers: {
-      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-      'Accept': 'application/json'
-    },
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      Swal.fire({
-        title: 'Success!',
-        text: 'Contribution recorded successfully',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      }).then(() => {
-        location.reload();
+  // Contribution form submission
+  const contributionForm = document.getElementById('contributionForm');
+  if (contributionForm) {
+    contributionForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const csrfToken = document.querySelector('meta[name="csrf-token"]');
+      
+      if (!csrfToken) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'CSRF token not found',
+          icon: 'error'
+        });
+        return;
+      }
+      
+      fetch('{{ route('events.store-contribution', $event->id) }}', {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+          'Accept': 'application/json'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          Swal.fire({
+            title: 'Success!',
+            text: 'Contribution recorded successfully',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload();
+          });
+        } else {
+          Swal.fire({
+            title: 'Error!',
+            text: data.message || 'Failed to record contribution',
+            icon: 'error'
+          });
+        }
+      })
+      .catch(error => {
+        Swal.fire({
+          title: 'Error!',
+          text: 'An error occurred',
+          icon: 'error'
+        });
       });
-    } else {
-      Swal.fire({
-        title: 'Error!',
-        text: data.message || 'Failed to record contribution',
-        icon: 'error'
-      });
-    }
-  })
-  .catch(error => {
-    Swal.fire({
-      title: 'Error!',
-      text: 'An error occurred',
-      icon: 'error'
     });
-  });
+  }
 });
 </script>
 @endpush
