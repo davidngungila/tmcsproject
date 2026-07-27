@@ -39,6 +39,7 @@
         <div class="card-header">
             <div class="card-title">Event Attendance Records</div>
             <div class="card-subtitle">Track and manage attendance for all church events</div>
+            <a href="{{ route('events.index') }}" class="btn btn-secondary btn-sm">Back to Events</a>
         </div>
         <div class="card-body">
             <div class="table-wrap">
