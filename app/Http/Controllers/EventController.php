@@ -4,11 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\EventAttendance;
+use App\Models\Member;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\MessagingService;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ContributionReceiptMailable;
+use App\Mail\GenericMailable;
 
 class EventController extends Controller
 {
+    protected $messagingService;
+
+    public function __construct(MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
     public function index()
     {
         $events = Event::orderBy('event_date', 'asc')->paginate(10);
@@ -199,10 +211,56 @@ class EventController extends Controller
         $validated['event_id'] = $event->id;
 
         try {
-            \App\Models\Expense::create($validated);
+            $expense = \App\Models\Expense::create($validated);
+            
+            // Send SMS and email notifications for event expense
+            $this->sendEventExpenseNotifications($expense, $event);
+            
             return response()->json(['success' => true, 'message' => 'Expense recorded successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to record expense: ' . $e->getMessage()]);
+        }
+    }
+
+    protected function sendEventExpenseNotifications($expense, $event)
+    {
+        $user = Auth::user();
+        if (!$user) return;
+
+        $amount = number_format($expense->amount, 0);
+        $voucher = $expense->voucher_number;
+        
+        // Send SMS notification
+        if ($user->phone) {
+            try {
+                $smsMessage = "Dear {$user->name}, your expense request for TZS {$amount} for event '{$event->event_name}' has been recorded. Voucher: {$voucher}. Status: Pending.";
+                $this->messagingService->sendSms($user->phone, $smsMessage);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send event expense SMS: " . $e->getMessage());
+            }
+        }
+
+        // Send email notification
+        if ($user->email) {
+            try {
+                $subject = "Event Expense Recorded: {$voucher}";
+                $emailContent = "
+                    <h2>Event Expense Recorded</h2>
+                    <p>Dear {$user->name},</p>
+                    <p>Your expense request for event <strong>{$event->event_name}</strong> has been recorded successfully.</p>
+                    <div style='padding: 20px; background: #f9f9f9; border-radius: 10px; margin: 20px 0;'>
+                        <p><strong>Voucher No:</strong> {$voucher}</p>
+                        <p><strong>Category:</strong> {$expense->category}</p>
+                        <p><strong>Amount:</strong> TZS {$amount}</p>
+                        <p><strong>Event:</strong> {$event->event_name}</p>
+                        <p><strong>Status:</strong> Pending</p>
+                    </div>
+                    <p>Thank you for using the TMCS Smart System.</p>
+                ";
+                Mail::to($user->email)->send(new GenericMailable($subject, $emailContent));
+            } catch (\Exception $e) {
+                \Log::error("Failed to send event expense email: " . $e->getMessage());
+            }
         }
     }
 
@@ -247,10 +305,43 @@ class EventController extends Controller
         ];
 
         try {
-            \App\Models\Contribution::create($contributionData);
+            $contribution = \App\Models\Contribution::create($contributionData);
+            
+            // Send SMS and email notifications for event contribution
+            $this->sendEventContributionNotifications($contribution, $event);
+            
             return response()->json(['success' => true, 'message' => 'Contribution recorded successfully']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to record contribution: ' . $e->getMessage()]);
+        }
+    }
+
+    protected function sendEventContributionNotifications($contribution, $event)
+    {
+        $member = $contribution->member;
+        if (!$member) return;
+
+        $amount = number_format($contribution->amount, 0);
+        $type = ucfirst(str_replace('_', ' ', $contribution->contribution_type));
+        $receipt = $contribution->receipt_number;
+        
+        // Send SMS notification to member
+        if ($member->phone) {
+            try {
+                $smsMessage = "Dear {$member->full_name}, thank you for your contribution of TZS {$amount} for {$type} at event '{$event->event_name}'. Receipt: {$receipt}. God bless you!";
+                $this->messagingService->sendSms($member->phone, $smsMessage);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send event contribution SMS: " . $e->getMessage());
+            }
+        }
+
+        // Send email notification to member
+        if ($member->email) {
+            try {
+                Mail::to($member->email)->send(new ContributionReceiptMailable($contribution));
+            } catch (\Exception $e) {
+                \Log::error("Failed to send event contribution email: " . $e->getMessage());
+            }
         }
     }
 
