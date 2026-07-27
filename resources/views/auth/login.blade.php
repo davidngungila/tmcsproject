@@ -107,9 +107,8 @@
 
             <!-- headline block -->
             <div class="relative z-10 max-w-md">
-                <p class="rise-in text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/90" style="animation-delay:.15s">Empowering churches through smart digital management</p>
                 <h1 class="rise-in font-display mt-4 text-[2.6rem] leading-[1.1] font-semibold text-white" style="animation-delay:.25s">
-                    Simplify church management.<br>Strengthen your community.
+                    Welcome to TmcsSmart
                 </h1>
                 <p class="rise-in mt-5 text-[15px] leading-relaxed text-mist-100/80" style="animation-delay:.4s">
                     Manage members, organize services, track giving, and keep your church activities connected — all in one secure platform built for efficient church administration.
