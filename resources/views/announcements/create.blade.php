@@ -15,13 +15,13 @@
       <form action="{{ route('announcements.store') }}" method="POST">
         @csrf
         
-        <div class="form-group">
+        <div class="form-group mb-4">
           <label class="form-label">Title *</label>
           <input type="text" name="title" class="form-control" value="{{ old('title') }}" placeholder="Announcement title" required>
           @error('title') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div class="form-group">
             <label class="form-label">Type *</label>
             <select name="type" class="form-control" required>
@@ -45,13 +45,13 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group mb-4">
           <label class="form-label">Content *</label>
           <textarea name="content" class="form-control" rows="6" placeholder="Announcement content..." required>{{ old('content') }}</textarea>
           @error('content') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div class="form-group">
             <label class="form-label">Expiry Date</label>
             <input type="date" name="expiry_date" class="form-control" value="{{ old('expiry_date') }}">
@@ -78,29 +78,3 @@
   </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-// Check for session messages and show SweetAlert2
-document.addEventListener('DOMContentLoaded', function() {
-  @if(session('success'))
-    Swal.fire({
-      title: 'Success!',
-      text: '{{ session('success') }}',
-      icon: 'success',
-      timer: 3000,
-      showConfirmButton: false
-    });
-  @endif
-  
-  @if(session('error'))
-    Swal.fire({
-      title: 'Error!',
-      text: '{{ session('error') }}',
-      icon: 'error',
-      confirmButtonColor: '#059669'
-    });
-  @endif
-});
-</script>
-@endpush
