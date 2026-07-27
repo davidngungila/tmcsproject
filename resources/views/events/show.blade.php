@@ -189,12 +189,11 @@
           <div>
             <label class="block text-sm font-medium mb-1">Category *</label>
             <select name="category" class="w-full border rounded px-3 py-2" required>
-              <option value="">Select Category</option>
+              <option value="Events" selected>Events</option>
               <option value="Utilities">Utilities (Electricity/Water)</option>
               <option value="Salaries">Salaries & Allowances</option>
               <option value="Maintenance">Maintenance & Repairs</option>
               <option value="Charity">Charity & Donations</option>
-              <option value="Events">Events & Liturgy</option>
               <option value="Office">Office Supplies</option>
               <option value="Other">Other Expenses</option>
             </select>
