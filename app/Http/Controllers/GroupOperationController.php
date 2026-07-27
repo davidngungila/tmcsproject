@@ -14,7 +14,6 @@ use App\Services\MessagingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Jobs\SendSmsJob;
 use Illuminate\Support\Facades\Auth;
 
 class GroupOperationController extends Controller
@@ -328,9 +327,9 @@ class GroupOperationController extends Controller
             return back()->with('error', 'No members with phone numbers found.');
         }
 
-        // Send SMS in background
-        SendSmsJob::dispatch($phones, $request->message);
+        // Send SMS immediately
+        $this->messagingService->sendSms($phones, $request->message);
 
-        return back()->with('success', 'Messages queued for sending to ' . count($phones) . ' members.');
+        return back()->with('success', 'Messages sent immediately to ' . count($phones) . ' members.');
     }
 }

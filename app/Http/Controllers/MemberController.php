@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Log;
 use App\Services\MessagingService;
 use App\Mail\WelcomeMemberMailable;
 use Illuminate\Support\Facades\Mail;
-use App\Jobs\SendSmsJob;
 
 use App\Services\GroupService;
 
@@ -162,13 +161,13 @@ class MemberController extends Controller
             } else {
                 $smsMessage = "Welcome to TMCS, {$member->full_name}! You have been registered successfully. ID: {$member->registration_number}. God bless you!";
             }
-            SendSmsJob::dispatch($member->phone, $smsMessage);
+            $this->messagingService->sendSms($member->phone, $smsMessage);
         }
 
-        // 2. Send Welcome Email (Queued)
+        // 2. Send Welcome Email (Immediate)
         if ($member->email) {
             // If no password provided (e.g. member already had a user), we don't send credentials
-            Mail::to($member->email)->queue(new WelcomeMemberMailable($member, $password ?? '******'));
+            Mail::to($member->email)->send(new WelcomeMemberMailable($member, $password ?? '******'));
         }
     }
 
@@ -262,14 +261,14 @@ class MemberController extends Controller
         // 4. Auto-assign to communities based on criteria
         $this->groupService->autoAssignMemberToCommunities($member);
 
-        // 5. Send Notifications (Queued)
+        // 5. Send Notifications (Immediate)
         if ($member->phone) {
             $smsMessage = "Congratulations {$member->full_name}! Your TMCS account has been approved. Your ID is {$member->registration_number}. You can now login to your portal.";
-            SendSmsJob::dispatch($member->phone, $smsMessage);
+            $this->messagingService->sendSms($member->phone, $smsMessage);
         }
 
         if ($member->email) {
-            Mail::to($member->email)->queue(new WelcomeMemberMailable($member, '******'));
+            Mail::to($member->email)->send(new WelcomeMemberMailable($member, '******'));
         }
 
         return back()->with('success', 'Member approved successfully! Registration number assigned: ' . $member->registration_number);

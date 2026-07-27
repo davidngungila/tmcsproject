@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Contribution;
 use App\Models\Member;
 use Illuminate\Support\Str;
-use App\Jobs\SendSmsJob;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ContributionReceiptMailable;
+use App\Services\MessagingService;
 
 class SnippePaymentService
 {
@@ -18,9 +18,11 @@ class SnippePaymentService
     protected string $postPaymentRedirectUrl;
     protected ?string $webhookUrl;
     protected string $baseUrl;
+    protected MessagingService $messagingService;
 
-    public function __construct()
+    public function __construct(MessagingService $messagingService)
     {
+        $this->messagingService = $messagingService;
         $cfg = config('services.snippe', []);
         $this->snippeKey = (string) ($cfg['api_key'] ?? '');
         $this->webhookSecret = (string) ($cfg['webhook_secret'] ?? '');
@@ -300,11 +302,11 @@ class SnippePaymentService
 
             if ($member->phone) {
                 $smsMessage = "Dear {$member->full_name}, your payment of TZS {$amount} for {$type} has been CONFIRMED. Receipt: {$contribution->receipt_number}. Thank you!";
-                SendSmsJob::dispatch($member->phone, $smsMessage);
+                $this->messagingService->sendSms($member->phone, $smsMessage);
             }
 
             if ($member->email) {
-                Mail::to($member->email)->queue(new ContributionReceiptMailable($contribution));
+                Mail::to($member->email)->send(new ContributionReceiptMailable($contribution));
             }
         } catch (\Exception $e) {
             Log::error("Failed to send success notifications: " . $e->getMessage());

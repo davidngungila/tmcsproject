@@ -6,7 +6,6 @@ use App\Models\MessageTemplate;
 use Illuminate\Http\Request;
 use App\Services\MessagingService;
 use Illuminate\Support\Facades\Mail;
-use App\Jobs\SendSmsJob;
 use App\Mail\GenericMailable;
 
 class MessageTemplateController extends Controller
@@ -33,11 +32,11 @@ class MessageTemplateController extends Controller
 
         try {
             if ($request->type === 'Email') {
-                Mail::to($recipient)->queue(new GenericMailable($subject, $content));
-                return back()->with('success', 'Test Email queued for ' . $recipient);
+                Mail::to($recipient)->send(new GenericMailable($subject, $content));
+                return back()->with('success', 'Test Email sent immediately to ' . $recipient);
             } elseif ($request->type === 'SMS') {
-                SendSmsJob::dispatch($recipient, $content);
-                return back()->with('success', 'Test SMS queued for ' . $recipient);
+                $this->messagingService->sendSms($recipient, $content);
+                return back()->with('success', 'Test SMS sent immediately to ' . $recipient);
             } elseif ($request->type === 'WhatsApp') {
                 // WhatsApp doesn't have a dedicated job yet, but we can still send it sync or create one
                 // For now, let's keep it sync or just use the service if needed

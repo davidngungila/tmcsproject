@@ -15,10 +15,17 @@ use App\Models\MemberCategory;
 use App\Models\Role;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMailable;
-use App\Jobs\SendSmsJob;
+use App\Services\MessagingService;
 
 class AuthController extends Controller
 {
+    protected $messagingService;
+
+    public function __construct(MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
     /**
      * Show the login form.
      */
@@ -130,10 +137,10 @@ class AuthController extends Controller
             }
         }
 
-        // 5. Send credentials via SMS
+        // 5. Send credentials via SMS (Immediate)
         if ($user->phone) {
             $smsMessage = "Welcome to TMCS! Your account has been created. Email: {$user->email}, Password: {$request->password}. Please wait for administrator approval before logging in.";
-            SendSmsJob::dispatch($user->phone, $smsMessage);
+            $this->messagingService->sendSms($user->phone, $smsMessage);
         }
 
         // 6. Send credentials via email (Immediate)

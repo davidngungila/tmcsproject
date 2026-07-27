@@ -6,7 +6,6 @@ use App\Models\Expense;
 use App\Models\Account;
 use App\Models\LedgerEntry;
 use App\Mail\GenericMailable;
-use App\Jobs\SendSmsJob;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -14,9 +13,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use App\Services\MessagingService;
 
 class ExpenseController extends Controller
 {
+    protected $messagingService;
+
+    public function __construct(MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
     public function index(Request $request)
     {
         $year = $request->get('year', date('Y'));
@@ -151,9 +158,9 @@ class ExpenseController extends Controller
         
         $message = "Dear {$user->name}, your expense request for TZS {$amount} ({$expense->description}) has been {$status}. Voucher: {$voucher}.";
 
-        // 1. Send SMS
+        // 1. Send SMS (Immediate)
         if ($user->phone) {
-            SendSmsJob::dispatch($user->phone, $message);
+            $this->messagingService->sendSms($user->phone, $message);
         }
 
         // 2. Send Email
