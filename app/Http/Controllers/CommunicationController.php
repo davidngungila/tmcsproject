@@ -178,6 +178,13 @@ class CommunicationController extends Controller
                 });
             }
         }
+        if ($request->age_group && $request->age_group !== 'all') {
+            // Calculate age from date_of_birth
+            $query->whereRaw("TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN ? AND ?", [
+                $this->getAgeRange($request->age_group)['min'],
+                $this->getAgeRange($request->age_group)['max']
+            ]);
+        }
         if ($request->reg_start_date) {
             $query->where('created_at', '>=', $request->reg_start_date);
         }
@@ -297,5 +304,15 @@ class CommunicationController extends Controller
         $activeGateways = ApiConfig::where('is_active', true)->get();
         $templates = MessageTemplate::where('is_active', true)->get();
         return view('communications.send-email', compact('groups', 'members', 'activeGateways', 'templates', 'categories', 'programs'));
+    }
+
+    private function getAgeRange($ageGroup)
+    {
+        $ranges = [
+            'youth' => ['min' => 18, 'max' => 35],
+            'adult' => ['min' => 36, 'max' => 60],
+            'senior' => ['min' => 61, 'max' => 120],
+        ];
+        return $ranges[$ageGroup] ?? ['min' => 0, 'max' => 120];
     }
 }
