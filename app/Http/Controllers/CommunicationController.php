@@ -59,7 +59,7 @@ class CommunicationController extends Controller
 
     public function show($id)
     {
-        $communication = Communication::findOrFail($id);
+        $communication = Communication::with(['sentBy', 'group', 'member'])->findOrFail($id);
         return view('communications.show', compact('communication'));
     }
 
