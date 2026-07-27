@@ -117,10 +117,12 @@
           <tr>
             <td>
               <div>
-                <div style="font-weight:600;font-size:13px;">{{ $communication->subject }}</div>
-                <div style="font-size:11px;color:var(--text-muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-                  {{ Str::limit(strip_tags($communication->message), 80) }}
-                </div>
+                <a href="{{ route('communications.show', $communication->id) }}" style="text-decoration:none;color:inherit;">
+                  <div style="font-weight:600;font-size:13px;">{{ $communication->subject }}</div>
+                  <div style="font-size:11px;color:var(--text-muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                    {{ Str::limit(strip_tags($communication->message), 80) }}
+                  </div>
+                </a>
               </div>
             </td>
             <td>
