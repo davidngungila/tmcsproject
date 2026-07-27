@@ -187,6 +187,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Communications
+    Route::get('/communications/history', [CommunicationController::class, 'history'])->name('communications.history');
     Route::get('/communications/announcements', [CommunicationController::class, 'announcements'])->name('communications.announcements');
     Route::get('/communications/send-sms', [CommunicationController::class, 'sendSms'])->name('communications.send-sms');
     Route::get('/communications/send-email', [CommunicationController::class, 'sendEmail'])->name('communications.send-email');

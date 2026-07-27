@@ -40,6 +40,23 @@ class CommunicationController extends Controller
         ));
     }
 
+    public function history()
+    {
+        $communications = Communication::with('recipients')->latest()->paginate(20);
+        $totalCommunications = Communication::count();
+        $sentCommunications = Communication::where('status', 'sent')->count();
+        $failedCommunications = Communication::where('status', 'failed')->count();
+        $pendingCommunications = Communication::where('status', 'pending')->count();
+        
+        return view('communications.history', compact(
+            'communications', 
+            'totalCommunications', 
+            'sentCommunications', 
+            'failedCommunications', 
+            'pendingCommunications'
+        ));
+    }
+
     public function show($id)
     {
         $communication = Communication::findOrFail($id);
