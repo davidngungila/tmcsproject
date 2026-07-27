@@ -310,8 +310,18 @@ function closeContributionModal() {
 document.addEventListener('DOMContentLoaded', function() {
   const expenseForm = document.getElementById('expenseForm');
   if (expenseForm) {
+    let isSubmitting = false;
+    
     expenseForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      
+      // Prevent multiple submissions
+      if (isSubmitting) {
+        return;
+      }
+      
+      isSubmitting = true;
+      
       const formData = new FormData(this);
       const csrfToken = document.querySelector('meta[name="csrf-token"]');
       const submitBtn = this.querySelector('button[type="submit"]');
@@ -322,6 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
           text: 'CSRF token not found',
           icon: 'error'
         });
+        isSubmitting = false;
         return;
       }
       
@@ -357,6 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
           });
           submitBtn.disabled = false;
           submitBtn.textContent = 'Save Expense';
+          isSubmitting = false;
         }
       })
       .catch(error => {
@@ -367,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         submitBtn.disabled = false;
         submitBtn.textContent = 'Save Expense';
+        isSubmitting = false;
       });
     });
   }
@@ -374,8 +387,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Contribution form submission
   const contributionForm = document.getElementById('contributionForm');
   if (contributionForm) {
+    let isSubmitting = false;
+    
     contributionForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      
+      // Prevent multiple submissions
+      if (isSubmitting) {
+        return;
+      }
+      
+      isSubmitting = true;
+      
       const formData = new FormData(this);
       const csrfToken = document.querySelector('meta[name="csrf-token"]');
       const submitBtn = this.querySelector('button[type="submit"]');
@@ -386,6 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
           text: 'CSRF token not found',
           icon: 'error'
         });
+        isSubmitting = false;
         return;
       }
       
@@ -421,6 +445,7 @@ document.addEventListener('DOMContentLoaded', function() {
           });
           submitBtn.disabled = false;
           submitBtn.textContent = 'Save Contribution';
+          isSubmitting = false;
         }
       })
       .catch(error => {
@@ -431,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         submitBtn.disabled = false;
         submitBtn.textContent = 'Save Contribution';
+        isSubmitting = false;
       });
     });
   }
