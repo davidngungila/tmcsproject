@@ -63,7 +63,17 @@ class AuthController extends Controller
         // 3. Send notification email (Immediate)
         Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
 
-        return redirect()->route('login')->with('success', 'A new password has been sent to your email address.');
+        // 4. Send notification SMS (Immediate)
+        if ($user->phone) {
+            try {
+                $smsMessage = "Password Reset: Your new password is {$newPassword}. Please change it after logging in for security.";
+                $this->messagingService->sendSms($user->phone, $smsMessage);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send password reset SMS: " . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('login')->with('success', 'A new password has been sent to your email and phone.');
     }
 
     /**

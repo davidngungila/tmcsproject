@@ -10,9 +10,17 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Mail\PasswordResetMailable;
+use App\Services\MessagingService;
 
 class UserController extends Controller
 {
+    protected $messagingService;
+
+    public function __construct(MessagingService $messagingService)
+    {
+        $this->messagingService = $messagingService;
+    }
+
     public function index(Request $request)
     {
         $query = User::with('roles');
@@ -133,7 +141,17 @@ class UserController extends Controller
         // 3. Send notification email (Immediate)
         Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
 
-        return back()->with('success', "Password for {$user->name} has been reset successfully and notification sent to their email.");
+        // 4. Send notification SMS (Immediate)
+        if ($user->phone) {
+            try {
+                $smsMessage = "Password Reset: Your new password is {$newPassword}. Please change it after logging in for security.";
+                $this->messagingService->sendSms($user->phone, $smsMessage);
+            } catch (\Exception $e) {
+                \Log::error("Failed to send password reset SMS: " . $e->getMessage());
+            }
+        }
+
+        return back()->with('success', "Password for {$user->name} has been reset successfully and notification sent to their email and phone.");
     }
 
     /**
