@@ -4,6 +4,19 @@
 @section('page-title', 'Communication Details')
 @section('breadcrumb', 'Home / Communications / Details')
 
+@php
+function getCommunicationStatusColor($status) {
+  $colors = [
+    'pending' => 'amber',
+    'sent' => 'green',
+    'failed' => 'red',
+    'scheduled' => 'blue',
+    'draft' => 'gray'
+  ];
+  return $colors[$status] ?? 'blue';
+}
+@endphp
+
 @section('content')
 <div class="animate-in space-y-6">
   <!-- COMMUNICATION DETAILS HEADER -->
@@ -142,18 +155,3 @@
   </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-function getCommunicationStatusColor(status) {
-  const colors = {
-    'pending': 'amber',
-    'sent': 'green',
-    'failed': 'red',
-    'scheduled': 'blue',
-    'draft': 'gray'
-  };
-  return colors[status] || 'blue';
-}
-</script>
-@endpush
