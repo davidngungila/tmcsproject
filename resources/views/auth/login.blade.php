@@ -107,48 +107,40 @@
 
             <!-- headline block -->
             <div class="relative z-10 max-w-md">
-                <p class="rise-in text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/90" style="animation-delay:.15s">Trusted by congregations everywhere</p>
+                <p class="rise-in text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300/90" style="animation-delay:.15s">Empowering churches through smart digital management</p>
                 <h1 class="rise-in font-display mt-4 text-[2.6rem] leading-[1.1] font-semibold text-white" style="animation-delay:.25s">
-                    Shepherd your church<br> with clarity.
+                    Simplify church management.<br>Strengthen your community.
                 </h1>
                 <p class="rise-in mt-5 text-[15px] leading-relaxed text-mist-100/80" style="animation-delay:.4s">
-                    Sign in to manage members, plan services, and track giving —
-                    all from one account built for church administration.
+                    Manage members, organize services, track giving, and keep your church activities connected — all in one secure platform built for efficient church administration.
                 </p>
 
                 <!-- feature rows -->
                 <div class="rise-in mt-9 space-y-4" style="animation-delay:.55s">
                     <div class="flex items-center gap-3">
                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                            <i class="fa-solid fa-users text-sm"></i>
+                            <i class="fa-solid fa-check text-sm"></i>
                         </div>
                         <p class="text-sm text-mist-100/90">Keep member records organized</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                            <i class="fa-solid fa-hand-holding-heart text-sm"></i>
+                            <i class="fa-solid fa-check text-sm"></i>
                         </div>
-                        <p class="text-sm text-mist-100/90">Track giving and pledges with ease</p>
+                        <p class="text-sm text-mist-100/90">Manage church activities with ease</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
-                            <i class="fa-solid fa-shield-halved text-sm"></i>
+                            <i class="fa-solid fa-check text-sm"></i>
                         </div>
-                        <p class="text-sm text-mist-100/90">Secure, session-based account access</p>
+                        <p class="text-sm text-mist-100/90">Track giving and contributions</p>
                     </div>
-                </div>
-            </div>
-
-            <!-- footer stat -->
-            <div class="relative z-10 rise-in flex items-center gap-6 border-t border-white/10 pt-6" style="animation-delay:.7s">
-                <div>
-                    <p class="font-display text-2xl font-semibold text-white">850<span class="text-gold-300">+</span></p>
-                    <p class="text-[11px] uppercase tracking-wide text-mist-100/60">Churches onboard</p>
-                </div>
-                <div class="h-8 w-px bg-white/10"></div>
-                <div>
-                    <p class="font-display text-2xl font-semibold text-white">120k<span class="text-gold-300">+</span></p>
-                    <p class="text-[11px] uppercase tracking-wide text-mist-100/60">Members managed</p>
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
+                            <i class="fa-solid fa-check text-sm"></i>
+                        </div>
+                        <p class="text-sm text-mist-100/90">Secure, reliable account access</p>
+                    </div>
                 </div>
             </div>
         </aside>

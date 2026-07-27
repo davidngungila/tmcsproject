@@ -189,6 +189,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/communications/announcements', [CommunicationController::class, 'announcements'])->name('communications.announcements');
     Route::get('/communications/send-sms', [CommunicationController::class, 'sendSms'])->name('communications.send-sms');
     Route::get('/communications/send-email', [CommunicationController::class, 'sendEmail'])->name('communications.send-email');
+    Route::post('/communications/{communication}/resend', [CommunicationController::class, 'resend'])->name('communications.resend');
     Route::resource('communications', CommunicationController::class);
     Route::post('/message-templates/test', [MessageTemplateController::class, 'test'])->name('message-templates.test');
     Route::resource('message-templates', MessageTemplateController::class);

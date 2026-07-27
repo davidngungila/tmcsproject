@@ -2,393 +2,575 @@
 
 @section('title', 'Send Bulk SMS - TmcsSmart')
 @section('page-title', 'Send Bulk SMS')
-@section('breadcrumb', 'TmcsSmart / Communications / Bulk SMS')
+@section('breadcrumb', 'TmcsSmart / Communications / Send SMS')
 
 @section('content')
 <div class="animate-in">
-  <form action="{{ route('communications.store') }}" method="POST">
+  <form action="{{ route('communications.store') }}" method="POST" enctype="multipart/form-data" id="smsForm">
     @csrf
     <input type="hidden" name="type" value="SMS">
+    <input type="hidden" name="form_action" id="formActionInput" value="send">
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">1. SMS Information</div>
+      <div class="card-subtitle">Basic SMS details</div>
+    </div>
+    <div class="card-body space-y-4">
+      <div class="form-group">
+        <label class="form-label">SMS Category</label>
+        <select name="sms_category" class="form-control">
+          <option value="">Select SMS Type</option>
+          <option value="church_announcement" {{ old('sms_category') == 'church_announcement' ? 'selected' : '' }}>Church Announcement</option>
+          <option value="sunday_service_reminder" {{ old('sms_category') == 'sunday_service_reminder' ? 'selected' : '' }}>Sunday Service Reminder</option>
+          <option value="prayer_meeting_reminder" {{ old('sms_category') == 'prayer_meeting_reminder' ? 'selected' : '' }}>Prayer Meeting Reminder</option>
+          <option value="event_invitation" {{ old('sms_category') == 'event_invitation' ? 'selected' : '' }}>Event Invitation</option>
+          <option value="birthday_wishes" {{ old('sms_category') == 'birthday_wishes' ? 'selected' : '' }}>Birthday Wishes</option>
+          <option value="wedding_announcement" {{ old('sms_category') == 'wedding_announcement' ? 'selected' : '' }}>Wedding Announcement</option>
+          <option value="funeral_announcement" {{ old('sms_category') == 'funeral_announcement' ? 'selected' : '' }}>Funeral Announcement</option>
+          <option value="giving_tithe_reminder" {{ old('sms_category') == 'giving_tithe_reminder' ? 'selected' : '' }}>Giving/Tithe Reminder</option>
+          <option value="cell_group_communication" {{ old('sms_category') == 'cell_group_communication' ? 'selected' : '' }}>Cell Group Communication</option>
+          <option value="emergency_message" {{ old('sms_category') == 'emergency_message' ? 'selected' : '' }}>Emergency Message</option>
+          <option value="general_message" {{ old('sms_category') == 'general_message' ? 'selected' : '' }}>General Message</option>
+        </select>
+      </div>
+    </div>
+  </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- LEFT COLUMN: CONTENT -->
-      <div class="lg:col-span-8 space-y-6">
-        <!-- MESSAGE CONTENT CARD -->
-        <div class="card">
-          <div class="card-header flex items-center justify-between">
-            <div>
-              <div class="card-title flex items-center gap-2">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Message Content
-              </div>
-              <div class="card-subtitle">Craft your perfect message</div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div>
-                <select id="messageTemplate" class="form-control text-sm" onchange="useTemplate()">
-                  <option value="">Load Template...</option>
-                  @foreach($templates as $template)
-                  <option value="{{ $template->content }}" data-subject="{{ $template->subject }}" data-type="{{ $template->type }}">{{ $template->name }} ({{ $template->type }})</option>
-                  @endforeach
-                </select>
-              </div>
-              <div class="flex gap-2">
-                <button type="button" class="btn btn-secondary flex-1" onclick="resetTemplate()">
-                  Reset
-                </button>
-              </div>
-            </div>
-            <div id="templatePreview" class="mt-4 hidden p-4 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-              <h4 class="text-sm font-semibold mb-2 text-gray-600">Template Preview</h4>
-              <div id="templatePreviewContent" class="text-sm text-gray-800"></div>
-            </div>
-          </div>
-          <div class="card-body space-y-4">
-            <div class="form-group">
-              <label class="form-label">Subject <span class="text-red-500">*</span></label>
-              <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" required placeholder="e.g., Sunday Service Reminder">
-              @error('subject') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Message <span class="text-red-500">*</span></label>
-              <textarea name="message" id="messageArea" class="form-control hidden" rows="4" required placeholder="Type your message here...">{{ old('message') }}</textarea>
-              <div id="quillEditor" class="rounded-lg"></div>
-              <div class="flex justify-between mt-2">
-                <span class="text-xs text-muted" id="charCount">0 characters</span>
-                <span class="text-xs text-muted" id="smsCount">0 SMS units</span>
-              </div>
-              <div class="p-3 bg-blue-50 rounded-lg border border-blue-100 mt-3">
-                <h5 class="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">Available Placeholders</h5>
-                <div class="flex flex-wrap gap-2">
-                  <button type="button" class="px-2 py-1 text-xs bg-white border border-blue-200 rounded hover:bg-blue-100 transition" onclick="insertPlaceholder('Name')">[Name]</button>
-                  <button type="button" class="px-2 py-1 text-xs bg-white border border-blue-200 rounded hover:bg-blue-100 transition" onclick="insertPlaceholder('Group')">[Group]</button>
-                  <button type="button" class="px-2 py-1 text-xs bg-white border border-blue-200 rounded hover:bg-blue-100 transition" onclick="insertPlaceholder('Date')">[Date]</button>
-                </div>
-              </div>
-              @error('message') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
-            </div>
-          </div>
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">2. Message Content</div>
+      <div class="card-subtitle">Compose your message</div>
+    </div>
+    <div class="card-body space-y-4">
+      <div class="form-group">
+        <label class="form-label">Message Title</label>
+        <input type="text" name="message_title" id="messageTitle" class="form-control" value="{{ old('message_title') }}" placeholder="Sunday Service Reminder">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Message Body</label>
+        <textarea name="message_body" id="messageBody" class="form-control" rows="6" placeholder="Dear Church Member, 
+
+You are warmly invited to join our Sunday Worship Service this Sunday at 8:00 AM. 
+
+Venue: Main Church Hall. 
+
+God bless you.
+TMCSmart Church">{{ old('message_body') }}</textarea>
+        <div class="flex justify-between mt-2 text-sm">
+          <span>Characters: <span id="charCount">0</span>/160</span>
+          <span>SMS Parts: <span id="smsParts">1</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">3. Select Recipients</div>
+      <div class="card-subtitle">Choose who to send to</div>
+    </div>
+    <div class="card-body space-y-4">
+      <div class="flex flex-wrap gap-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="recipient_option" id="recipientAll" value="all" {{ old('recipient_option', 'all') == 'all' ? 'checked' : '' }} class="w-4 h-4 text-green-600">
+          <span>All Members</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="recipient_option" id="recipientCellGroup" value="cell_group" {{ old('recipient_option') == 'cell_group' ? 'checked' : '' }} class="w-4 h-4 text-green-600">
+          <span>Cell Group / Fellowship</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="recipient_option" id="recipientVisitors" value="visitors" {{ old('recipient_option') == 'visitors' ? 'checked' : '' }} class="w-4 h-4 text-green-600">
+          <span>Visitors</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="recipient_option" id="recipientCustom" value="custom" {{ old('recipient_option') == 'custom' ? 'checked' : '' }} class="w-4 h-4 text-green-600">
+          <span>Custom Members</span>
+        </label>
+      </div>
+
+      <div id="cellGroupSelect" class="mt-4 {{ old('recipient_option') == 'cell_group' ? '' : 'hidden' }}">
+        <div class="form-group">
+          <label class="form-label">Select Cell Group</label>
+          <select name="cell_group" class="form-control">
+            <option value="">Choose a cell group...</option>
+            @foreach($groups as $group)
+            <option value="{{ $group->id }}" {{ old('cell_group') == $group->id ? 'selected' : '' }}>{{ $group->name }}</option>
+            @endforeach
+          </select>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: RECIPIENTS & SCHEDULING -->
-      <div class="lg:col-span-4 space-y-6">
-        <!-- RECIPIENTS CARD -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title flex items-center gap-2">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-              </svg>
-              Recipients
-            </div>
-            <div class="card-subtitle">Who will receive this message?</div>
-          </div>
-          <div class="card-body space-y-4">
-            <div class="form-group">
-              <select name="recipient_type" id="recipientType" class="form-control" required>
-                <option value="All" {{ old('recipient_type') == 'All' ? 'selected' : '' }}>All Members</option>
-                <option value="Group" {{ old('recipient_type') == 'Group' ? 'selected' : '' }}>Specific Group</option>
-                <option value="Individual" {{ old('recipient_type') == 'Individual' ? 'selected' : '' }}>Individual Member</option>
-                <option value="Advanced" {{ old('recipient_type') == 'Advanced' ? 'selected' : '' }}>Advanced Criteria</option>
-              </select>
-            </div>
-
-            <div id="groupSelect" class="space-y-3 {{ old('recipient_type') == 'Group' ? '' : 'hidden' }}">
-              <div class="form-group mb-0">
-                <label class="form-label">Select Group <span class="text-red-500">*</span></label>
-                <select name="group_id" class="form-control">
-                  <option value="">Choose a group...</option>
-                  @foreach($groups as $group)
-                  <option value="{{ $group->id }}" {{ old('group_id') == $group->id ? 'selected' : '' }}>{{ $group->name }} ({{ $group->members->count() }} members)</option>
-                  @endforeach
-                </select>
-                @error('group_id') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
-              </div>
-            </div>
-
-            <div id="memberSelect" class="space-y-3 {{ old('recipient_type') == 'Individual' ? '' : 'hidden' }}">
-              <div class="form-group mb-0">
-                <label class="form-label">Select Member <span class="text-red-500">*</span></label>
-                <select name="member_id" class="form-control">
-                  <option value="">Choose a member...</option>
-                  @foreach($members as $member)
-                  <option value="{{ $member->id }}" {{ old('member_id') == $member->id ? 'selected' : '' }}>{{ $member->full_name }} ({{ $member->phone ?? $member->email }})</option>
-                  @endforeach
-                </select>
-                @error('member_id') <div class="text-red text-xs mt-1">{{ $message }}</div> @enderror
-              </div>
-            </div>
-
-            <div id="advancedCriteria" class="space-y-4 {{ old('recipient_type') == 'Advanced' ? '' : 'hidden' }}">
-              <div class="form-group mb-0">
-                <label class="form-label">Member Categories</label>
-                <select name="criteria[category_ids][]" class="form-control" multiple>
-                  @foreach($categories as $cat)
-                  <option value="{{ $cat->id }}" {{ in_array($cat->id, old('criteria.category_ids', [])) ? 'selected' : '' }}>{{ $cat->name }}</option>
-                  @endforeach
-                </select>
-              </div>
-
-              <div class="form-group mb-0">
-                <label class="form-label">Programs</label>
-                <select name="criteria[program_ids][]" class="form-control" multiple>
-                  @foreach($programs as $prog)
-                  <option value="{{ $prog->id }}" {{ in_array($prog->id, old('criteria.program_ids', [])) ? 'selected' : '' }}>{{ $prog->name }}</option>
-                  @endforeach
-                </select>
-              </div>
-
-              <div class="form-group mb-0">
-                <label class="form-label">Communities</label>
-                <select name="criteria[community_ids][]" class="form-control" multiple>
-                  @foreach($groups->where('type', 'Community') as $com)
-                  <option value="{{ $com->id }}" {{ in_array($com->id, old('criteria.community_ids', [])) ? 'selected' : '' }}>{{ $com->name }}</option>
-                  @endforeach
-                </select>
-              </div>
-
-              <div class="grid grid-cols-2 gap-3">
-                <div class="form-group mb-0">
-                  <label class="form-label">Contribution Min</label>
-                  <input type="number" name="criteria[contribution_min]" class="form-control" value="{{ old('criteria.contribution_min') }}" placeholder="Min">
-                </div>
-                <div class="form-group mb-0">
-                  <label class="form-label">Contribution Max</label>
-                  <input type="number" name="criteria[contribution_max]" class="form-control" value="{{ old('criteria.contribution_max') }}" placeholder="Max">
-                </div>
-              </div>
-
-              <div class="form-group mb-0">
-                <label class="form-label">Active Status</label>
-                <select name="criteria[is_active]" class="form-control">
-                  <option value="">All</option>
-                  <option value="1" {{ old('criteria.is_active') === '1' ? 'selected' : '' }}>Only Active</option>
-                  <option value="0" {{ old('criteria.is_active') === '0' ? 'selected' : '' }}>Only Inactive</option>
-                </select>
-              </div>
-            </div>
-          </div>
+      <div id="customMemberSelect" class="mt-4 {{ old('recipient_option') == 'custom' ? '' : 'hidden' }}">
+        <div class="form-group">
+          <label class="form-label">Select Members</label>
+          <select name="custom_members[]" class="form-control" multiple size="5">
+            @foreach($members as $member)
+            <option value="{{ $member->id }}" {{ (old('custom_members') && in_array($member->id, old('custom_members'))) ? 'selected' : '' }}>{{ $member->full_name }} ({{ $member->phone ?? $member->email }})</option>
+            @endforeach
+          </select>
+          <div class="text-xs text-muted mt-1">Hold Ctrl/Cmd to select multiple</div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- SCHEDULING CARD -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title flex items-center gap-2">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-              Timing
-            </div>
-            <div class="card-subtitle">When should this be sent?</div>
-          </div>
-          <div class="card-body space-y-4">
-            <div class="flex gap-4 items-center">
-              <label class="flex items-center gap-2 cursor-pointer flex-1">
-                <input type="radio" name="send_option" value="now" checked onchange="toggleCreateScheduleField()" class="w-4 h-4 text-green-600">
-                <span class="font-medium">Send Now</span>
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer flex-1">
-                <input type="radio" name="send_option" value="schedule" onchange="toggleCreateScheduleField()" class="w-4 h-4 text-green-600">
-                <span class="font-medium">Schedule Later</span>
-              </label>
-            </div>
-            <div id="createScheduleField" class="space-y-2 hidden">
-              <input type="datetime-local" name="scheduled_at" class="form-control">
-              <span class="text-xs text-muted block">Enter date and time in your local timezone</span>
-            </div>
-          </div>
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">4. Member Filters</div>
+      <div class="card-subtitle">Filter recipients further</div>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="form-group">
+          <label class="form-label">Gender</label>
+          <select name="gender" class="form-control">
+            <option value="all">All</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
         </div>
-
-        <!-- API GATEWAY STATUS CARD -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title flex items-center gap-2">
-              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-              </svg>
-              API Gateways
-            </div>
-            <div class="card-subtitle">Status of your messaging services</div>
-          </div>
-          <div class="card-body">
-            @forelse($activeGateways as $gateway)
-            <div class="flex items-center justify-between py-2">
-              <div class="flex items-center gap-3">
-                <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                <span class="text-sm font-medium">{{ $gateway->name }}</span>
-              </div>
-              <span class="badge green text-xs">{{ $gateway->provider_type }}</span>
-            </div>
-            @empty
-            <div class="text-center py-4">
-              <div class="flex items-center justify-center gap-2 text-red-500 mb-2">
-                <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                <span class="text-sm font-medium">No Active Gateways</span>
-              </div>
-              <p class="text-xs text-muted">Please configure an API in Api Config section</p>
-            </div>
-            @endforelse
-          </div>
+        <div class="form-group">
+          <label class="form-label">Age Group</label>
+          <select name="age_group" class="form-control">
+            <option value="all">All</option>
+            <option value="0-17">0-17</option>
+            <option value="18-30">18-30</option>
+            <option value="31-50">31-50</option>
+            <option value="51+">51+</option>
+          </select>
         </div>
+        <div class="form-group">
+          <label class="form-label">Membership Status</label>
+          <select name="membership_status" class="form-control">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Status</label>
+          <select name="payment_status" class="form-control">
+            <option value="all">All</option>
+            <option value="paid">Paid</option>
+            <option value="unpaid">Unpaid</option>
+          </select>
+        </div>
+        @if($contributionTypes->count() > 0)
+        <div class="form-group">
+          <label class="form-label">Contribution Type</label>
+          <select name="contribution_type_id" class="form-control">
+            <option value="">All Types</option>
+            @foreach($contributionTypes as $type)
+            <option value="{{ $type->id }}">{{ $type->name }}</option>
+            @endforeach
+          </select>
+        </div>
+        @endif
+        <div class="form-group">
+          <label class="form-label">Registration Date (Start)</label>
+          <input type="date" name="reg_start_date" class="form-control" value="{{ old('reg_start_date') }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Registration Date (End)</label>
+          <input type="date" name="reg_end_date" class="form-control" value="{{ old('reg_end_date') }}">
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <!-- ACTION BUTTONS -->
-        <div class="flex gap-3">
-          <a href="{{ route('communications.index') }}" class="btn btn-secondary flex-1">Cancel</a>
-          <button type="submit" class="btn btn-primary flex-1">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="mr-2">
-              <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-            </svg>
-            <span id="createSubmitText">Send Bulk SMS</span>
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">5. Manual Phone Numbers</div>
+      <div class="card-subtitle">Add external contacts</div>
+    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label class="form-label">Enter phone numbers (one per line)</label>
+        <textarea name="manual_phones" class="form-control" rows="3" placeholder="+255712345678
++255754321987">{{ old('manual_phones') }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">6. SMS Preview</div>
+      <div class="card-subtitle">Preview before sending</div>
+    </div>
+    <div class="card-body">
+      <div class="border rounded-lg p-4 bg-gray-50">
+        <p class="mb-2"><strong>Sender:</strong> <span id="previewSender">{{ $defaultSenderName }}</span></p>
+        <p class="mb-2"><strong>Recipients:</strong> <span id="previewRecipients">0 Members</span></p>
+        <p class="mb-2"><strong>Message:</strong></p>
+        <p id="previewMessage" class="whitespace-pre-line border-t border-gray-200 pt-2">Your message will appear here</p>
+      </div>
+      <p class="text-sm mt-4"><strong>SMS Required:</strong> <span id="previewSmsRequired">0</span></p>
+    </div>
+  </div>
+
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">7. Schedule SMS</div>
+      <div class="card-subtitle">Choose when to send</div>
+    </div>
+    <div class="card-body space-y-4">
+      <div class="flex gap-6">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="send_option" value="now" {{ old('send_option', 'now') == 'now' ? 'checked' : '' }} class="w-4 h-4 text-green-600">
+          <span>Send Now</span>
+        </label>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" name="send_option" value="schedule" {{ old('send_option') == 'schedule' ? 'checked' : '' }} class="w-4 h-4 text-green-600">
+          <span>Schedule</span>
+        </label>
+      </div>
+      <div id="scheduleFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 {{ old('send_option') == 'schedule' ? '' : 'hidden' }}">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" name="scheduled_date" class="form-control" value="{{ old('scheduled_date') }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input type="time" name="scheduled_time" class="form-control" value="{{ old('scheduled_time') }}">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-6">
+    <div class="card-body">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <div class="card-title">Actions</div>
+          <div class="card-subtitle">Preview, save, or send your SMS with confirmation prompts.</div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <button type="button" id="previewBtn" class="btn btn-secondary">Preview SMS</button>
+          <button type="button" id="saveDraftBtn" class="btn btn-gold">Save Draft</button>
+          <button type="button" id="cancelBtn" class="btn btn-secondary" data-cancel-url="{{ route('communications.index') }}">Cancel</button>
+          <button type="button" id="sendBtn" class="btn btn-primary">
+            <span id="sendBtnText">Send SMS</span>
           </button>
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="card mb-6">
+    <div class="card-header">
+      <div class="card-title">8. SMS History</div>
+      <div class="card-subtitle">Your recent SMS</div>
+    </div>
+    <div class="card-body">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b">
+              <th class="text-left py-2">Date</th>
+              <th class="text-left py-2">Message</th>
+              <th class="text-left py-2">Group</th>
+              <th class="text-left py-2">Recipients</th>
+              <th class="text-left py-2">Status</th>
+              <th class="text-left py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if($communications->count() > 0)
+              @foreach($communications->take(5) as $comm)
+                <tr class="border-b">
+                  <td class="py-2">{{ $comm->created_at->format('d/m/Y') }}</td>
+                  <td class="py-2">{{ Str::limit($comm->subject, 30) }}</td>
+                  <td class="py-2">{{ $comm->recipient_type == 'all' ? 'All Members' : ($comm->group ? $comm->group->name : 'N/A') }}</td>
+                  <td class="py-2">{{ count(json_decode($comm->recipients, true) ?? []) }}</td>
+                  <td class="py-2"><span class="badge {{ $comm->status == 'sent' ? 'green' : 'amber' }}">{{ ucfirst($comm->status) }}</span></td>
+                  <td class="py-2">
+                    <div class="flex gap-2">
+                      <button type="button" class="text-xs text-green-600 hover:underline" onclick="viewCommunication({{ $comm->id }})">View</button>
+                      <button type="button" class="text-xs text-blue-600 hover:underline" onclick="resendCommunication({{ $comm->id }})">Resend</button>
+                      <button type="button" class="text-xs text-gray-600 hover:underline">Download Report</button>
+                    </div>
+                  </td>
+                </tr>
+              @endforeach
+            @else
+              <tr><td colspan="6" class="text-center py-4 text-muted">No SMS history yet</td></tr>
+            @endif
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Recommended Church SMS Templates</div>
+    </div>
+    <div class="card-body space-y-3">
+      <div class="p-3 bg-gray-50 rounded border border-gray-200 cursor-pointer hover:bg-blue-50" onclick="useTemplate('Welcome New Member', 'Welcome to TMCSmart Church family. We are happy to have you with us. God bless you.')">
+        <h5 class="font-semibold text-sm mb-1">Welcome New Member</h5>
+        <p class="text-xs text-gray-600">Welcome to TMCSmart Church family. We are happy to have you with us. God bless you.</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded border border-gray-200 cursor-pointer hover:bg-blue-50" onclick="useTemplate('Birthday Message', 'Happy Birthday [Name]! May God bless you with joy, health and success. From TMCSmart Church.')">
+        <h5 class="font-semibold text-sm mb-1">Birthday Message</h5>
+        <p class="text-xs text-gray-600">Happy Birthday John! May God bless you with joy, health and success. From TMCSmart Church.</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded border border-gray-200 cursor-pointer hover:bg-blue-50" onclick="useTemplate('Service Reminder', 'Reminder: Sunday Worship Service starts at 8:00 AM. We look forward to worshiping with you.')">
+        <h5 class="font-semibold text-sm mb-1">Service Reminder</h5>
+        <p class="text-xs text-gray-600">Reminder: Sunday Worship Service starts at 8:00 AM. We look forward to worshiping with you.</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded border border-gray-200 cursor-pointer hover:bg-blue-50" onclick="useTemplate('Contribution/Giving Reminder', 'Dear Member, thank you for your faithfulness. Remember your weekly contribution. God bless you.')">
+        <h5 class="font-semibold text-sm mb-1">Contribution/Giving Reminder</h5>
+        <p class="text-xs text-gray-600">Dear Member, thank you for your faithfulness. Remember your weekly contribution. God bless you.</p>
+      </div>
+      <div class="p-3 bg-gray-50 rounded border border-gray-200 cursor-pointer hover:bg-blue-50" onclick="useTemplate('Emergency Announcement', 'Important announcement: Due to weather conditions, today\'s meeting has been postponed.')">
+        <h5 class="font-semibold text-sm mb-1">Emergency Announcement</h5>
+        <p class="text-xs text-gray-600">Important announcement: Due to weather conditions, today's meeting has been postponed.</p>
+      </div>
+    </div>
+  </div>
   </form>
 </div>
 @endsection
 
-@push('styles')
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
-@endpush
-
 @push('scripts')
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
-let quill;
-const recipientType = document.getElementById('recipientType');
-const groupSelect = document.getElementById('groupSelect');
-const memberSelect = document.getElementById('memberSelect');
-const advancedCriteria = document.getElementById('advancedCriteria');
-const templateSelect = document.getElementById('messageTemplate');
-const subjectInput = document.querySelector('input[name="subject"]');
-const charCountEl = document.getElementById('charCount');
-const smsCountEl = document.getElementById('smsCount');
-const messageArea = document.getElementById('messageArea');
+const smsForm = document.getElementById('smsForm');
+const formActionInput = document.getElementById('formActionInput');
+const messageTitle = document.getElementById('messageTitle');
+const messageBody = document.getElementById('messageBody');
+const previewMessage = document.getElementById('previewMessage');
+const previewRecipients = document.getElementById('previewRecipients');
+const previewSmsRequired = document.getElementById('previewSmsRequired');
+const sendBtn = document.getElementById('sendBtn');
+const sendBtnText = document.getElementById('sendBtnText');
+const saveDraftBtn = document.getElementById('saveDraftBtn');
+const previewBtn = document.getElementById('previewBtn');
+const cancelBtn = document.getElementById('cancelBtn');
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize Quill
-  quill = new Quill('#quillEditor', {
-    theme: 'snow',
-    placeholder: 'Type your message here...',
-    modules: {
-      toolbar: [
-        [{ 'header': [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['link', 'image'],
-        ['clean']
-      ]
-    }
-  });
-
-  // Load initial content
-  if (messageArea.value) {
-    quill.root.innerHTML = messageArea.value;
+function countManualPhones() {
+  const manualPhonesField = document.querySelector('textarea[name="manual_phones"]');
+  if (!manualPhonesField || !manualPhonesField.value.trim()) {
+    return 0;
   }
 
-  // Sync Quill content to textarea
-  quill.on('text-change', function() {
-    const html = quill.root.innerHTML;
-    messageArea.value = html === '<p><br></p>' ? '' : html;
-    updateCharCount();
-  });
+  return manualPhonesField.value
+    .split('\n')
+    .map(phone => phone.trim())
+    .filter(Boolean)
+    .length;
+}
 
-  // Handle URL params
-  const urlParams = new URLSearchParams(window.location.search);
-  const groupId = urlParams.get('group_id');
-  if (groupId) {
-    recipientType.value = 'Group';
-    groupSelect.classList.remove('hidden');
-    const groupOption = groupSelect.querySelector(`option[value="${groupId}"]`);
-    if (groupOption) {
-      groupOption.selected = true;
-    }
+function getRecipientSummary() {
+  const selectedRecipient = document.querySelector('input[name="recipient_option"]:checked')?.value || 'all';
+  const manualCount = countManualPhones();
+  let label = 'All Members';
+  let estimatedCount = manualCount;
+
+  if (selectedRecipient === 'cell_group') {
+    const groupSelect = document.querySelector('select[name="cell_group"]');
+    label = groupSelect?.options[groupSelect.selectedIndex]?.text || 'Selected Cell Group';
+    estimatedCount += groupSelect?.value ? 1 : 0;
+  } else if (selectedRecipient === 'custom') {
+    const selectedMembers = Array.from(document.querySelector('select[name="custom_members[]"]')?.selectedOptions || []);
+    label = selectedMembers.length ? `Custom Members (${selectedMembers.length})` : 'Custom Members';
+    estimatedCount += selectedMembers.length;
+  } else if (selectedRecipient === 'visitors') {
+    label = 'Visitors';
+    estimatedCount += 1;
+  } else {
+    estimatedCount += 1;
   }
 
-  // Initial count
-  updateCharCount();
-});
+  return {
+    label,
+    estimatedCount,
+  };
+}
 
 function updateCharCount() {
-  const text = quill.getText().trim();
+  const text = messageBody.value;
   const chars = text.length;
-  charCountEl.textContent = `${chars} characters`;
-  
-  const units = Math.ceil(chars / 160) || 0;
-  smsCountEl.textContent = `${units} SMS unit${units !== 1 ? 's' : ''}`;
+  const parts = Math.max(1, Math.ceil(chars / 160));
+  const recipientSummary = getRecipientSummary();
+
+  document.getElementById('charCount').textContent = chars;
+  document.getElementById('smsParts').textContent = parts;
+  previewMessage.textContent = text || 'Your message will appear here';
+  previewRecipients.textContent = `${recipientSummary.estimatedCount} recipient(s) estimated`;
+  previewSmsRequired.textContent = Math.max(1, parts * Math.max(1, recipientSummary.estimatedCount));
 }
 
-function useTemplate() {
-  if (templateSelect.value) {
-    const selectedOption = templateSelect.options[templateSelect.selectedIndex];
-    const content = templateSelect.value;
-    const subject = selectedOption.getAttribute('data-subject');
+function toggleRecipientFields() {
+  const selectedValue = document.querySelector('input[name="recipient_option"]:checked')?.value;
+  document.getElementById('cellGroupSelect').classList.add('hidden');
+  document.getElementById('customMemberSelect').classList.add('hidden');
 
-    quill.root.innerHTML = content;
-    if (subject) subjectInput.value = subject;
-    
-    // Show preview
-    document.getElementById('templatePreview').classList.remove('hidden');
-    document.getElementById('templatePreviewContent').innerHTML = `
-      <p class="font-semibold mb-1">${subject}</p>
-      <div class="whitespace-pre-wrap">${content}</div>
-    `;
-    
-    updateCharCount();
-  } else {
-    document.getElementById('templatePreview').classList.add('hidden');
+  if (selectedValue === 'cell_group') {
+    document.getElementById('cellGroupSelect').classList.remove('hidden');
+  } else if (selectedValue === 'custom') {
+    document.getElementById('customMemberSelect').classList.remove('hidden');
   }
+
+  updateCharCount();
 }
 
-function resetTemplate() {
-  if (confirm('Are you sure you want to clear the message and subject?')) {
-    quill.setText('');
-    subjectInput.value = '';
-    templateSelect.value = '';
-    document.getElementById('templatePreview').classList.add('hidden');
-    updateCharCount();
-  }
+function toggleScheduleFields() {
+  const sendOption = document.querySelector('input[name="send_option"]:checked')?.value;
+  document.getElementById('scheduleFields').classList.toggle('hidden', sendOption !== 'schedule');
 }
 
-function insertPlaceholder(placeholder) {
-  const range = quill.getSelection();
-  if (range) {
-    quill.insertText(range.index, `[${placeholder}]`);
-    quill.setSelection(range.index + placeholder.length + 2);
-    updateCharCount();
-  }
+function useTemplate(title, body) {
+  messageTitle.value = title;
+  messageBody.value = body;
+  updateCharCount();
 }
 
-recipientType.addEventListener('change', function() {
-  groupSelect.classList.add('hidden');
-  memberSelect.classList.add('hidden');
-  advancedCriteria.classList.add('hidden');
-  
-  if (this.value === 'Group') {
-    groupSelect.classList.remove('hidden');
-  } else if (this.value === 'Individual') {
-    memberSelect.classList.remove('hidden');
-  } else if (this.value === 'Advanced') {
-    advancedCriteria.classList.remove('hidden');
-  }
+function setSubmittingState(buttonLabel) {
+  sendBtn.disabled = true;
+  saveDraftBtn.disabled = true;
+  previewBtn.disabled = true;
+  cancelBtn.disabled = true;
+  sendBtnText.textContent = buttonLabel;
+}
+
+function getPreviewHtml() {
+  const chars = messageBody.value.length;
+  const parts = Math.max(1, Math.ceil(chars / 160));
+  const recipientSummary = getRecipientSummary();
+  const message = (messageBody.value || 'No message content yet.').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  const title = (messageTitle.value || 'Untitled SMS').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  return `
+    <div style="text-align:left">
+      <div style="margin-bottom:12px;"><strong>Sender:</strong> {{ $defaultSenderName }}</div>
+      <div style="margin-bottom:12px;"><strong>Title:</strong> ${title}</div>
+      <div style="margin-bottom:12px;"><strong>Recipients:</strong> ${recipientSummary.label}</div>
+      <div style="margin-bottom:12px;"><strong>Estimated count:</strong> ${recipientSummary.estimatedCount}</div>
+      <div style="margin-bottom:12px;"><strong>SMS units:</strong> ${parts}</div>
+      <div style="padding:12px; border:1px solid #d1fae5; border-radius:12px; background:#f0fdf4;">
+        ${message}
+      </div>
+    </div>
+  `;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  updateCharCount();
+  toggleRecipientFields();
+  toggleScheduleFields();
+
+  @if(session('success'))
+    Swal.fire({
+      title: 'Success',
+      text: '{{ session('success') }}',
+      icon: 'success',
+      timer: 3000,
+      showConfirmButton: false
+    });
+  @endif
+
+  @if(session('error'))
+    Swal.fire({
+      title: 'Error',
+      text: '{{ session('error') }}',
+      icon: 'error',
+      confirmButtonColor: '#059669'
+    });
+  @endif
+
+  @if($errors->any())
+    Swal.fire({
+      title: 'Validation Error',
+      html: `{!! collect($errors->all())->map(fn ($error) => '<div style="margin-bottom:6px;">' . e($error) . '</div>')->implode('') !!}`,
+      icon: 'error',
+      confirmButtonColor: '#059669'
+    });
+  @endif
 });
 
-function toggleCreateScheduleField() {
-  const sendOption = document.querySelector('input[name="send_option"]:checked')?.value;
-  const submitText = document.getElementById('createSubmitText');
-  
-  if (sendOption === 'schedule') {
-    document.getElementById('createScheduleField').classList.remove('hidden');
-    submitText.textContent = 'Schedule Bulk SMS';
-  } else {
-    document.getElementById('createScheduleField').classList.add('hidden');
-    submitText.textContent = 'Send Bulk SMS';
-  }
-}
+messageBody.addEventListener('input', updateCharCount);
+messageBody.addEventListener('change', updateCharCount);
+messageTitle.addEventListener('input', updateCharCount);
+document.querySelector('textarea[name="manual_phones"]').addEventListener('input', updateCharCount);
+document.querySelector('select[name="cell_group"]').addEventListener('change', updateCharCount);
+document.querySelector('select[name="custom_members[]"]').addEventListener('change', updateCharCount);
+
+document.querySelectorAll('input[name="recipient_option"]').forEach(radio => {
+  radio.addEventListener('change', toggleRecipientFields);
+});
+
+document.querySelectorAll('input[name="send_option"]').forEach(radio => {
+  radio.addEventListener('change', toggleScheduleFields);
+});
+
+previewBtn.addEventListener('click', function() {
+  Swal.fire({
+    title: 'SMS Preview',
+    html: getPreviewHtml(),
+    width: 720,
+    confirmButtonText: 'Close',
+    confirmButtonColor: '#059669'
+  });
+});
+
+sendBtn.addEventListener('click', function() {
+  formActionInput.value = 'send';
+
+  Swal.fire({
+    title: 'Send SMS now?',
+    text: 'This will submit the form and send the message using the configured SMS gateway.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, send SMS',
+    cancelButtonText: 'Review Again',
+    confirmButtonColor: '#059669',
+    cancelButtonColor: '#6b7280'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      setSubmittingState('Sending...');
+      smsForm.submit();
+    }
+  });
+});
+
+saveDraftBtn.addEventListener('click', function() {
+  formActionInput.value = 'save_draft';
+
+  Swal.fire({
+    title: 'Save as draft?',
+    text: 'Your current SMS setup will be saved without sending.',
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'Save Draft',
+    cancelButtonText: 'Continue Editing',
+    confirmButtonColor: '#d97706',
+    cancelButtonColor: '#6b7280'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      setSubmittingState('Saving Draft...');
+      smsForm.submit();
+    }
+  });
+});
+
+cancelBtn.addEventListener('click', function() {
+  const cancelUrl = this.dataset.cancelUrl;
+
+  Swal.fire({
+    title: 'Discard changes?',
+    text: 'Unsaved edits on this SMS form will be lost.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, leave page',
+    cancelButtonText: 'Stay Here',
+    confirmButtonColor: '#dc2626',
+    cancelButtonColor: '#6b7280'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      window.location.href = cancelUrl;
+    }
+  });
+});
 </script>
 @endpush

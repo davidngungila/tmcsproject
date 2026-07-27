@@ -41,11 +41,6 @@ class ProcessScheduledCommunications extends Command
                     $this->info("Processing communication #{$communication->id} to " . count($recipients) . " recipient(s)...");
                     
                     ProcessCommunicationJob::dispatch($communication, $recipients);
-                    
-                    $communication->update([
-                        'status' => 'pending',
-                        'sent_at' => now(),
-                    ]);
                 } else {
                     $this->warn("Communication #{$communication->id} has no recipients, skipping.");
                 }

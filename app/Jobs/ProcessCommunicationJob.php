@@ -32,29 +32,52 @@ class ProcessCommunicationJob implements ShouldQueue
     public function handle(MessagingService $messagingService): void
     {
         try {
-            if ($this->communication->type === 'SMS') {
+            $type = strtolower($this->communication->type);
+
+            if ($type === 'sms') {
                 $response = $messagingService->sendSms($this->recipients, $this->communication->message);
                 if ($response['status'] === 'success') {
-                    $this->communication->update(['status' => 'Sent']);
+                    $this->communication->update([
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                        'error_message' => null,
+                    ]);
                 } else {
-                    $this->communication->update(['status' => 'Failed']);
+                    $this->communication->update([
+                        'status' => 'failed',
+                        'error_message' => $response['message'] ?? 'Failed to send SMS.',
+                    ]);
                     Log::error("Communication Job SMS Failed: " . $response['message']);
                 }
-            } elseif ($this->communication->type === 'Email') {
+            } elseif ($type === 'email') {
                 foreach ($this->recipients as $email) {
                     Mail::to($email)->send(new GenericMailable($this->communication->subject, $this->communication->message));
                 }
-                $this->communication->update(['status' => 'Sent']);
-            } elseif ($this->communication->type === 'WhatsApp') {
+                $this->communication->update([
+                    'status' => 'sent',
+                    'sent_at' => now(),
+                    'error_message' => null,
+                ]);
+            } elseif ($type === 'whatsapp') {
                 $response = $messagingService->sendWhatsApp($this->recipients, $this->communication->message);
                 if ($response['status'] === 'success') {
-                    $this->communication->update(['status' => 'Sent']);
+                    $this->communication->update([
+                        'status' => 'sent',
+                        'sent_at' => now(),
+                        'error_message' => null,
+                    ]);
                 } else {
-                    $this->communication->update(['status' => 'Failed']);
+                    $this->communication->update([
+                        'status' => 'failed',
+                        'error_message' => $response['message'] ?? 'Failed to send WhatsApp message.',
+                    ]);
                 }
             }
         } catch (\Exception $e) {
-            $this->communication->update(['status' => 'Failed']);
+            $this->communication->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+            ]);
             Log::error("ProcessCommunicationJob Exception: " . $e->getMessage());
             throw $e;
         }
