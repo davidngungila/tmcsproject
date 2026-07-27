@@ -93,7 +93,7 @@
             </div>
             <div class="flex-1">
               <div class="font-black text-gray-800 text-sm mb-1">{{ $event->title }}</div>
-              <div class="text-[10px] text-gray-500 mb-2">{{ $event->start_date->format('M d, Y - g:i A') }}</div>
+              <div class="text-[10px] text-gray-500 mb-2">{{ $event->start_date ? $event->start_date->format('M d, Y - g:i A') : 'Date not set' }}</div>
               @if($event->location)
               <div class="text-[9px] text-gray-400">{{ $event->location }}</div>
               @endif
@@ -130,7 +130,7 @@
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
                 <span class="badge blue text-[9px] uppercase font-bold">{{ $announcement->type }}</span>
-                <span class="text-[9px] text-gray-400">{{ $announcement->created_at->format('M d, Y') }}</span>
+                <span class="text-[9px] text-gray-400">{{ $announcement->created_at ? $announcement->created_at->format('M d, Y') : 'Date not set' }}</span>
               </div>
               <div class="font-black text-gray-800 text-sm mb-2">{{ $announcement->title }}</div>
               <div class="text-xs text-gray-600 line-clamp-2">{{ Str::limit($announcement->content, 150) }}</div>
