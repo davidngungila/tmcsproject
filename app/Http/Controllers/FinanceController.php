@@ -348,10 +348,10 @@ class FinanceController extends Controller
             SendSmsJob::dispatch($member->phone, $smsMessage);
         }
 
-        // 2. Send Email with PDF attachment (Queued)
+        // 2. Send Email with PDF attachment (Immediate)
         if ($member->email) {
-            // The mailable is Queued, and it will generate the PDF internally in its attachments() method
-            Mail::to($member->email)->queue(new ContributionReceiptMailable($contribution));
+            // The mailable sends immediately and generates the PDF internally in its attachments() method
+            Mail::to($member->email)->send(new ContributionReceiptMailable($contribution));
         }
     }
 

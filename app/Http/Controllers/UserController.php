@@ -130,8 +130,8 @@ class UserController extends Controller
             'force_password_change' => true, // Force change on next login
         ]);
 
-        // 3. Send notification email (Queued)
-        Mail::to($user->email)->queue(new PasswordResetMailable($user, $newPassword));
+        // 3. Send notification email (Immediate)
+        Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
 
         return back()->with('success', "Password for {$user->name} has been reset successfully and notification sent to their email.");
     }

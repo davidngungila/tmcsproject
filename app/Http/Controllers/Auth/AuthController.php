@@ -53,8 +53,8 @@ class AuthController extends Controller
             'force_password_change' => true, // Force change on next login
         ]);
 
-        // 3. Send notification email (Queued)
-        Mail::to($user->email)->queue(new PasswordResetMailable($user, $newPassword));
+        // 3. Send notification email (Immediate)
+        Mail::to($user->email)->send(new PasswordResetMailable($user, $newPassword));
 
         return redirect()->route('login')->with('success', 'A new password has been sent to your email address.');
     }
@@ -136,9 +136,9 @@ class AuthController extends Controller
             SendSmsJob::dispatch($user->phone, $smsMessage);
         }
 
-        // 6. Send credentials via email
+        // 6. Send credentials via email (Immediate)
         if ($user->email) {
-            Mail::to($user->email)->queue(new PasswordResetMailable($user, $request->password, 'Your TMCS Account Credentials'));
+            Mail::to($user->email)->send(new PasswordResetMailable($user, $request->password, 'Your TMCS Account Credentials'));
         }
 
         return redirect()->route('login')->with('success', 'Registration successful! Your account is pending administrator approval. Login credentials have been sent to your email and phone.');
