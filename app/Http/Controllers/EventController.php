@@ -155,6 +155,33 @@ class EventController extends Controller
         return redirect()->route('events.attendance')->with('success', 'Attendance updated successfully');
     }
 
+    public function storeAttendance(Request $request, Event $event)
+    {
+        $member = Auth::user()->member;
+        
+        if (!$member) {
+            return back()->with('error', 'Member profile not found.');
+        }
+
+        // Check if already registered for this event
+        $existingAttendance = EventAttendance::where('event_id', $event->id)
+            ->where('member_id', $member->id)
+            ->first();
+
+        if ($existingAttendance) {
+            return back()->with('info', 'You have already registered for this event.');
+        }
+
+        EventAttendance::create([
+            'event_id' => $event->id,
+            'member_id' => $member->id,
+            'status' => 'pending',
+            'registered_at' => now(),
+        ]);
+
+        return back()->with('success', 'Successfully registered for the event!');
+    }
+
     public function storeExpense(Request $request, Event $event)
     {
         $validated = $request->validate([

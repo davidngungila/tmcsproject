@@ -200,6 +200,7 @@ Route::middleware('auth')->group(function () {
 
     // Events
     Route::get('/events/attendance', [EventController::class, 'attendance'])->name('events.attendance');
+    Route::post('/events/{event}/attendance', [EventController::class, 'storeAttendance'])->name('events.attendance.store');
     Route::put('/events/attendance/{attendance}', [EventController::class, 'updateAttendance'])->name('events.attendance.update');
     Route::post('/events/{event}/store-expense', [EventController::class, 'storeExpense'])->name('events.store-expense');
     Route::post('/events/{event}/store-contribution', [EventController::class, 'storeContribution'])->name('events.store-contribution');

@@ -27,8 +27,8 @@
         @forelse($upcoming as $event)
           <div class="p-5 flex items-center gap-6 hover:bg-light/30 transition-colors group">
             <div class="w-16 h-16 rounded-2xl bg-white border-2 border-blue-100 text-blue-600 flex-center flex-col shadow-sm group-hover:border-blue-500 transition-colors">
-              <span class="text-lg font-black leading-none">{{ $event->event_date->format('d') }}</span>
-              <span class="text-[10px] font-bold uppercase tracking-tighter">{{ $event->event_date->format('M Y') }}</span>
+              <span class="text-lg font-black leading-none">{{ $event->event_date ? $event->event_date->format('d') : 'N/A' }}</span>
+              <span class="text-[10px] font-bold uppercase tracking-tighter">{{ $event->event_date ? $event->event_date->format('M Y') : 'Date' }}</span>
             </div>
             <div class="flex-1">
               <div class="flex items-center gap-2 mb-1">
@@ -38,7 +38,7 @@
               <div class="flex items-center gap-4 text-xs text-muted">
                 <div class="flex items-center gap-1">
                   <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  {{ $event->event_time->format('h:i A') }}
+                  {{ $event->event_time ? $event->event_time->format('h:i A') : 'Time not set' }}
                 </div>
                 <div class="flex items-center gap-1">
                   <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -47,7 +47,10 @@
               </div>
             </div>
             <div class="hidden md:block">
-              <button class="btn btn-primary btn-sm rounded-xl px-6">I'm Attending</button>
+              <form action="{{ route('events.attendance.store', $event->id) }}" method="POST" class="inline">
+                @csrf
+                <button type="submit" class="btn btn-primary btn-sm rounded-xl px-6">I'm Attending</button>
+              </form>
             </div>
           </div>
         @empty
@@ -79,7 +82,7 @@
                 <div class="font-bold text-sm">{{ $item->event->event_name }}</div>
                 <div class="text-[10px] text-muted">{{ Str::limit($item->event->description, 50) }}</div>
               </td>
-              <td class="px-6 py-4 text-sm">{{ $item->event->event_date->format('d M, Y') }}</td>
+              <td class="px-6 py-4 text-sm">{{ $item->event->event_date ? $item->event->event_date->format('d M, Y') : 'Date not set' }}</td>
               <td class="px-6 py-4 text-sm text-muted">{{ $item->event->venue }}</td>
               <td class="px-6 py-4 text-right">
                 <span class="badge {{ $item->status === 'attended' ? 'green' : 'amber' }}">
