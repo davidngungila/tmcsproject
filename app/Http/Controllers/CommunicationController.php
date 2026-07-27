@@ -90,14 +90,9 @@ class CommunicationController extends Controller
 
     public function store(Request $request)
     {
-        $formAction = $request->input('form_action', 'send');
-
         $validated = $request->validate([
-            'form_action' => 'nullable|in:send,save_draft',
-            'message_title' => $formAction === 'save_draft' ? 'nullable|string|max:255' : 'required|string|max:255',
-            'message_body' => $formAction === 'save_draft' ? 'nullable|string' : 'required|string',
-            'sms_category' => 'nullable|string',
-            'recipient_option' => $formAction === 'save_draft' ? 'nullable|in:all,cell_group,visitors,custom' : 'required|in:all,cell_group,visitors,custom',
+            'message_body' => 'required|string',
+            'recipient_option' => 'required|in:all,cell_group,visitors,custom',
             'cell_group' => 'nullable|exists:groups,id',
             'custom_members' => 'nullable|array',
             'custom_members.*' => 'exists:members,id',
@@ -108,28 +103,26 @@ class CommunicationController extends Controller
             'contribution_type_id' => 'nullable|exists:contribution_types,id',
             'reg_start_date' => 'nullable|date',
             'reg_end_date' => 'nullable|date',
-            'manual_phones' => 'nullable|string',
-            'send_option' => $formAction === 'save_draft' ? 'nullable|in:now,schedule' : 'required|in:now,schedule',
-            'scheduled_date' => 'nullable|date',
-            'scheduled_time' => 'nullable',
         ]);
 
         $query = Member::query();
         $recipients = [];
 
         // Handle recipient option
-        $recipientOption = $validated['recipient_option'] ?? 'all';
+        $recipientOption = $validated['recipient_option'];
 
-        if ($formAction !== 'save_draft' && $recipientOption === 'cell_group' && empty($validated['cell_group'])) {
+        if ($recipientOption === 'cell_group' && empty($validated['cell_group'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Please select a cell group before sending the SMS.']);
+            }
             return back()->with('error', 'Please select a cell group before sending the SMS.');
         }
 
-        if ($formAction !== 'save_draft' && $recipientOption === 'custom' && empty($validated['custom_members'])) {
+        if ($recipientOption === 'custom' && empty($validated['custom_members'])) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'Please select at least one member before sending the SMS.']);
+            }
             return back()->with('error', 'Please select at least one member before sending the SMS.');
-        }
-
-        if ($formAction !== 'save_draft' && ($validated['send_option'] ?? null) === 'schedule' && (!$request->scheduled_date || !$request->scheduled_time)) {
-            return back()->with('error', 'Please provide both schedule date and schedule time.');
         }
 
         if ($recipientOption === 'all') {
@@ -180,24 +173,14 @@ class CommunicationController extends Controller
             $recipients = array_merge($recipients, $query->whereNotNull('phone')->pluck('phone')->toArray());
         }
 
-        // Add manual phones
-        if ($request->manual_phones) {
-            $manualPhones = explode("\n", trim($request->manual_phones));
-            $manualPhones = array_map('trim', $manualPhones);
-            $recipients = array_merge($recipients, $manualPhones);
-        }
-
         // Remove duplicates and nulls
         $recipients = array_unique(array_filter($recipients));
 
-        if ($formAction !== 'save_draft' && empty($recipients)) {
+        if (empty($recipients)) {
+            if ($request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => 'No valid phone numbers found for the selected recipients.']);
+            }
             return back()->with('error', 'No valid phone numbers found for the selected recipients.');
-        }
-
-        // Prepare scheduled_at if needed
-        $scheduledAt = null;
-        if (($validated['send_option'] ?? null) === 'schedule' && $request->scheduled_date && $request->scheduled_time) {
-            $scheduledAt = $request->scheduled_date . ' ' . $request->scheduled_time;
         }
 
         // Get default sender name from first active gateway
@@ -215,14 +198,13 @@ class CommunicationController extends Controller
         };
 
         $communicationData = [
-            'subject' => $validated['message_title'] ?: 'Untitled Draft',
-            'message' => $validated['message_body'] ?? '',
+            'subject' => 'Bulk SMS',
+            'message' => $validated['message_body'],
             'type' => 'sms',
             'recipient_type' => $recipientType,
             'group_id' => $request->cell_group ?? null,
             'criteria' => [
                 'sender_name' => $senderName,
-                'category' => $request->sms_category,
                 'recipient_option' => $recipientOption,
                 'gender' => $request->gender,
                 'age_group' => $request->age_group,
@@ -233,46 +215,52 @@ class CommunicationController extends Controller
             'sent_by' => Auth::id(),
             'recipients' => json_encode($recipients),
             'status' => 'draft',
-            'scheduled_at' => $scheduledAt,
         ];
 
         $communication = Communication::create($communicationData);
 
-        if ($formAction === 'save_draft') {
-            return redirect()->route('communications.index')->with('success', 'SMS draft saved successfully.');
+        // Sequential sending
+        $sentCount = 0;
+        $failedCount = 0;
+        $totalRecipients = count($recipients);
+
+        foreach ($recipients as $index => $recipient) {
+            $response = $this->messagingService->sendSms([$recipient], $validated['message_body']);
+            
+            if (($response['status'] ?? 'error') === 'success') {
+                $sentCount++;
+            } else {
+                $failedCount++;
+            }
         }
 
-        if (($validated['send_option'] ?? 'now') === 'schedule' && $scheduledAt) {
+        // Update communication status
+        if ($sentCount > 0) {
             $communication->update([
-                'status' => 'scheduled',
-            ]);
-
-            return redirect()
-                ->route('communications.index')
-                ->with('success', 'Bulk SMS scheduled successfully for ' . $scheduledAt);
-        }
-
-        $response = $this->messagingService->sendSms($recipients, $validated['message_body']);
-
-        if (($response['status'] ?? 'error') === 'success') {
-            $communication->update([
-                'status' => 'sent',
+                'status' => $failedCount > 0 ? 'partial' : 'sent',
                 'sent_at' => now(),
-                'scheduled_at' => null,
-                'error_message' => null,
+                'error_message' => $failedCount > 0 ? "Failed to send to {$failedCount} recipients" : null,
             ]);
-
-            return redirect()
-                ->route('communications.index')
-                ->with('success', 'Bulk SMS sent successfully to ' . count($recipients) . ' recipient(s).');
+        } else {
+            $communication->update([
+                'status' => 'failed',
+                'error_message' => 'Failed to send SMS to any recipient',
+            ]);
         }
 
-        $communication->update([
-            'status' => 'failed',
-            'error_message' => $response['message'] ?? 'Failed to send SMS.',
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => $sentCount > 0,
+                'message' => "SMS sent to {$sentCount} recipients. Failed: {$failedCount}",
+                'sent_count' => $sentCount,
+                'failed_count' => $failedCount,
+                'total_recipients' => $totalRecipients
+            ]);
+        }
 
-        return back()->with('error', $response['message'] ?? 'Failed to send SMS.');
+        return redirect()
+            ->route('communications.index')
+            ->with('success', "Bulk SMS sent successfully to {$sentCount} recipient(s). Failed: {$failedCount}");
     }
 
     public function announcements()
