@@ -58,24 +58,32 @@
                         @forelse($attendances as $attendance)
                         <tr>
                             <td>
+                                @if($attendance && $attendance->event)
                                 <div class="font-semibold">{{ $attendance->event->event_name }}</div>
                                 <div class="text-xs text-muted">{{ $attendance->event->event_date->format('M j, Y') }}</div>
+                                @else
+                                <span class="text-muted">N/A</span>
+                                @endif
                             </td>
-                            <td>{{ $attendance->member->full_name ?? 'N/A' }}</td>
+                            <td>{{ $attendance && $attendance->member ? $attendance->member->full_name : 'N/A' }}</td>
                             <td>
+                                @if($attendance)
                                 <span class="badge {{ $attendance->status == 'attended' ? 'green' : ($attendance->status == 'absent' ? 'red' : 'amber') }}">
                                     {{ ucfirst($attendance->status) }}
                                 </span>
+                                @else
+                                <span class="text-muted">N/A</span>
+                                @endif
                             </td>
                             <td>
-                                @if($attendance->checked_in_at)
+                                @if($attendance && $attendance->checked_in_at)
                                     {{ $attendance->checked_in_at->format('M j, Y g:i A') }}
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
                             <td>
-                                @if($attendance->checkedInBy)
+                                @if($attendance && $attendance->checkedInBy)
                                     {{ $attendance->checkedInBy->name }}
                                 @else
                                     <span class="text-muted">-</span>
@@ -83,6 +91,7 @@
                             </td>
                             <td>
                                 <div class="flex gap-2">
+                                    @if($attendance && $attendance->id)
                                     <form action="{{ route('events.attendance.update', $attendance->id) }}" method="POST" class="inline">
                                         @method('PUT')
                                         @csrf
@@ -92,6 +101,9 @@
                                             <option value="absent" {{ $attendance->status == 'absent' ? 'selected' : '' }}>Absent</option>
                                         </select>
                                     </form>
+                                    @else
+                                    <span class="text-muted text-xs">N/A</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
